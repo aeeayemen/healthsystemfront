@@ -48,6 +48,7 @@
                                     <tr>
                                         <th>الرقم</th>
                                         <th>الوصف</th>
+                                        <th>النوع</th>
                                         <th>رقم المشرف</th>
                                         <th>التاريخ</th>
                                         <th>إجراءات</th>
@@ -89,6 +90,18 @@
                         <div class="mb-3">
                             <label class="form-label">النصيحة</label>
                             <textarea class="form-control" id="formDescribtion" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">النوع</label>
+                            <select class="form-select" id="formType" required>
+                                <option value="nutrition">تغذية</option>
+                                <option value="exercise">رياضة</option>
+                                <option value="mental">صحة نفسية</option>
+                                <option value="sleep">نوم</option>
+                                <option value="habits">عادات صحية</option>
+                                <option value="weight_loss">إنقاص الوزن</option>
+                                <option value="muscle_building">بناء العضلات</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -172,6 +185,7 @@
                     <tr>
                         <td>${item.id}</td>
                         <td>${item.describtion}</td>
+                        <td><span class="badge bg-info">${item.type || '-'}</span></td>
                         <td><span class="badge bg-secondary">${item.admin_id}</span></td>
                         <td>${item.date}</td>
                         <td>
@@ -204,6 +218,7 @@
             document.getElementById('modalTitle').textContent = 'إضافة نصيحة';
             document.getElementById('editId').value = '';
             document.getElementById('formDescribtion').value = '';
+            document.getElementById('formType').value = 'nutrition';
             formModal.show();
         }
 
@@ -213,21 +228,23 @@
             document.getElementById('modalTitle').textContent = 'تعديل النصيحة';
             document.getElementById('editId').value = id;
             document.getElementById('formDescribtion').value = item.describtion;
+            document.getElementById('formType').value = item.type || 'nutrition';
             formModal.show();
         }
 
         function saveData() {
             const id = document.getElementById('editId').value;
             const describtion = document.getElementById('formDescribtion').value.trim();
+            const type = document.getElementById('formType').value;
             if (!describtion) { alert('يرجى إدخال النصيحة'); return; }
 
             let tips = db.get('tips') || [...MOCK_DATA.tips];
             if (id) {
                 const index = tips.findIndex(t => t.id === parseInt(id));
-                if (index !== -1) tips[index].describtion = describtion;
+                if (index !== -1) tips[index] = { ...tips[index], describtion, type };
             } else {
                 const newId = Math.max(...tips.map(t => t.id), 0) + 1;
-                tips.push({ id: newId, describtion, admin_id: 1, date: new Date().toISOString().split('T')[0] });
+                tips.push({ id: newId, describtion, type, admin_id: 1, date: new Date().toISOString().split('T')[0] });
             }
             db.save('tips', tips);
             formModal.hide();

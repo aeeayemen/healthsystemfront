@@ -42,7 +42,6 @@
                                     <tr>
                                         <th>الرقم</th>
                                         <th>الاسم</th>
-                                        <th>النوع</th>
                                         <th>إجراءات</th>
                                     </tr>
                                 </thead>
@@ -75,10 +74,6 @@
                         <div class="mb-3">
                             <label class="form-label">اسم الفئة</label>
                             <input type="text" class="form-control" id="formName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">النوع (type)</label>
-                            <input type="text" class="form-control" id="formType" required placeholder="مثال: nutrition">
                         </div>
                     </form>
                 </div>
@@ -143,20 +138,14 @@
             renderTable();
         }
 
-        function getTypeColor(type) {
-            const colors = { 'nutrition': 'bg-success', 'exercise': 'bg-primary', 'mental': 'bg-info', 'sleep': 'bg-secondary', 'habits': 'bg-warning' };
-            return colors[type] || 'bg-secondary';
-        }
-
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = filteredData.length === 0 
-                ? '<tr><td colspan="4" class="text-center text-muted py-4">لا توجد فئات</td></tr>'
+                ? '<tr><td colspan="3" class="text-center text-muted py-4">لا توجد فئات</td></tr>'
                 : filteredData.map(item => `
                     <tr>
                         <td>${item.id}</td>
                         <td>${item.name}</td>
-                        <td><span class="badge ${getTypeColor(item.type)}">${item.type}</span></td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
@@ -169,7 +158,6 @@
             document.getElementById('modalTitle').textContent = 'إضافة فئة';
             document.getElementById('editId').value = '';
             document.getElementById('formName').value = '';
-            document.getElementById('formType').value = '';
             formModal.show();
         }
 
@@ -179,23 +167,21 @@
             document.getElementById('modalTitle').textContent = 'تعديل الفئة';
             document.getElementById('editId').value = id;
             document.getElementById('formName').value = item.name;
-            document.getElementById('formType').value = item.type;
             formModal.show();
         }
 
         function saveData() {
             const id = document.getElementById('editId').value;
             const name = document.getElementById('formName').value.trim();
-            const type = document.getElementById('formType').value.trim();
-            if (!name || !type) { alert('يرجى ملء جميع الحقول'); return; }
+            if (!name) { alert('يرجى ملء جميع الحقول'); return; }
 
             let data = db.get('tipsCategories') || [...MOCK_DATA.tipsCategories];
             if (id) {
                 const index = data.findIndex(t => t.id === parseInt(id));
-                if (index !== -1) { data[index].name = name; data[index].type = type; }
+                if (index !== -1) { data[index].name = name; }
             } else {
                 const newId = Math.max(...data.map(t => t.id), 0) + 1;
-                data.push({ id: newId, name, type });
+                data.push({ id: newId, name });
             }
             db.save('tipsCategories', data);
             formModal.hide();

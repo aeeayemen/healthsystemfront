@@ -57,27 +57,27 @@ const MOCK_DATA = {
 
     // WeeklyCalculations
     weeklyCalculations: [
-        { id: 1, user_id: 1, weight: 80, waist: 85, date: '2024-11-01' },
-        { id: 2, user_id: 1, weight: 79.5, waist: 84, date: '2024-11-08' },
-        { id: 3, user_id: 1, weight: 79, waist: 83, date: '2024-11-15' },
-        { id: 4, user_id: 2, weight: 58, waist: 68, date: '2024-11-01' },
-        { id: 5, user_id: 2, weight: 57.5, waist: 67, date: '2024-11-08' },
-        { id: 6, user_id: 3, weight: 85, waist: 90, date: '2024-11-01' },
-        { id: 7, user_id: 3, weight: 84, waist: 89, date: '2024-11-08' },
-        { id: 8, user_id: 4, weight: 62, waist: 70, date: '2024-11-01' },
-        { id: 9, user_id: 5, weight: 78, waist: 82, date: '2024-11-01' },
-        { id: 10, user_id: 5, weight: 77.5, waist: 81, date: '2024-11-08' }
+        { id: 1, user_id: 1, weight: 80, waist: 85, stomach: 90, arm: 35, chest: 100, thigh: 60, shoulder: 110, buttocks: 95, date: '2024-11-01' },
+        { id: 2, user_id: 1, weight: 79.5, waist: 84, stomach: 89, arm: 35, chest: 99, thigh: 59, shoulder: 110, buttocks: 94, date: '2024-11-08' },
+        { id: 3, user_id: 1, weight: 79, waist: 83, stomach: 88, arm: 34.5, chest: 98, thigh: 59, shoulder: 109, buttocks: 93, date: '2024-11-15' },
+        { id: 4, user_id: 2, weight: 58, waist: 68, stomach: 70, arm: 28, chest: 85, thigh: 50, shoulder: 95, buttocks: 88, date: '2024-11-01' },
+        { id: 5, user_id: 2, weight: 57.5, waist: 67, stomach: 69, arm: 28, chest: 84, thigh: 49, shoulder: 95, buttocks: 87, date: '2024-11-08' },
+        { id: 6, user_id: 3, weight: 85, waist: 90, stomach: 95, arm: 38, chest: 105, thigh: 65, shoulder: 115, buttocks: 100, date: '2024-11-01' },
+        { id: 7, user_id: 3, weight: 84, waist: 89, stomach: 94, arm: 37.5, chest: 104, thigh: 64, shoulder: 114, buttocks: 99, date: '2024-11-08' },
+        { id: 8, user_id: 4, weight: 62, waist: 70, stomach: 75, arm: 30, chest: 90, thigh: 55, shoulder: 100, buttocks: 92, date: '2024-11-01' },
+        { id: 9, user_id: 5, weight: 78, waist: 82, stomach: 88, arm: 36, chest: 102, thigh: 62, shoulder: 112, buttocks: 98, date: '2024-11-01' },
+        { id: 10, user_id: 5, weight: 77.5, waist: 81, stomach: 87, arm: 36, chest: 101, thigh: 61, shoulder: 111, buttocks: 97, date: '2024-11-08' }
     ],
 
     // Doctor with admin_id (null = pending, not null = approved)
     doctors: [
-        { id: 1, name: 'د. أحمد الشريف', gender: 'male', degree: 'دكتوراه تغذية علاجية', bank_account: 'SA1234567890123456789012', phone_number: '0501111111', CV: 'https://example.com/cv1.pdf', admin_id: 1 },
-        { id: 2, name: 'د. سمية خالد', gender: 'female', degree: 'ماجستير علوم تغذية', bank_account: 'SA9876543210987654321098', phone_number: '0502222222', CV: 'https://example.com/cv2.pdf', admin_id: 1 },
-        { id: 3, name: 'د. عمر الفهد', gender: 'male', degree: 'بكالوريوس تغذية', bank_account: 'SA5555666677778888999900', phone_number: '0503333333', CV: 'https://example.com/cv3.pdf', admin_id: 1 },
-        { id: 4, name: 'د. هند العلي', gender: 'female', degree: 'ماجستير تغذية رياضية', phone_number: '0504444444', CV: 'https://example.com/cv4.pdf', admin_id: null },
-        { id: 5, name: 'د. فيصل المطيري', gender: 'male', degree: 'دكتوراه طب رياضي', phone_number: '0505555555', CV: 'https://example.com/cv5.pdf', admin_id: null },
-        { id: 6, name: 'د. منى السبيعي', gender: 'female', degree: 'ماجستير تغذية علاجية', phone_number: '0506666666', CV: 'https://example.com/cv6.pdf', admin_id: null },
-        { id: 7, name: 'د. سعد الغامدي', gender: 'male', degree: 'دكتوراه علوم الغذاء', phone_number: '0507777777', CV: 'https://example.com/cv7.pdf', admin_id: null }
+        { id: 1, name: 'د. أحمد الشريف', gender: 'male', degree: 'دكتوراه تغذية علاجية', bank_account: 'SA1234567890123456789012', phone_number: '0501111111', CV: 'https://example.com/cv1.pdf', admin_id: 1, diet: 'كيتو', price: 200 },
+        { id: 2, name: 'د. سمية خالد', gender: 'female', degree: 'ماجستير علوم تغذية', bank_account: 'SA9876543210987654321098', phone_number: '0502222222', CV: 'https://example.com/cv2.pdf', admin_id: 1, diet: 'نباتي', price: 150 },
+        { id: 3, name: 'د. عمر الفهد', gender: 'male', degree: 'بكالوريوس تغذية', bank_account: 'SA5555666677778888999900', phone_number: '0503333333', CV: 'https://example.com/cv3.pdf', admin_id: 1, diet: 'صيام متقطع', price: 180 },
+        { id: 4, name: 'د. هند العلي', gender: 'female', degree: 'ماجستير تغذية رياضية', bank_account: 'SA4444555566667777888899', phone_number: '0504444444', CV: 'https://example.com/cv4.pdf', admin_id: null, diet: 'رياضيين', price: 250 },
+        { id: 5, name: 'د. فيصل المطيري', gender: 'male', degree: 'دكتوراه طب رياضي', bank_account: 'SA1111222233334444555566', phone_number: '0505555555', CV: 'https://example.com/cv5.pdf', admin_id: null, diet: 'تضخيم', price: 300 },
+        { id: 6, name: 'د. منى السبيعي', gender: 'female', degree: 'ماجستير تغذية علاجية', bank_account: 'SA7777888899990000111122', phone_number: '0506666666', CV: 'https://example.com/cv6.pdf', admin_id: null, diet: 'لو كارب', price: 160 },
+        { id: 7, name: 'د. سعد الغامدي', gender: 'male', degree: 'دكتوراه علوم الغذاء', bank_account: 'SA3333444455556666777788', phone_number: '0507777777', CV: 'https://example.com/cv7.pdf', admin_id: null, diet: 'عام', price: 140 }
     ],
 
     // Rate (Doctor Ratings)
@@ -127,27 +127,27 @@ const MOCK_DATA = {
 
     // Tips
     tips: [
-        { id: 1, describtion: 'اشرب 8 أكواب من الماء يومياً للحفاظ على رطوبة الجسم', admin_id: 1, date: '2024-11-01' },
-        { id: 2, describtion: 'تناول الخضروات الورقية يومياً لتعزيز المناعة', admin_id: 1, date: '2024-11-05' },
-        { id: 3, describtion: 'المشي 30 دقيقة يومياً يحسن الصحة العامة', admin_id: 1, date: '2024-11-10' },
-        { id: 4, describtion: 'تجنب تناول الطعام قبل النوم بساعتين', admin_id: 1, date: '2024-11-15' },
-        { id: 5, describtion: 'النوم 7-8 ساعات ضروري لتجديد الطاقة', admin_id: 1, date: '2024-11-20' },
-        { id: 6, describtion: 'تناول البروتين في كل وجبة لبناء العضلات', admin_id: 1, date: '2024-11-22' },
-        { id: 7, describtion: 'قلل من تناول السكريات المكررة', admin_id: 1, date: '2024-11-23' },
-        { id: 8, describtion: 'تناول الفواكه الطازجة بدلاً من العصائر', admin_id: 1, date: '2024-11-24' },
-        { id: 9, describtion: 'استخدم زيت الزيتون بدلاً من الزيوت المهدرجة', admin_id: 1, date: '2024-11-25' },
-        { id: 10, describtion: 'تناول وجبات صغيرة ومتعددة خلال اليوم', admin_id: 1, date: '2024-11-26' }
+        { id: 1, describtion: 'اشرب 8 أكواب من الماء يومياً للحفاظ على رطوبة الجسم', admin_id: 1, date: '2024-11-01', type: 'nutrition' },
+        { id: 2, describtion: 'تناول الخضروات الورقية يومياً لتعزيز المناعة', admin_id: 1, date: '2024-11-05', type: 'nutrition' },
+        { id: 3, describtion: 'المشي 30 دقيقة يومياً يحسن الصحة العامة', admin_id: 1, date: '2024-11-10', type: 'exercise' },
+        { id: 4, describtion: 'تجنب تناول الطعام قبل النوم بساعتين', admin_id: 1, date: '2024-11-15', type: 'habits' },
+        { id: 5, describtion: 'النوم 7-8 ساعات ضروري لتجديد الطاقة', admin_id: 1, date: '2024-11-20', type: 'sleep' },
+        { id: 6, describtion: 'تناول البروتين في كل وجبة لبناء العضلات', admin_id: 1, date: '2024-11-22', type: 'nutrition' },
+        { id: 7, describtion: 'قلل من تناول السكريات المكررة', admin_id: 1, date: '2024-11-23', type: 'nutrition' },
+        { id: 8, describtion: 'تناول الفواكه الطازجة بدلاً من العصائر', admin_id: 1, date: '2024-11-24', type: 'nutrition' },
+        { id: 9, describtion: 'استخدم زيت الزيتون بدلاً من الزيوت المهدرجة', admin_id: 1, date: '2024-11-25', type: 'nutrition' },
+        { id: 10, describtion: 'تناول وجبات صغيرة ومتعددة خلال اليوم', admin_id: 1, date: '2024-11-26', type: 'habits' }
     ],
 
     // TipsCategory
     tipsCategories: [
-        { id: 1, name: 'تغذية', type: 'nutrition' },
-        { id: 2, name: 'رياضة', type: 'exercise' },
-        { id: 3, name: 'صحة نفسية', type: 'mental' },
-        { id: 4, name: 'نوم', type: 'sleep' },
-        { id: 5, name: 'عادات صحية', type: 'habits' },
-        { id: 6, name: 'إنقاص الوزن', type: 'weight_loss' },
-        { id: 7, name: 'بناء العضلات', type: 'muscle_building' }
+        { id: 1, name: 'تغذية' },
+        { id: 2, name: 'رياضة' },
+        { id: 3, name: 'صحة نفسية' },
+        { id: 4, name: 'نوم' },
+        { id: 5, name: 'عادات صحية' },
+        { id: 6, name: 'إنقاص الوزن' },
+        { id: 7, name: 'بناء العضلات' }
     ],
 
     // Forum
@@ -172,21 +172,31 @@ const MOCK_DATA = {
 
     // Meals
     meals: [
-        { id: 1, name: 'شوفان بالموز', serving: '1 كوب', describtion: 'شوفان مطبوخ مع حليب قليل الدسم وموز طازج', carbo: 45, protin: 12, fat: 5, energy: 280, category: 'فطور' },
-        { id: 2, name: 'سلطة الدجاج المشوي', serving: '300 جم', describtion: 'صدر دجاج مشوي مع خضروات طازجة وزيت زيتون', carbo: 10, protin: 35, fat: 15, energy: 320, category: 'غداء' },
-        { id: 3, name: 'سمك السلمون', serving: '200 جم', describtion: 'سلمون مشوي مع الخضار السوتيه', carbo: 5, protin: 40, fat: 20, energy: 360, category: 'غداء' },
-        { id: 4, name: 'زبادي يوناني', serving: '150 جم', describtion: 'زبادي يوناني مع العسل والمكسرات', carbo: 15, protin: 15, fat: 8, energy: 190, category: 'وجبة خفيفة' },
-        { id: 5, name: 'بيض مسلوق', serving: '2 بيضة', describtion: 'بيضتان مسلوقتان مع خبز أسمر', carbo: 20, protin: 14, fat: 10, energy: 230, category: 'فطور' },
-        { id: 6, name: 'حساء العدس', serving: '250 مل', describtion: 'حساء عدس أحمر مع الليمون', carbo: 30, protin: 12, fat: 3, energy: 200, category: 'عشاء' },
-        { id: 7, name: 'موز', serving: '1 موزة', describtion: 'موزة متوسطة الحجم', carbo: 27, protin: 1, fat: 0, energy: 105, category: 'وجبة خفيفة' },
-        { id: 8, name: 'أرز بني مع الخضار', serving: '200 جم', describtion: 'أرز بني مطبوخ مع خضار مشكلة', carbo: 45, protin: 8, fat: 5, energy: 260, category: 'غداء' },
-        { id: 9, name: 'سلطة خضراء', serving: '150 جم', describtion: 'خس، خيار، طماطم مع زيت زيتون', carbo: 8, protin: 2, fat: 10, energy: 120, category: 'مقبلات' },
-        { id: 10, name: 'شريحة خبز أسمر', serving: '1 شريحة', describtion: 'خبز أسمر كامل الحبوب', carbo: 15, protin: 4, fat: 1, energy: 80, category: 'خبز' },
-        { id: 11, name: 'تفاح أخضر', serving: '1 تفاحة', describtion: 'تفاحة خضراء متوسطة الحجم', carbo: 25, protin: 0, fat: 0, energy: 95, category: 'وجبة خفيفة' },
-        { id: 12, name: 'صدر دجاج مشوي', serving: '150 جم', describtion: 'صدر دجاج مشوي بالأعشاب', carbo: 0, protin: 32, fat: 7, energy: 195, category: 'غداء' },
-        { id: 13, name: 'عصير برتقال طبيعي', serving: '200 مل', describtion: 'عصير برتقال طازج بدون سكر', carbo: 22, protin: 2, fat: 0, energy: 90, category: 'فطور' },
-        { id: 14, name: 'لوز محمص', serving: '30 جم', describtion: 'لوز محمص بدون ملح', carbo: 6, protin: 6, fat: 15, energy: 175, category: 'وجبة خفيفة' },
-        { id: 15, name: 'سلطة التونة', serving: '200 جم', describtion: 'تونة مع خضار وزيت زيتون', carbo: 5, protin: 25, fat: 12, energy: 230, category: 'عشاء' }
+        { id: 1, meal_id: 'M-001', name: 'شوفان بالموز', describtion: '1 كوب - شوفان مطبوخ مع حليب قليل الدسم وموز طازج' },
+        { id: 2, meal_id: 'M-002', name: 'سلطة الدجاج المشوي', describtion: '300 جم - صدر دجاج مشوي مع خضروات طازجة وزيت زيتون' },
+        { id: 3, meal_id: 'M-003', name: 'سمك السلمون', describtion: '200 جم - سلمون مشوي مع الخضار السوتيه' },
+        { id: 4, meal_id: 'M-004', name: 'زبادي يوناني', describtion: '150 جم - زبادي يوناني مع العسل والمكسرات' },
+        { id: 5, meal_id: 'M-005', name: 'بيض مسلوق', describtion: '2 بيضة - بيضتان مسلوقتان مع خبز أسمر' },
+        { id: 6, meal_id: 'M-006', name: 'حساء العدس', describtion: '250 مل - حساء عدس أحمر مع الليمون' },
+        { id: 7, meal_id: 'M-007', name: 'موز', describtion: '1 موزة - موزة متوسطة الحجم' },
+        { id: 8, meal_id: 'M-008', name: 'أرز بني مع الخضار', describtion: '200 جم - أرز بني مطبوخ مع خضار مشكلة' },
+        { id: 9, meal_id: 'M-009', name: 'سلطة خضراء', describtion: '150 جم - خس، خيار، طماطم مع زيت زيتون' },
+        { id: 10, meal_id: 'M-010', name: 'شريحة خبز أسمر', describtion: '1 شريحة - خبز أسمر كامل الحبوب' },
+        { id: 11, meal_id: 'M-011', name: 'تفاح أخضر', describtion: '1 تفاحة - تفاحة خضراء متوسطة الحجم' },
+        { id: 12, meal_id: 'M-012', name: 'صدر دجاج مشوي', describtion: '150 جم - صدر دجاج مشوي بالأعشاب' },
+        { id: 13, meal_id: 'M-013', name: 'عصير برتقال طبيعي', describtion: '200 مل - عصير برتقال طازج بدون سكر' },
+        { id: 14, meal_id: 'M-014', name: 'لوز محمص', describtion: '30 جم - لوز محمص بدون ملح' },
+        { id: 15, meal_id: 'M-015', name: 'سلطة التونة', describtion: '200 جم - تونة مع خضار وزيت زيتون' }
+    ],
+
+    // MealCategories
+    mealCategories: [
+        { id: 1, name: 'فطور', carbo: 50, protin: 20, fat: 10, energy: 350 },
+        { id: 2, name: 'غداء', carbo: 60, protin: 30, fat: 15, energy: 500 },
+        { id: 3, name: 'عشاء', carbo: 40, protin: 25, fat: 10, energy: 400 },
+        { id: 4, name: 'وجبة خفيفة', carbo: 20, protin: 10, fat: 5, energy: 150 },
+        { id: 5, name: 'مقبلات', carbo: 15, protin: 5, fat: 5, energy: 100 },
+        { id: 6, name: 'خبز', carbo: 30, protin: 5, fat: 2, energy: 120 }
     ],
 
     // Settings

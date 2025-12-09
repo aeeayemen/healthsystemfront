@@ -25,16 +25,11 @@
 
                 <div class="filter-bar">
                     <div class="row g-3 align-items-center">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
                                 <input type="text" class="form-control" id="searchInput" placeholder="بحث بالاسم...">
                             </div>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-select" id="categoryFilter">
-                                <option value="">كل الفئات</option>
-                            </select>
                         </div>
                         <div class="col-md-2">
                             <select class="form-select" id="perPage">
@@ -52,14 +47,9 @@
                                 <thead>
                                     <tr>
                                         <th>الرقم</th>
+                                        <th>رمز الوجبة</th>
                                         <th>الاسم</th>
-                                        <th>الحصة</th>
-                                        <th>الوصف</th>
-                                        <th>الكربوهيدرات</th>
-                                        <th>البروتين</th>
-                                        <th>الدهون</th>
-                                        <th>السعرات</th>
-                                        <th>الفئة</th>
+                                        <th>وصف الحصة</th>
                                         <th>إجراءات</th>
                                     </tr>
                                 </thead>
@@ -102,39 +92,12 @@
                                 <input type="text" class="form-control" id="formName" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">الحصة (serving)</label>
-                                <input type="text" class="form-control" id="formServing" required>
+                                <label class="form-label">رمز الوجبة (meal_id)</label>
+                                <input type="text" class="form-control" id="formMealId" required>
                             </div>
                             <div class="col-md-12 mb-3">
-                                <label class="form-label">الوصف</label>
+                                <label class="form-label">وصف الحصة</label>
                                 <textarea class="form-control" id="formDescribtion" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">الكربوهيدرات (carbo)</label>
-                                <input type="number" class="form-control" id="formCarbo" step="0.1" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">البروتين (protin)</label>
-                                <input type="number" class="form-control" id="formProtin" step="0.1" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">الدهون (fat)</label>
-                                <input type="number" class="form-control" id="formFat" step="0.1" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">السعرات (energy)</label>
-                                <input type="number" class="form-control" id="formEnergy" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">الفئة (category)</label>
-                                <select class="form-select" id="formCategory">
-                                    <option value="فطور">فطور</option>
-                                    <option value="غداء">غداء</option>
-                                    <option value="عشاء">عشاء</option>
-                                    <option value="وجبة خفيفة">وجبة خفيفة</option>
-                                    <option value="مقبلات">مقبلات</option>
-                                    <option value="خبز">خبز</option>
-                                </select>
                             </div>
                         </div>
                     </form>
@@ -179,7 +142,6 @@
             deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
             loadData();
             document.getElementById('searchInput').addEventListener('input', applyFilters);
-            document.getElementById('categoryFilter').addEventListener('change', applyFilters);
             document.getElementById('perPage').addEventListener('change', handlePerPageChange);
             document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
         });
@@ -187,34 +149,19 @@
         function loadData() {
             allData = db.get('meals') || MOCK_DATA.meals || [];
             filteredData = [...allData];
-            
-            // Populate category filter
-            const categories = [...new Set(allData.map(m => m.category))];
-            const categoryFilter = document.getElementById('categoryFilter');
-            categoryFilter.innerHTML = '<option value="">كل الفئات</option>';
-            categories.forEach(cat => categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`);
-            
             renderTable();
         }
 
         function applyFilters() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
             filteredData = allData.filter(item => {
-                const matchesSearch = !query || item.name.toLowerCase().includes(query);
-                const matchesCategory = !category || item.category === category;
-                return matchesSearch && matchesCategory;
+                return !query || item.name.toLowerCase().includes(query);
             });
             currentPage = 1;
             renderTable();
         }
 
         function handlePerPageChange(e) { perPage = parseInt(e.target.value); currentPage = 1; renderTable(); }
-
-        function getCategoryColor(category) {
-            const colors = { 'فطور': 'bg-warning', 'غداء': 'bg-success', 'عشاء': 'bg-primary', 'وجبة خفيفة': 'bg-info', 'مقبلات': 'bg-secondary', 'خبز': 'bg-dark' };
-            return colors[category] || 'bg-secondary';
-        }
 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
@@ -226,14 +173,9 @@
                 : pageData.map(item => `
                     <tr>
                         <td>${item.id}</td>
+                        <td><code>${item.meal_id || '-'}</code></td>
                         <td><strong>${item.name}</strong></td>
-                        <td>${item.serving}</td>
-                        <td class="text-truncate" style="max-width: 120px;">${item.describtion}</td>
-                        <td>${item.carbo} جم</td>
-                        <td>${item.protin} جم</td>
-                        <td>${item.fat} جم</td>
-                        <td><strong>${item.energy}</strong> سعرة</td>
-                        <td><span class="badge ${getCategoryColor(item.category)}">${item.category}</span></td>
+                        <td class="text-truncate" style="max-width: 200px;">${item.describtion}</td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
@@ -264,13 +206,8 @@
             document.getElementById('modalTitle').textContent = 'إضافة وجبة';
             document.getElementById('editId').value = '';
             document.getElementById('formName').value = '';
-            document.getElementById('formServing').value = '';
+            document.getElementById('formMealId').value = '';
             document.getElementById('formDescribtion').value = '';
-            document.getElementById('formCarbo').value = '';
-            document.getElementById('formProtin').value = '';
-            document.getElementById('formFat').value = '';
-            document.getElementById('formEnergy').value = '';
-            document.getElementById('formCategory').value = 'فطور';
             formModal.show();
         }
 
@@ -280,38 +217,28 @@
             document.getElementById('modalTitle').textContent = 'تعديل الوجبة';
             document.getElementById('editId').value = id;
             document.getElementById('formName').value = item.name;
-            document.getElementById('formServing').value = item.serving;
+            document.getElementById('formMealId').value = item.meal_id || '';
             document.getElementById('formDescribtion').value = item.describtion;
-            document.getElementById('formCarbo').value = item.carbo;
-            document.getElementById('formProtin').value = item.protin;
-            document.getElementById('formFat').value = item.fat;
-            document.getElementById('formEnergy').value = item.energy;
-            document.getElementById('formCategory').value = item.category;
             formModal.show();
         }
 
         function saveData() {
             const id = document.getElementById('editId').value;
             const name = document.getElementById('formName').value.trim();
-            const serving = document.getElementById('formServing').value.trim();
+            const meal_id = document.getElementById('formMealId').value.trim();
             const describtion = document.getElementById('formDescribtion').value.trim();
-            const carbo = parseFloat(document.getElementById('formCarbo').value);
-            const protin = parseFloat(document.getElementById('formProtin').value);
-            const fat = parseFloat(document.getElementById('formFat').value);
-            const energy = parseInt(document.getElementById('formEnergy').value);
-            const category = document.getElementById('formCategory').value;
 
-            if (!name || !serving) { alert('يرجى ملء الحقول المطلوبة'); return; }
+            if (!name || !meal_id) { alert('يرجى ملء الحقول المطلوبة'); return; }
 
             let data = db.get('meals') || [...MOCK_DATA.meals];
             if (id) {
                 const index = data.findIndex(m => m.id === parseInt(id));
                 if (index !== -1) {
-                    data[index] = { ...data[index], name, serving, describtion, carbo, protin, fat, energy, category };
+                    data[index] = { ...data[index], name, meal_id, describtion };
                 }
             } else {
                 const newId = Math.max(...data.map(m => m.id), 0) + 1;
-                data.push({ id: newId, name, serving, describtion, carbo, protin, fat, energy, category });
+                data.push({ id: newId, name, meal_id, describtion });
             }
             db.save('meals', data);
             formModal.hide();

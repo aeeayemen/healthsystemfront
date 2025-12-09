@@ -1,0 +1,48 @@
+:root {
+    /* Primary Colors */
+    --primary: #9d0176;
+    --primary-dark: #9d0176;
+    --primary-light: #9d0176;
+    --secondary: #6c952b;
+    
+    /* Accent Colors */
+    --success: #2ec4b6;
+    --warning: #ff9f1c;
+    --danger: #e71d36;
+    --info: #3a86ff;
+    
+    /* Neutral Colors */
+    --dark: #0b090a;
+    --dark-gray: #161a1d;
+    --gray: #6c757d;
+    --light-gray: #ced4da;
+    --light: #f8f9fa;
+    --white: #ffffff;
+    
+    /* Backgrounds */
+    --bg-body: #f3f4f6;
+    --bg-card: #ffffff;
+    --bg-sidebar: #ffffff;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --shadow-hover: 0 20px 25px rgba(0,0,0,0.15);
+    
+    /* Typography */
+    --font-family: 'Cairo', Tahoma, Geneva, Verdana, sans-serif;
+    --font-family: 'و', Tahoma, Geneva, Verdana, sans-serif;
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+[data-theme="dark"] {
+    --bg-body: #0f172a;
+    --bg-card: #1e293b;
+    --bg-sidebar: #1e293b;
+    --dark: #f8f9fa;
+    --light: #1e293b;
+    --gray: #94a3b8;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+}

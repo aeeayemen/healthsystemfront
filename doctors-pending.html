@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدكاترة المنتظرين - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-user-clock me-2"></i>الدكاترة المنتظرين</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة دكتور</button>
+                </div>
+                <div class="filter-bar">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-3"><div class="input-group"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="text" class="form-control" id="searchInput" placeholder="بحث بالاسم..."></div></div>
+                        <div class="col-md-2"><select class="form-select" id="genderFilter"><option value="">كل الجنس</option><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>الاسم</th><th>الجنس</th><th>الدرجة</th><th>رقم الهاتف</th><th>السيرة الذاتية</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>4</td><td>د. هند العلي</td><td><span class="badge bg-pink">أنثى</span></td><td>ماجستير تغذية رياضية</td><td>0504444444</td><td><a href="https://example.com/cv4.pdf" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-success me-1" onclick="approveDoctor(4)"><i class="fas fa-check"></i> قبول</button><button class="btn btn-sm btn-danger" onclick="rejectDoctor(4)"><i class="fas fa-times"></i> رفض</button></td></tr>
+                                <tr><td>5</td><td>د. فيصل المطيري</td><td><span class="badge bg-primary">ذكر</span></td><td>دكتوراه طب رياضي</td><td>0505555555</td><td><a href="https://example.com/cv5.pdf" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-success me-1" onclick="approveDoctor(5)"><i class="fas fa-check"></i> قبول</button><button class="btn btn-sm btn-danger" onclick="rejectDoctor(5)"><i class="fas fa-times"></i> رفض</button></td></tr>
+                                <tr><td>6</td><td>د. منى السبيعي</td><td><span class="badge bg-pink">أنثى</span></td><td>ماجستير تغذية علاجية</td><td>0506666666</td><td><a href="https://example.com/cv6.pdf" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-success me-1" onclick="approveDoctor(6)"><i class="fas fa-check"></i> قبول</button><button class="btn btn-sm btn-danger" onclick="rejectDoctor(6)"><i class="fas fa-times"></i> رفض</button></td></tr>
+                                <tr><td>7</td><td>د. سعد الغامدي</td><td><span class="badge bg-primary">ذكر</span></td><td>دكتوراه علوم الغذاء</td><td>0507777777</td><td><a href="https://example.com/cv7.pdf" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-success me-1" onclick="approveDoctor(7)"><i class="fas fa-check"></i> قبول</button><button class="btn btn-sm btn-danger" onclick="rejectDoctor(7)"><i class="fas fa-times"></i> رفض</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة دكتور</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="row">
+                <div class="col-md-6 mb-3"><label class="form-label">الاسم</label><input type="text" class="form-control" id="formName" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">الجنس</label><select class="form-select" id="formGender" required><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+                <div class="col-md-6 mb-3"><label class="form-label">الدرجة العلمية</label><input type="text" class="form-control" id="formDegree" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="formPhone" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">الحساب البنكي</label><input type="text" class="form-control" id="formBankAccount"></div>
+                <div class="col-md-6 mb-3"><label class="form-label">رابط السيرة الذاتية</label><input type="url" class="form-control" id="formCV"></div>
+            </div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا الدكتور؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script><script src="assets/js/db.js"></script><script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],filteredData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('doctors-pending');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('searchInput').addEventListener('input',applyFilters);document.getElementById('genderFilter').addEventListener('change',applyFilters);document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        function loadData(){const doctors=db.get('doctors')||MOCK_DATA.doctors||[];allData=doctors.filter(d=>d.admin_id===null);filteredData=[...allData];renderTable();}
+        function applyFilters(){const query=document.getElementById('searchInput').value.toLowerCase();const gender=document.getElementById('genderFilter').value;filteredData=allData.filter(item=>{return(!query||item.name.toLowerCase().includes(query))&&(!gender||item.gender===gender);});currentPage=1;renderTable();}
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=filteredData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="7" class="text-center text-muted py-4">لا يوجد دكاترة منتظرين</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td>${item.name}</td><td><span class="badge ${item.gender==='male'?'bg-primary':'bg-pink'}">${item.gender==='male'?'ذكر':'أنثى'}</span></td><td>${item.degree}</td><td>${item.phone_number}</td><td><a href="${item.CV}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-success me-1" onclick="approveDoctor(${item.id})" title="قبول"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderPagination(){const tp=Math.ceil(filteredData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${filteredData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,filteredData.length)} من ${filteredData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        function goToPage(p){const tp=Math.ceil(filteredData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function approveDoctor(id){if(!confirm('هل تريد قبول هذا الدكتور؟'))return;let doctors=db.get('doctors')||[...MOCK_DATA.doctors];const index=doctors.findIndex(d=>d.id===id);if(index!==-1){doctors[index].admin_id=1;db.save('doctors',doctors);loadData();}}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة دكتور';document.getElementById('editId').value='';document.getElementById('formName').value='';document.getElementById('formGender').value='male';document.getElementById('formDegree').value='';document.getElementById('formPhone').value='';document.getElementById('formBankAccount').value='';document.getElementById('formCV').value='';formModal.show();}
+        function openEditModal(id){const doctors=db.get('doctors')||MOCK_DATA.doctors||[];const item=doctors.find(d=>d.id===id);if(!item)return;document.getElementById('modalTitle').textContent='تعديل الدكتور';document.getElementById('editId').value=id;document.getElementById('formName').value=item.name;document.getElementById('formGender').value=item.gender;document.getElementById('formDegree').value=item.degree;document.getElementById('formPhone').value=item.phone_number;document.getElementById('formBankAccount').value=item.bank_account||'';document.getElementById('formCV').value=item.CV||'';formModal.show();}
+        function saveData(){const id=document.getElementById('editId').value;const name=document.getElementById('formName').value.trim();const gender=document.getElementById('formGender').value;const degree=document.getElementById('formDegree').value.trim();const phone_number=document.getElementById('formPhone').value.trim();const bank_account=document.getElementById('formBankAccount').value.trim();const CV=document.getElementById('formCV').value.trim();if(!name||!degree||!phone_number){alert('يرجى ملء الحقول المطلوبة');return;}let doctors=db.get('doctors')||[...MOCK_DATA.doctors];if(id){const index=doctors.findIndex(d=>d.id===parseInt(id));if(index!==-1)doctors[index]={...doctors[index],name,gender,degree,phone_number,bank_account,CV};}else{const newId=Math.max(...doctors.map(d=>d.id),0)+1;doctors.push({id:newId,name,gender,degree,phone_number,bank_account,CV,admin_id:null});}db.save('doctors',doctors);formModal.hide();loadData();}
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        function confirmDelete(){if(!deleteId)return;let doctors=db.get('doctors')||[...MOCK_DATA.doctors];doctors=doctors.filter(d=>d.id!==deleteId);db.save('doctors',doctors);deleteId=null;deleteModal.hide();loadData();}
+    </script>
+</body>
+</html>

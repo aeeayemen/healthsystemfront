@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الرسائل - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-envelope me-2"></i>الرسائل</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة رسالة</button>
+                </div>
+                <div class="filter-bar">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-3"><div class="input-group"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="text" class="form-control" id="searchInput" placeholder="بحث في الرسائل..."></div></div>
+                        <div class="col-md-2"><select class="form-select" id="readFilter"><option value="">الكل</option><option value="true">مقروءة</option><option value="false">غير مقروءة</option></select></div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم المستخدم</th><th>رقم الطبيب</th><th>الرسالة</th><th>الوقت</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>1</td><td>أحمد محمد</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">السلام عليكم دكتور، لدي سؤال عن النظام الغذائي</td><td>10:30</td><td>2024-11-20</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(1)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>2</td><td>أحمد محمد</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">هل يمكنني تناول الفواكه بعد الوجبات؟</td><td>10:32</td><td>2024-11-20</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(2)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>3</td><td>سارة علي</td><td>د. سمية خالد</td><td class="text-truncate" style="max-width: 200px;">شكراً على الخطة الجديدة دكتورة</td><td>14:00</td><td>2024-11-21</td><td><span class="badge bg-warning"><i class="fas fa-envelope"></i> جديدة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(3)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>4</td><td>خالد عمر</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">متى موعدي القادم؟</td><td>09:15</td><td>2024-11-22</td><td><span class="badge bg-warning"><i class="fas fa-envelope"></i> جديدة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(4)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>5</td><td>فاطمة حسن</td><td>د. سمية خالد</td><td class="text-truncate" style="max-width: 200px;">أشعر بتحسن كبير بعد اتباع النظام</td><td>16:45</td><td>2024-11-22</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(5)"><i class="fas fa-eye"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة رسالة</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+            <div class="mb-3"><label class="form-label">رقم الطبيب</label><input type="number" class="form-control" id="formDoctorId" required></div>
+            <div class="mb-3"><label class="form-label">الرسالة</label><textarea class="form-control" id="formMessage" rows="4" required></textarea></div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذه الرسالة؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script><script src="assets/js/db.js"></script><script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],filteredData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('messages');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('searchInput').addEventListener('input',applyFilters);document.getElementById('readFilter').addEventListener('change',applyFilters);document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        function loadData(){allData=db.get('messages')||MOCK_DATA.messages||[];filteredData=[...allData];renderTable();}
+        function applyFilters(){const query=document.getElementById('searchInput').value.toLowerCase();const readValue=document.getElementById('readFilter').value;filteredData=allData.filter(item=>{const matchesSearch=!query||item.massage.toLowerCase().includes(query);const matchesRead=readValue===''||String(item.read)===readValue;return matchesSearch&&matchesRead;});currentPage=1;renderTable();}
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=filteredData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="8" class="text-center text-muted py-4">لا توجد رسائل</td></tr>':pageData.map(item=>`<tr class="${!item.read?'table-warning':''}"><td>${item.id}</td><td>${item.user_id}</td><td>${item.doctor_id}</td><td class="text-truncate" style="max-width:200px;">${item.massage}</td><td>${item.time}</td><td>${item.date}</td><td><span class="badge ${item.read?'badge-read':'badge-unread'}">${item.read?'مقروءة':'غير مقروءة'}</span></td><td><button class="btn btn-sm btn-outline-info me-1" onclick="viewDetails(${item.id})"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderPagination(){const tp=Math.ceil(filteredData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${filteredData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,filteredData.length)} من ${filteredData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        function goToPage(p){const tp=Math.ceil(filteredData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function viewDetails(id){window.location.href=`message-details.html?id=${id}`;}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة رسالة';document.getElementById('editId').value='';document.getElementById('formUserId').value='';document.getElementById('formDoctorId').value='';document.getElementById('formMessage').value='';formModal.show();}
+        function openEditModal(id){const item=allData.find(m=>m.id===id);if(!item)return;document.getElementById('modalTitle').textContent='تعديل الرسالة';document.getElementById('editId').value=id;document.getElementById('formUserId').value=item.user_id;document.getElementById('formDoctorId').value=item.doctor_id;document.getElementById('formMessage').value=item.massage;formModal.show();}
+        function saveData(){const id=document.getElementById('editId').value;const user_id=parseInt(document.getElementById('formUserId').value);const doctor_id=parseInt(document.getElementById('formDoctorId').value);const massage=document.getElementById('formMessage').value.trim();if(!user_id||!doctor_id||!massage){alert('يرجى ملء جميع الحقول');return;}let data=db.get('messages')||[...MOCK_DATA.messages];const now=new Date();if(id){const index=data.findIndex(m=>m.id===parseInt(id));if(index!==-1){data[index].user_id=user_id;data[index].doctor_id=doctor_id;data[index].massage=massage;}}else{const newId=Math.max(...data.map(m=>m.id),0)+1;data.push({id:newId,user_id,doctor_id,massage,time:now.toTimeString().slice(0,5),date:now.toISOString().split('T')[0],read:false});}db.save('messages',data);formModal.hide();loadData();}
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        function confirmDelete(){if(!deleteId)return;let data=db.get('messages')||[...MOCK_DATA.messages];data=data.filter(m=>m.id!==deleteId);db.save('messages',data);deleteId=null;deleteModal.hide();loadData();}
+    </script>
+</body>
+</html>

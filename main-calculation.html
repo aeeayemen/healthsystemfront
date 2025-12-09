@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الحسابات الرئيسية - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-calculator me-2"></i>الحسابات الرئيسية</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة حساب</button>
+                </div>
+                <div class="filter-bar">
+                    <div class="row g-3"><div class="col-md-4"><div class="input-group"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="text" class="form-control" id="searchInput" placeholder="بحث برقم المستخدم..."></div></div></div>
+                </div>
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم المستخدم</th><th>السعرات</th><th>البروتين</th><th>الدهون</th><th>الكربوهيدرات</th><th>معدل الأيض</th><th>مؤشر الكتلة</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>1</td><td>أحمد محمد</td><td><strong>2200</strong></td><td>110 جم</td><td>70 جم</td><td>250 جم</td><td>1800</td><td><span class="badge bg-warning">26.1</span></td></tr>
+                                <tr><td>2</td><td>سارة علي</td><td><strong>1600</strong></td><td>80 جم</td><td>50 جم</td><td>180 جم</td><td>1400</td><td><span class="badge bg-success">22.7</span></td></tr>
+                                <tr><td>3</td><td>خالد عمر</td><td><strong>2400</strong></td><td>120 جم</td><td>75 جم</td><td>270 جم</td><td>1900</td><td><span class="badge bg-warning">26.2</span></td></tr>
+                                <tr><td>4</td><td>فاطمة حسن</td><td><strong>1700</strong></td><td>85 جم</td><td>55 جم</td><td>190 جم</td><td>1450</td><td><span class="badge bg-success">22.8</span></td></tr>
+                                <tr><td>5</td><td>محمد سعيد</td><td><strong>2100</strong></td><td>105 جم</td><td>65 جم</td><td>240 جم</td><td>1750</td><td><span class="badge bg-warning">26.4</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة حساب</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="row">
+                <div class="col-md-4 mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">السعرات الحرارية</label><input type="number" class="form-control" id="formCalories" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">البروتين</label><input type="number" class="form-control" id="formProtin" step="0.1" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الدهون</label><input type="number" class="form-control" id="formFat" step="0.1" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الكربوهيدرات</label><input type="number" class="form-control" id="formCarbo" step="0.1" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">معدل الأيض (BMR)</label><input type="number" class="form-control" id="formBMR" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">مؤشر كتلة الجسم (BMI)</label><input type="number" class="form-control" id="formBMI" step="0.1" required></div>
+            </div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا الحساب؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script><script src="assets/js/db.js"></script><script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],filteredData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('main-calculation');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('searchInput').addEventListener('input',handleSearch);document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        function loadData(){allData=db.get('mainCalculations')||MOCK_DATA.mainCalculations||[];filteredData=[...allData];renderTable();}
+        function handleSearch(e){const q=e.target.value;filteredData=allData.filter(i=>String(i.user_id).includes(q));currentPage=1;renderTable();}
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=filteredData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="9" class="text-center text-muted py-4">لا توجد بيانات</td></tr>':pageData.map(i=>`<tr><td>${i.id}</td><td>${i.user_id}</td><td><strong>${i.calories}</strong></td><td>${i.protin}g</td><td>${i.fat}g</td><td>${i.carbo}g</td><td>${i.BMR}</td><td><span class="badge bg-${i.BMI<25?'success':'warning'}">${i.BMI}</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${i.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${i.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderPagination(){const tp=Math.ceil(filteredData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${filteredData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,filteredData.length)} من ${filteredData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        function goToPage(p){const tp=Math.ceil(filteredData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة حساب';document.getElementById('editId').value='';['UserId','Calories','Protin','Fat','Carbo','BMR','BMI'].forEach(f=>document.getElementById('form'+f).value='');formModal.show();}
+        function openEditModal(id){const item=allData.find(c=>c.id===id);if(!item)return;document.getElementById('modalTitle').textContent='تعديل الحساب';document.getElementById('editId').value=id;document.getElementById('formUserId').value=item.user_id;document.getElementById('formCalories').value=item.calories;document.getElementById('formProtin').value=item.protin;document.getElementById('formFat').value=item.fat;document.getElementById('formCarbo').value=item.carbo;document.getElementById('formBMR').value=item.BMR;document.getElementById('formBMI').value=item.BMI;formModal.show();}
+        function saveData(){const id=document.getElementById('editId').value;const user_id=parseInt(document.getElementById('formUserId').value);const calories=parseInt(document.getElementById('formCalories').value);const protin=parseFloat(document.getElementById('formProtin').value);const fat=parseFloat(document.getElementById('formFat').value);const carbo=parseFloat(document.getElementById('formCarbo').value);const BMR=parseInt(document.getElementById('formBMR').value);const BMI=parseFloat(document.getElementById('formBMI').value);if(!user_id||!calories){alert('يرجى ملء الحقول');return;}let data=db.get('mainCalculations')||[...MOCK_DATA.mainCalculations];if(id){const idx=data.findIndex(c=>c.id===parseInt(id));if(idx!==-1)data[idx]={...data[idx],user_id,calories,protin,fat,carbo,BMR,BMI};}else{const newId=Math.max(...data.map(c=>c.id),0)+1;data.push({id:newId,user_id,calories,protin,fat,carbo,BMR,BMI});}db.save('mainCalculations',data);formModal.hide();loadData();}
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        function confirmDelete(){if(!deleteId)return;let data=db.get('mainCalculations')||[...MOCK_DATA.mainCalculations];data=data.filter(c=>c.id!==deleteId);db.save('mainCalculations',data);deleteId=null;deleteModal.hide();loadData();}
+    </script>
+</body>
+</html>

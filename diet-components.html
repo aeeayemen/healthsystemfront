@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكونات النظام الغذائي - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-utensils me-2"></i>مكونات النظام الغذائي</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة مكون</button>
+                </div>
+                <div class="filter-bar">
+                    <div class="row g-3"><div class="col-md-4"><div class="input-group"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="text" class="form-control" id="searchInput" placeholder="بحث..."></div></div></div>
+                </div>
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم النظام</th><th>رقم الطبيب</th><th>وقت الفترة</th><th>اسم الفترة</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>1</td><td><span class="badge bg-secondary">1</span></td><td>د. أحمد الشريف</td><td>08:00</td><td><strong>الفطور</strong></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(1)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(1)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>2</td><td><span class="badge bg-secondary">1</span></td><td>د. أحمد الشريف</td><td>11:00</td><td><strong>وجبة خفيفة صباحية</strong></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(2)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(2)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>3</td><td><span class="badge bg-secondary">1</span></td><td>د. أحمد الشريف</td><td>13:00</td><td><strong>الغداء</strong></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(3)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(3)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>4</td><td><span class="badge bg-secondary">1</span></td><td>د. أحمد الشريف</td><td>16:00</td><td><strong>وجبة خفيفة مسائية</strong></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(4)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(4)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>5</td><td><span class="badge bg-secondary">1</span></td><td>د. أحمد الشريف</td><td>19:00</td><td><strong>العشاء</strong></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(5)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(5)"><i class="fas fa-trash"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة مكون</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="mb-3"><label class="form-label">رقم النظام الغذائي</label><input type="number" class="form-control" id="formDietId" required></div>
+            <div class="mb-3"><label class="form-label">رقم الطبيب</label><input type="number" class="form-control" id="formDoctorId" required></div>
+            <div class="mb-3"><label class="form-label">وقت الفترة</label><input type="time" class="form-control" id="formPeriodsTime" required></div>
+            <div class="mb-3"><label class="form-label">اسم الفترة</label><input type="text" class="form-control" id="formPeriodName" required></div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا المكون؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script><script src="assets/js/db.js"></script><script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],filteredData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('diet-components');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('searchInput').addEventListener('input',handleSearch);document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        function loadData(){allData=db.get('dietComponents')||MOCK_DATA.dietComponents||[];filteredData=[...allData];renderTable();}
+        function handleSearch(e){const query=e.target.value.toLowerCase();filteredData=allData.filter(item=>item.period_name.toLowerCase().includes(query));currentPage=1;renderTable();}
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=filteredData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="6" class="text-center text-muted py-4">لا توجد بيانات</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td>${item.diet_id}</td><td>${item.doctor_id}</td><td><code>${item.periods_time}</code></td><td><span class="badge bg-info">${item.period_name}</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderPagination(){const tp=Math.ceil(filteredData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${filteredData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,filteredData.length)} من ${filteredData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        function goToPage(p){const tp=Math.ceil(filteredData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة مكون';document.getElementById('editId').value='';document.getElementById('formDietId').value='';document.getElementById('formDoctorId').value='';document.getElementById('formPeriodsTime').value='';document.getElementById('formPeriodName').value='';formModal.show();}
+        function openEditModal(id){const item=allData.find(d=>d.id===id);if(!item)return;document.getElementById('modalTitle').textContent='تعديل المكون';document.getElementById('editId').value=id;document.getElementById('formDietId').value=item.diet_id;document.getElementById('formDoctorId').value=item.doctor_id;document.getElementById('formPeriodsTime').value=item.periods_time;document.getElementById('formPeriodName').value=item.period_name;formModal.show();}
+        function saveData(){const id=document.getElementById('editId').value;const diet_id=parseInt(document.getElementById('formDietId').value);const doctor_id=parseInt(document.getElementById('formDoctorId').value);const periods_time=document.getElementById('formPeriodsTime').value;const period_name=document.getElementById('formPeriodName').value.trim();if(!diet_id||!doctor_id||!periods_time||!period_name){alert('يرجى ملء جميع الحقول');return;}let data=db.get('dietComponents')||[...MOCK_DATA.dietComponents];if(id){const index=data.findIndex(d=>d.id===parseInt(id));if(index!==-1)data[index]={...data[index],diet_id,doctor_id,periods_time,period_name};}else{const newId=Math.max(...data.map(d=>d.id),0)+1;data.push({id:newId,diet_id,doctor_id,periods_time,period_name});}db.save('dietComponents',data);formModal.hide();loadData();}
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        function confirmDelete(){if(!deleteId)return;let data=db.get('dietComponents')||[...MOCK_DATA.dietComponents];data=data.filter(d=>d.id!==deleteId);db.save('dietComponents',data);deleteId=null;deleteModal.hide();loadData();}
+    </script>
+</body>
+</html>

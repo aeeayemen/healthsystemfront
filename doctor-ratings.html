@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقييمات الأطباء - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-star me-2"></i>تقييمات الأطباء</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة تقييم</button>
+                </div>
+                <div class="filter-bar">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-3"><div class="input-group"><span class="input-group-text"><i class="fas fa-search"></i></span><input type="text" class="form-control" id="searchInput" placeholder="بحث..."></div></div>
+                        <div class="col-md-2"><select class="form-select" id="rateFilter"><option value="">كل التقييمات</option><option value="5">5 نجوم</option><option value="4">4 نجوم</option><option value="3">3 نجوم</option><option value="2">2 نجوم</option><option value="1">1 نجمة</option></select></div>
+                    </div>
+                </div>
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم الطبيب</th><th>رقم المستخدم</th><th>التقييم</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>1</td><td>د. أحمد الشريف</td><td>أحمد محمد</td><td><span class="text-warning"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span> <strong>5</strong></td></tr>
+                                <tr><td>2</td><td>د. أحمد الشريف</td><td>سارة علي</td><td><span class="text-warning"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></span> <strong>4</strong></td></tr>
+                                <tr><td>3</td><td>د. أحمد الشريف</td><td>خالد عمر</td><td><span class="text-warning"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span> <strong>5</strong></td></tr>
+                                <tr><td>4</td><td>د. سمية خالد</td><td>فاطمة حسن</td><td><span class="text-warning"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span> <strong>5</strong></td></tr>
+                                <tr><td>5</td><td>د. سمية خالد</td><td>محمد سعيد</td><td><span class="text-warning"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></span> <strong>4</strong></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة تقييم</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="mb-3"><label class="form-label">رقم الطبيب</label><input type="number" class="form-control" id="formDoctorId" required></div>
+            <div class="mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+            <div class="mb-3"><label class="form-label">التقييم (1-5)</label><select class="form-select" id="formRate" required><option value="5">5 نجوم</option><option value="4">4 نجوم</option><option value="3">3 نجوم</option><option value="2">2 نجوم</option><option value="1">1 نجمة</option></select></div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا التقييم؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script><script src="assets/js/db.js"></script><script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],filteredData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('doctor-ratings');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('searchInput').addEventListener('input',applyFilters);document.getElementById('rateFilter').addEventListener('change',applyFilters);document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        function loadData(){allData=db.get('rates')||MOCK_DATA.rates||[];filteredData=[...allData];renderTable();}
+        function applyFilters(){const query=document.getElementById('searchInput').value.toLowerCase();const rateValue=document.getElementById('rateFilter').value;filteredData=allData.filter(item=>{const matchesSearch=!query||String(item.doctor_id).includes(query)||String(item.user_id).includes(query);const matchesRate=!rateValue||item.rate===parseInt(rateValue);return matchesSearch&&matchesRate;});currentPage=1;renderTable();}
+        function getStars(rate){let stars='';for(let i=0;i<5;i++)stars+=`<i class="fas fa-star ${i<rate?'text-warning':'text-muted'}"></i>`;return stars;}
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=filteredData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="5" class="text-center text-muted py-4">لا توجد تقييمات</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td>${item.doctor_id}</td><td>${item.user_id}</td><td>${getStars(item.rate)}</td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderPagination(){const tp=Math.ceil(filteredData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${filteredData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,filteredData.length)} من ${filteredData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        function goToPage(p){const tp=Math.ceil(filteredData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة تقييم';document.getElementById('editId').value='';document.getElementById('formDoctorId').value='';document.getElementById('formUserId').value='';document.getElementById('formRate').value='5';formModal.show();}
+        function openEditModal(id){const item=allData.find(r=>r.id===id);if(!item)return;document.getElementById('modalTitle').textContent='تعديل التقييم';document.getElementById('editId').value=id;document.getElementById('formDoctorId').value=item.doctor_id;document.getElementById('formUserId').value=item.user_id;document.getElementById('formRate').value=item.rate;formModal.show();}
+        function saveData(){const id=document.getElementById('editId').value;const doctor_id=parseInt(document.getElementById('formDoctorId').value);const user_id=parseInt(document.getElementById('formUserId').value);const rate=parseInt(document.getElementById('formRate').value);if(!doctor_id||!user_id){alert('يرجى ملء جميع الحقول');return;}let data=db.get('rates')||[...MOCK_DATA.rates];if(id){const index=data.findIndex(r=>r.id===parseInt(id));if(index!==-1)data[index]={...data[index],doctor_id,user_id,rate};}else{const newId=Math.max(...data.map(r=>r.id),0)+1;data.push({id:newId,doctor_id,user_id,rate});}db.save('rates',data);formModal.hide();loadData();}
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        function confirmDelete(){if(!deleteId)return;let data=db.get('rates')||[...MOCK_DATA.rates];data=data.filter(r=>r.id!==deleteId);db.save('rates',data);deleteId=null;deleteModal.hide();loadData();}
+    </script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الوجبات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-hamburger me-2"></i>الوجبات</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>إضافة وجبة
+                    </button>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="بحث بالاسم...">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">كل الفئات</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="perPage">
+                                <option value="10">10 لكل صفحة</option>
+                                <option value="25">25 لكل صفحة</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>الرقم</th>
+                                        <th>الاسم</th>
+                                        <th>الحصة</th>
+                                        <th>الوصف</th>
+                                        <th>الكربوهيدرات</th>
+                                        <th>البروتين</th>
+                                        <th>الدهون</th>
+                                        <th>السعرات</th>
+                                        <th>الفئة</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <tr><td>1</td><td><strong>شوفان بالموز</strong></td><td>1 كوب</td><td class="text-truncate" style="max-width: 120px;">شوفان مطبوخ مع حليب قليل الدسم</td><td>45 جم</td><td>12 جم</td><td>5 جم</td><td><strong>280</strong> سعرة</td><td><span class="badge bg-warning">فطور</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(1)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(1)"><i class="fas fa-trash"></i></button></td></tr>
+                                    <tr><td>2</td><td><strong>سلطة الدجاج المشوي</strong></td><td>300 جم</td><td class="text-truncate" style="max-width: 120px;">صدر دجاج مشوي مع خضروات</td><td>10 جم</td><td>35 جم</td><td>15 جم</td><td><strong>320</strong> سعرة</td><td><span class="badge bg-success">غداء</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(2)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(2)"><i class="fas fa-trash"></i></button></td></tr>
+                                    <tr><td>3</td><td><strong>سمك السلمون</strong></td><td>200 جم</td><td class="text-truncate" style="max-width: 120px;">سلمون مشوي مع الخضار السوتيه</td><td>5 جم</td><td>40 جم</td><td>20 جم</td><td><strong>360</strong> سعرة</td><td><span class="badge bg-success">غداء</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(3)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(3)"><i class="fas fa-trash"></i></button></td></tr>
+                                    <tr><td>4</td><td><strong>زبادي يوناني</strong></td><td>150 جم</td><td class="text-truncate" style="max-width: 120px;">زبادي يوناني مع العسل</td><td>15 جم</td><td>15 جم</td><td>8 جم</td><td><strong>190</strong> سعرة</td><td><span class="badge bg-info">وجبة خفيفة</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(4)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(4)"><i class="fas fa-trash"></i></button></td></tr>
+                                    <tr><td>5</td><td><strong>حساء العدس</strong></td><td>250 مل</td><td class="text-truncate" style="max-width: 120px;">حساء عدس أحمر مع الليمون</td><td>30 جم</td><td>12 جم</td><td>3 جم</td><td><strong>200</strong> سعرة</td><td><span class="badge bg-primary">عشاء</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(5)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(5)"><i class="fas fa-trash"></i></button></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-container">
+                            <div class="text-muted" id="paginationInfo">عرض 0 من 0</div>
+                            <nav>
+                                <ul class="pagination mb-0" id="pagination"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة وجبة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="editId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">اسم الوجبة</label>
+                                <input type="text" class="form-control" id="formName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحصة (serving)</label>
+                                <input type="text" class="form-control" id="formServing" required>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">الوصف</label>
+                                <textarea class="form-control" id="formDescribtion" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">الكربوهيدرات (carbo)</label>
+                                <input type="number" class="form-control" id="formCarbo" step="0.1" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">البروتين (protin)</label>
+                                <input type="number" class="form-control" id="formProtin" step="0.1" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">الدهون (fat)</label>
+                                <input type="number" class="form-control" id="formFat" step="0.1" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">السعرات (energy)</label>
+                                <input type="number" class="form-control" id="formEnergy" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الفئة (category)</label>
+                                <select class="form-select" id="formCategory">
+                                    <option value="فطور">فطور</option>
+                                    <option value="غداء">غداء</option>
+                                    <option value="عشاء">عشاء</option>
+                                    <option value="وجبة خفيفة">وجبة خفيفة</option>
+                                    <option value="مقبلات">مقبلات</option>
+                                    <option value="خبز">خبز</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body"><p>هل أنت متأكد من حذف هذه الوجبة؟</p></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script>
+    <script src="assets/js/db.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let allData = [], filteredData = [], currentPage = 1, perPage = 10;
+        let formModal, deleteModal, deleteId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('meals');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadData();
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+            document.getElementById('perPage').addEventListener('change', handlePerPageChange);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+        });
+
+        function loadData() {
+            allData = db.get('meals') || MOCK_DATA.meals || [];
+            filteredData = [...allData];
+            
+            // Populate category filter
+            const categories = [...new Set(allData.map(m => m.category))];
+            const categoryFilter = document.getElementById('categoryFilter');
+            categoryFilter.innerHTML = '<option value="">كل الفئات</option>';
+            categories.forEach(cat => categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`);
+            
+            renderTable();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            filteredData = allData.filter(item => {
+                const matchesSearch = !query || item.name.toLowerCase().includes(query);
+                const matchesCategory = !category || item.category === category;
+                return matchesSearch && matchesCategory;
+            });
+            currentPage = 1;
+            renderTable();
+        }
+
+        function handlePerPageChange(e) { perPage = parseInt(e.target.value); currentPage = 1; renderTable(); }
+
+        function getCategoryColor(category) {
+            const colors = { 'فطور': 'bg-warning', 'غداء': 'bg-success', 'عشاء': 'bg-primary', 'وجبة خفيفة': 'bg-info', 'مقبلات': 'bg-secondary', 'خبز': 'bg-dark' };
+            return colors[category] || 'bg-secondary';
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const start = (currentPage - 1) * perPage;
+            const pageData = filteredData.slice(start, start + perPage);
+
+            tbody.innerHTML = pageData.length === 0 
+                ? '<tr><td colspan="10" class="text-center text-muted py-4">لا توجد وجبات</td></tr>'
+                : pageData.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.serving}</td>
+                        <td class="text-truncate" style="max-width: 120px;">${item.describtion}</td>
+                        <td>${item.carbo} جم</td>
+                        <td>${item.protin} جم</td>
+                        <td>${item.fat} جم</td>
+                        <td><strong>${item.energy}</strong> سعرة</td>
+                        <td><span class="badge ${getCategoryColor(item.category)}">${item.category}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredData.length / perPage);
+            const start = (currentPage - 1) * perPage + 1;
+            const end = Math.min(currentPage * perPage, filteredData.length);
+            document.getElementById('paginationInfo').textContent = `عرض ${filteredData.length > 0 ? start : 0} - ${end} من ${filteredData.length}`;
+
+            let html = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1})">السابق</a></li>`;
+            for (let i = 1; i <= totalPages; i++) html += `<li class="page-item ${currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;
+            html += `<li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">التالي</a></li>`;
+            document.getElementById('pagination').innerHTML = html;
+        }
+
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredData.length / perPage);
+            if (page >= 1 && page <= totalPages) { currentPage = page; renderTable(); }
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة وجبة';
+            document.getElementById('editId').value = '';
+            document.getElementById('formName').value = '';
+            document.getElementById('formServing').value = '';
+            document.getElementById('formDescribtion').value = '';
+            document.getElementById('formCarbo').value = '';
+            document.getElementById('formProtin').value = '';
+            document.getElementById('formFat').value = '';
+            document.getElementById('formEnergy').value = '';
+            document.getElementById('formCategory').value = 'فطور';
+            formModal.show();
+        }
+
+        function openEditModal(id) {
+            const item = allData.find(m => m.id === id);
+            if (!item) return;
+            document.getElementById('modalTitle').textContent = 'تعديل الوجبة';
+            document.getElementById('editId').value = id;
+            document.getElementById('formName').value = item.name;
+            document.getElementById('formServing').value = item.serving;
+            document.getElementById('formDescribtion').value = item.describtion;
+            document.getElementById('formCarbo').value = item.carbo;
+            document.getElementById('formProtin').value = item.protin;
+            document.getElementById('formFat').value = item.fat;
+            document.getElementById('formEnergy').value = item.energy;
+            document.getElementById('formCategory').value = item.category;
+            formModal.show();
+        }
+
+        function saveData() {
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('formName').value.trim();
+            const serving = document.getElementById('formServing').value.trim();
+            const describtion = document.getElementById('formDescribtion').value.trim();
+            const carbo = parseFloat(document.getElementById('formCarbo').value);
+            const protin = parseFloat(document.getElementById('formProtin').value);
+            const fat = parseFloat(document.getElementById('formFat').value);
+            const energy = parseInt(document.getElementById('formEnergy').value);
+            const category = document.getElementById('formCategory').value;
+
+            if (!name || !serving) { alert('يرجى ملء الحقول المطلوبة'); return; }
+
+            let data = db.get('meals') || [...MOCK_DATA.meals];
+            if (id) {
+                const index = data.findIndex(m => m.id === parseInt(id));
+                if (index !== -1) {
+                    data[index] = { ...data[index], name, serving, describtion, carbo, protin, fat, energy, category };
+                }
+            } else {
+                const newId = Math.max(...data.map(m => m.id), 0) + 1;
+                data.push({ id: newId, name, serving, describtion, carbo, protin, fat, energy, category });
+            }
+            db.save('meals', data);
+            formModal.hide();
+            loadData();
+        }
+
+        function openDeleteModal(id) { deleteId = id; deleteModal.show(); }
+
+        function confirmDelete() {
+            if (!deleteId) return;
+            let data = db.get('meals') || [...MOCK_DATA.meals];
+            data = data.filter(m => m.id !== deleteId);
+            db.save('meals', data);
+            deleteId = null;
+            deleteModal.hide();
+            loadData();
+        }
+    </script>
+</body>
+</html>

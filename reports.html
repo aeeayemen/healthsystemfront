@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقارير والتحليلات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <h2 class="fw-bold text-primary mb-4">التقارير والتحليلات</h2>
+
+                <div class="row">
+                    <!-- Usage Stats -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-primary"></i> إحصائيات استخدام النظام</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="usageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ratings Reports -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-star me-2 text-warning"></i> تقارير التقييمات</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="ratingsStats">
+                                    <!-- Injected via JS -->
+                                    <p class="text-center text-muted">جاري التحميل...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diet Calculations Analysis -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-calculator me-2 text-success"></i> تحليل الحسابات الغذائية</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="dietChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Measurements Tracking -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-ruler me-2 text-info"></i> تتبع القياسات الأسبوعية</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="measurementsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/mock-data.js"></script>
+    <script src="assets/js/db.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('reports');
+            initCharts();
+        });
+
+        function initCharts() {
+            // Usage Chart
+            const usageCtx = document.getElementById('usageChart').getContext('2d');
+            new Chart(usageCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['مشتركين', 'أطباء', 'زوار'],
+                    datasets: [{
+                        data: [300, 50, 100], // Mock data
+                        backgroundColor: ['#4361ee', '#3a0ca3', '#f72585']
+                    }]
+                }
+            });
+
+            // Diet Chart
+            const dietCtx = document.getElementById('dietChart').getContext('2d');
+            new Chart(dietCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                    datasets: [{
+                        label: 'أنظمة غذائية مفعلة',
+                        data: [12, 19, 3, 5, 2, 3],
+                        backgroundColor: '#4cc9f0'
+                    }]
+                }
+            });
+
+            // Measurements Chart
+            const measureCtx = document.getElementById('measurementsChart').getContext('2d');
+            new Chart(measureCtx, {
+                type: 'line',
+                data: {
+                    labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
+                    datasets: [{
+                        label: 'متوسط فقدان الوزن (كجم)',
+                        data: [1, 1.5, 2.2, 3],
+                        borderColor: '#7209b7',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            // Ratings Stats
+            const ratingsContainer = document.getElementById('ratingsStats');
+            ratingsContainer.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>متوسط تقييم الأطباء</span>
+                    <span class="badge bg-warning text-dark"><i class="fas fa-star"></i> 4.8</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>متوسط تقييم الأنظمة</span>
+                    <span class="badge bg-warning text-dark"><i class="fas fa-star"></i> 4.5</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>عدد التقييمات الكلي</span>
+                    <span class="badge bg-secondary">1,250</span>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

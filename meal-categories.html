@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فئات الوجبات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-layer-group me-2"></i>فئات الوجبات</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>إضافة فئة
+                    </button>
+                </div>
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>#</th><th>الفئة</th><th>عدد الوجبات</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td><i class="fas fa-utensils me-2 text-warning"></i><strong>فطور</strong></td><td><span class="badge bg-primary">3</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('فطور')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('فطور')"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td><i class="fas fa-utensils me-2 text-success"></i><strong>غداء</strong></td><td><span class="badge bg-primary">4</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('غداء')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('غداء')"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td><i class="fas fa-utensils me-2 text-info"></i><strong>عشاء</strong></td><td><span class="badge bg-primary">2</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('عشاء')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('عشاء')"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td><i class="fas fa-utensils me-2 text-secondary"></i><strong>وجبة خفيفة</strong></td><td><span class="badge bg-primary">4</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('وجبة خفيفة')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('وجبة خفيفة')"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td><i class="fas fa-utensils me-2 text-danger"></i><strong>مقبلات</strong></td><td><span class="badge bg-primary">1</span></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('مقبلات')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('مقبلات')"><i class="fas fa-trash"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة فئة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="editOldCategory">
+                        <div class="mb-3">
+                            <label class="form-label">اسم الفئة</label>
+                            <input type="text" class="form-control" id="formCategory" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذه الفئة؟</p>
+                    <p class="text-muted small">سيتم حذف جميع الوجبات المرتبطة بهذه الفئة.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script>
+    <script src="assets/js/db.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let formModal, deleteModal, deleteCategory = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('meal-categories');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadData();
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+        });
+
+        function getCategoryColor(c) {
+            const cols = {'فطور':'bg-warning','غداء':'bg-success','عشاء':'bg-primary','وجبة خفيفة':'bg-info','مقبلات':'bg-secondary','خبز':'bg-dark'};
+            return cols[c] || 'bg-secondary';
+        }
+
+        function getCategoryIcon(c) {
+            const icons = {'فطور':'fa-sun','غداء':'fa-cloud-sun','عشاء':'fa-moon','وجبة خفيفة':'fa-cookie','مقبلات':'fa-pepper-hot','خبز':'fa-bread-slice'};
+            return icons[c] || 'fa-utensils';
+        }
+
+        function loadData() {
+            const meals = db.get('meals') || MOCK_DATA.meals || [];
+            const categoryMap = {};
+            meals.forEach(m => {
+                if (!categoryMap[m.category]) categoryMap[m.category] = 0;
+                categoryMap[m.category]++;
+            });
+            
+            const categories = Object.entries(categoryMap).map(([cat, count], i) => ({
+                num: i + 1,
+                category: cat,
+                count
+            }));
+            
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = categories.length === 0 
+                ? '<tr><td colspan="4" class="text-center text-muted py-4">لا توجد فئات</td></tr>'
+                : categories.map(c => `
+                    <tr>
+                        <td>${c.num}</td>
+                        <td>
+                            <i class="fas ${getCategoryIcon(c.category)} me-2 text-muted"></i>
+                            <span class="badge ${getCategoryColor(c.category)}">${c.category}</span>
+                        </td>
+                        <td><strong>${c.count}</strong> وجبة</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('${c.category}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('${c.category}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة فئة';
+            document.getElementById('editOldCategory').value = '';
+            document.getElementById('formCategory').value = '';
+            formModal.show();
+        }
+
+        function openEditModal(category) {
+            document.getElementById('modalTitle').textContent = 'تعديل الفئة';
+            document.getElementById('editOldCategory').value = category;
+            document.getElementById('formCategory').value = category;
+            formModal.show();
+        }
+
+        function saveData() {
+            const oldCategory = document.getElementById('editOldCategory').value;
+            const newCategory = document.getElementById('formCategory').value.trim();
+            
+            if (!newCategory) {
+                alert('يرجى إدخال اسم الفئة');
+                return;
+            }
+
+            let meals = db.get('meals') || [...MOCK_DATA.meals];
+            
+            if (oldCategory) {
+                // Edit: update all meals with old category to new category
+                meals = meals.map(m => {
+                    if (m.category === oldCategory) {
+                        return { ...m, category: newCategory };
+                    }
+                    return m;
+                });
+            } else {
+                // Add: create a placeholder meal with new category
+                const newId = Math.max(...meals.map(m => m.id), 0) + 1;
+                meals.push({
+                    id: newId,
+                    name: 'وجبة جديدة',
+                    serving: '1 حصة',
+                    describtion: 'وجبة جديدة في فئة ' + newCategory,
+                    carbo: 0,
+                    protin: 0,
+                    fat: 0,
+                    energy: 0,
+                    category: newCategory
+                });
+            }
+            
+            db.save('meals', meals);
+            formModal.hide();
+            loadData();
+        }
+
+        function openDeleteModal(category) {
+            deleteCategory = category;
+            deleteModal.show();
+        }
+
+        function confirmDelete() {
+            if (!deleteCategory) return;
+            
+            let meals = db.get('meals') || [...MOCK_DATA.meals];
+            // Remove all meals with this category
+            meals = meals.filter(m => m.category !== deleteCategory);
+            db.save('meals', meals);
+            
+            deleteCategory = null;
+            deleteModal.hide();
+            loadData();
+        }
+    </script>
+</body>
+</html>

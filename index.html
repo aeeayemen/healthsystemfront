@@ -294,7 +294,7 @@
 
                 // Call API Login
                 // Using direct fetch as requested to match Route::post('/login', [AuthController::class, 'login']);
-                const fetchResponse = await fetch('http://localhost:8000/api/login', {
+                const fetchResponse = await fetch('https://health-system-backend-c9pb.onrender.com/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

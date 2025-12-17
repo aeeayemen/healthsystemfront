@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقييمات الأطباء - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-star me-2"></i>تقييمات الأطباء</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة تقييم</button>
+                </div>
+
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم الطبيب</th><th>رقم المستخدم</th><th>التقييم</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <!-- Data will be loaded from API -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة تقييم</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="mb-3"><label class="form-label">رقم الطبيب</label><input type="number" class="form-control" id="formDoctorId" required></div>
+            <div class="mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+            <div class="mb-3"><label class="form-label">التقييم (1-5)</label><select class="form-select" id="formRate" required><option value="5">5 نجوم</option><option value="4">4 نجوم</option><option value="3">3 نجوم</option><option value="2">2 نجوم</option><option value="1">1 نجمة</option></select></div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا التقييم؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('doctor-ratings');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        
+        async function loadData(){
+            try {
+                const response = await ApiService.rates.getAll({});
+                allData = response.data || response || [];
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load ratings:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+        
+        function getStars(rate){let stars='';for(let i=0;i<5;i++)stars+=`<i class="fas fa-star ${i<rate?'text-warning':'text-muted'}"></i>`;return stars;}
+        function renderTable(){const tbody=document.getElementById('tableBody');tbody.innerHTML=allData.length===0?'<tr><td colspan="5" class="text-center text-muted py-4">لا توجد تقييمات</td></tr>':allData.map(item=>`<tr><td>${item.id}</td><td>${item.doctor_name || item.doctor_id}</td><td>${item.user_name || item.user_id}</td><td>${getStars(item.rate)} <strong>${item.rate}</strong></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');}
+
+
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة تقييم';document.getElementById('editId').value='';document.getElementById('formDoctorId').value='';document.getElementById('formUserId').value='';document.getElementById('formRate').value='5';formModal.show();}
+        
+        function openEditModal(id){
+            const item=allData.find(r=>r.id===id);
+            if(!item)return;
+            document.getElementById('modalTitle').textContent='تعديل التقييم';
+            document.getElementById('editId').value=id;
+            document.getElementById('formDoctorId').value=item.doctor_id;
+            document.getElementById('formUserId').value=item.user_id;
+            document.getElementById('formRate').value=item.rate;
+            formModal.show();
+        }
+        
+        async function saveData(){
+            const id=document.getElementById('editId').value;
+            const data = {
+                doctor_id: parseInt(document.getElementById('formDoctorId').value),
+                user_id: parseInt(document.getElementById('formUserId').value),
+                rate: document.getElementById('formRate').value
+            };
+            if(!data.doctor_id||!data.user_id){alert('يرجى ملء جميع الحقول');return;}
+            
+            try {
+                if(id){
+                    await ApiService.rates.update(id, data);
+                    showToast('تم تحديث التقييم بنجاح');
+                } else {
+                    await ApiService.rates.create(data);
+                    showToast('تم إضافة التقييم بنجاح');
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save rating:', error);
+                showToast(error.message || 'فشل حفظ التقييم', 'error');
+            }
+        }
+        
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        
+        async function confirmDelete(){
+            if(!deleteId)return;
+            try {
+                await ApiService.rates.delete(deleteId);
+                showToast('تم حذف التقييم بنجاح');
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete rating:', error);
+                showToast(error.message || 'فشل حذف التقييم', 'error');
+            }
+            deleteId=null;
+            deleteModal.hide();
+        }
+    </script>
+</body>
+</html>

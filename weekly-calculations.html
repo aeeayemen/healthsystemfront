@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الحسابات الأسبوعية - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-calendar-week me-2"></i>الحسابات الأسبوعية</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة حساب</button>
+                </div>
+
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم المستخدم</th><th>الوزن</th><th>محيط الخصر</th><th>المعدة</th><th>الذراع</th><th>الصدر</th><th>الفخذ</th><th>الكتف</th><th>الأرداف</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <!-- Data will be loaded from API -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة حساب</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="row">
+                <div class="col-md-6 mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">التاريخ</label><input type="date" class="form-control" id="formDate" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الوزن (كجم)</label><input type="number" class="form-control" id="formWeight" step="0.1" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">محيط الخصر (سم)</label><input type="number" class="form-control" id="formWaist" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">المعدة (سم)</label><input type="number" class="form-control" id="formStomach"></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الذراع (سم)</label><input type="number" class="form-control" id="formArm"></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الصدر (سم)</label><input type="number" class="form-control" id="formChest"></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الفخذ (سم)</label><input type="number" class="form-control" id="formThigh"></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الكتف (سم)</label><input type="number" class="form-control" id="formShoulder"></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الأرداف (سم)</label><input type="number" class="form-control" id="formButtocks"></div>
+            </div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا الحساب؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('weekly-calculations');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        
+        async function loadData(){
+            try {
+                const response = await ApiService.weeklyCalculations.getAll();
+                allData = response.data || response || [];
+                allData = response.data || response || [];
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load weekly calculations:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="12" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+        
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=allData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="12" class="text-center text-muted py-4">لا توجد بيانات</td></tr>':pageData.map(i=>`<tr><td>${i.id}</td><td>${i.user_id || '-'}</td><td>${i.weight || '-'} كجم</td><td>${i.waist || '-'} سم</td><td>${i.stomach||'-'}</td><td>${i.arm||'-'}</td><td>${i.chest||'-'}</td><td>${i.thigh||'-'}</td><td>${i.shoulder||'-'}</td><td>${i.buttocks||'-'}</td><td>${i.date || '-'}</td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${i.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${i.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderPagination(){const tp=Math.ceil(allData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${allData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,allData.length)} من ${allData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        function goToPage(p){const tp=Math.ceil(allData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة حساب';document.getElementById('editId').value='';document.getElementById('formUserId').value='';document.getElementById('formWeight').value='';document.getElementById('formWaist').value='';document.getElementById('formStomach').value='';document.getElementById('formArm').value='';document.getElementById('formChest').value='';document.getElementById('formThigh').value='';document.getElementById('formShoulder').value='';document.getElementById('formButtocks').value='';document.getElementById('formDate').value='';formModal.show();}
+        
+        function openEditModal(id){
+            const item=allData.find(c=>c.id===id);
+            if(!item)return;
+            document.getElementById('modalTitle').textContent='تعديل الحساب';
+            document.getElementById('editId').value=id;
+            document.getElementById('formUserId').value=item.user_id;
+            document.getElementById('formWeight').value=item.weight;
+            document.getElementById('formWaist').value=item.waist;
+            document.getElementById('formStomach').value=item.stomach||'';
+            document.getElementById('formArm').value=item.arm||'';
+            document.getElementById('formChest').value=item.chest||'';
+            document.getElementById('formThigh').value=item.thigh||'';
+            document.getElementById('formShoulder').value=item.shoulder||'';
+            document.getElementById('formButtocks').value=item.buttocks||'';
+            document.getElementById('formDate').value=item.date;
+            formModal.show();
+        }
+        
+        async function saveData(){
+            const id = document.getElementById('editId').value;
+            const data = {
+                user_id: parseInt(document.getElementById('formUserId').value),
+                weight: parseFloat(document.getElementById('formWeight').value),
+                waist: parseFloat(document.getElementById('formWaist').value),
+                stomach: parseFloat(document.getElementById('formStomach').value) || null,
+                arm: parseFloat(document.getElementById('formArm').value) || null,
+                chest: parseFloat(document.getElementById('formChest').value) || null,
+                thigh: parseFloat(document.getElementById('formThigh').value) || null,
+                shoulder: parseFloat(document.getElementById('formShoulder').value) || null,
+                buttocks: parseFloat(document.getElementById('formButtocks').value) || null,
+                date: document.getElementById('formDate').value
+            };
+            
+            try {
+                if (id) {
+                    await ApiService.weeklyCalculations.update(id, data);
+                    if (typeof showToast === 'function') showToast('تم تحديث البيانات بنجاح');
+                } else {
+                    await ApiService.weeklyCalculations.create(data);
+                    if (typeof showToast === 'function') showToast('تم إضافة الحساب بنجاح');
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save weekly calculation:', error);
+                alert('فشل حفظ البيانات: ' + (error.message || 'خطأ غير معروف'));
+            }
+        }
+        
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        
+        async function confirmDelete(){
+            if (!deleteId) return;
+            try {
+                await ApiService.weeklyCalculations.delete(deleteId);
+                if (typeof showToast === 'function') showToast('تم حذف الحساب بنجاح');
+                else alert('تم حذف الحساب بنجاح');
+                
+                deleteId = null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete weekly calculation:', error);
+                alert('فشل حذف الحساب: ' + (error.message || 'خطأ غير معروف'));
+                deleteId = null;
+                deleteModal.hide();
+            }
+        }
+    </script>
+</body>
+</html>

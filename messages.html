@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الرسائل - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-envelope me-2"></i>الرسائل</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة رسالة</button>
+                </div>
+
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم المستخدم</th><th>رقم الطبيب</th><th>الرسالة</th><th>الوقت</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>1</td><td>أحمد محمد</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">السلام عليكم دكتور، لدي سؤال عن النظام الغذائي</td><td>10:30</td><td>2024-11-20</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(1)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>2</td><td>أحمد محمد</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">هل يمكنني تناول الفواكه بعد الوجبات؟</td><td>10:32</td><td>2024-11-20</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(2)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>3</td><td>سارة علي</td><td>د. سمية خالد</td><td class="text-truncate" style="max-width: 200px;">شكراً على الخطة الجديدة دكتورة</td><td>14:00</td><td>2024-11-21</td><td><span class="badge bg-warning"><i class="fas fa-envelope"></i> جديدة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(3)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>4</td><td>خالد عمر</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">متى موعدي القادم؟</td><td>09:15</td><td>2024-11-22</td><td><span class="badge bg-warning"><i class="fas fa-envelope"></i> جديدة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(4)"><i class="fas fa-eye"></i></button></td></tr>
+                                <tr><td>5</td><td>فاطمة حسن</td><td>د. سمية خالد</td><td class="text-truncate" style="max-width: 200px;">أشعر بتحسن كبير بعد اتباع النظام</td><td>16:45</td><td>2024-11-22</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(5)"><i class="fas fa-eye"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة رسالة</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+            <div class="mb-3"><label class="form-label">رقم الطبيب</label><input type="number" class="form-control" id="formDoctorId" required></div>
+            <div class="mb-3"><label class="form-label">الرسالة</label><textarea class="form-control" id="formMessage" rows="4" required></textarea></div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذه الرسالة؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('messages');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        
+        async function loadData(){
+            try {
+                const response = await ApiService.chat.adminChats();
+                const conversations = response.data || response || [];
+                allData = conversations.map(c => ({
+                    id: c.id,
+                    user_id: c.user_id || c.patient_id || '-',
+                    doctor_id: c.doctor_id || '-',
+                    message: c.massage || c.last_message || c.message || c.content || c.body || c.text || '-',
+                    time: c.time || (c.updated_at ? c.updated_at.split('T')[1]?.substring(0,5) : '-'),
+                    date: c.date || (c.updated_at ? c.updated_at.split('T')[0] : '-'),
+                    read: c.read !== undefined ? c.read : true
+                }));
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load messages:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+        
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=allData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="8" class="text-center text-muted py-4">لا توجد رسائل</td></tr>':pageData.map(item=>`<tr class="${!item.read?'table-warning':''}"><td>${item.id}</td><td>${item.user_id}</td><td>${item.doctor_id}</td><td class="text-truncate" style="max-width:200px;">${item.message}</td><td>${item.time}</td><td>${item.date}</td><td><span class="badge ${item.read?'badge-read':'badge-unread'}">${item.read?'مقروءة':'غير مقروءة'}</span></td><td><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        
+        function renderPagination(){const tp=Math.ceil(allData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${allData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,allData.length)} من ${allData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        
+        function goToPage(p){const tp=Math.ceil(allData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة رسالة';document.getElementById('editId').value='';document.getElementById('formUserId').value='';document.getElementById('formDoctorId').value='';document.getElementById('formMessage').value='';formModal.show();}
+        
+        async function saveData(){
+            const user_id=parseInt(document.getElementById('formUserId').value);
+            const doctor_id=parseInt(document.getElementById('formDoctorId').value);
+            const message=document.getElementById('formMessage').value.trim();
+            if(!user_id||!doctor_id||!message){alert('يرجى ملء جميع الحقول');return;}
+            
+            try {
+                await ApiService.chat.sendMessage({ 
+                    sender_id: user_id, 
+                    receiver_id: doctor_id, 
+                    massage: message 
+                });
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to send message:', error);
+                alert('فشل إرسال الرسالة: ' + (error.message || 'خطأ غير معروف'));
+            }
+        }
+        
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        
+        async function confirmDelete(){
+            if(!deleteId)return;
+            try {
+                await ApiService.chat.deleteMessage(deleteId);
+                deleteId=null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete message:', error);
+                alert('فشل حذف الرسالة');
+            }
+        }
+    </script>
+</body>
+</html>

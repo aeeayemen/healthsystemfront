@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النصائح - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-lightbulb me-2"></i>النصائح</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>إضافة نصيحة
+                    </button>
+                </div>
+
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>الرقم</th>
+                                        <th>الوصف</th>
+                                        <th>التاريخ</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <!-- Data will be loaded from API -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-container">
+                            <div class="text-muted" id="paginationInfo">عرض 0 من 0</div>
+                            <nav>
+                                <ul class="pagination mb-0" id="pagination"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة نصيحة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label class="form-label">النصيحة</label>
+                            <textarea class="form-control" id="formDescribtion" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">النوع</label>
+                            <select class="form-select" id="formType" required>
+                                <option value="nutrition">تغذية</option>
+                                <option value="exercise">رياضة</option>
+                                <option value="mental">صحة نفسية</option>
+                                <option value="sleep">نوم</option>
+                                <option value="habits">عادات صحية</option>
+                                <option value="weight_loss">إنقاص الوزن</option>
+                                <option value="muscle_building">بناء العضلات</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذه النصيحة؟</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let allData = [], currentPage = 1;
+        let formModal, deleteModal, deleteId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('tips');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadData();
+            loadCategories();
+            setupEventListeners();
+        });
+
+        async function loadCategories() {
+            try {
+                const response = await ApiService.tipsCategories.getAll();
+                const categories = response.data || response || [];
+                const typeSelect = document.getElementById('formType');
+                
+                if (categories.length > 0) {
+                    typeSelect.innerHTML = categories.map(cat => 
+                        `<option value="${cat.id}">${cat.name_ar || cat.name_en || cat.name}</option>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load categories', error);
+                // Fallback or toast?
+            }
+        }
+
+        async function loadData() {
+            try {
+                const response = await ApiService.tips.getAll();
+                allData = response.data || response;
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load tips', error);
+                showToast('فشل تحميل النصائح', 'error');
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+        }
+
+
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+
+            tbody.innerHTML = allData.length === 0 
+                ? '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد نصائح</td></tr>'
+                : allData.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.describtion || item.description || item.content || item.title || '-'}</td>
+                        <td>${item.date || item.created_at?.split('T')[0] || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredData.length / perPage);
+            const start = (currentPage - 1) * perPage + 1;
+            const end = Math.min(currentPage * perPage, filteredData.length);
+            document.getElementById('paginationInfo').textContent = `عرض ${filteredData.length > 0 ? start : 0} - ${end} من ${filteredData.length}`;
+
+            let html = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1})">السابق</a></li>`;
+            for (let i = 1; i <= totalPages; i++) html += `<li class="page-item ${currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;
+            html += `<li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">التالي</a></li>`;
+            document.getElementById('pagination').innerHTML = html;
+        }
+
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredData.length / perPage);
+            if (page >= 1 && page <= totalPages) { currentPage = page; renderTable(); }
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة نصيحة';
+            document.getElementById('editId').value = '';
+            document.getElementById('formDescribtion').value = '';
+            document.getElementById('formType').value = 'nutrition';
+            formModal.show();
+        }
+
+        async function openEditModal(id) {
+            try {
+                const response = await ApiService.tips.get(id);
+                const item = response.data || response;
+                
+                document.getElementById('modalTitle').textContent = 'تعديل النصيحة';
+                document.getElementById('editId').value = id;
+                document.getElementById('formDescribtion').value = item.describtion;
+                document.getElementById('formType').value = item.category_id || item.type;
+                formModal.show();
+            } catch (error) {
+                console.error('Failed to load tip details', error);
+                showToast('فشل تحميل تفاصيل النصيحة', 'error');
+            }
+        }
+
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const describtion = document.getElementById('formDescribtion').value.trim();
+            const type = document.getElementById('formType').value;
+            
+            if (!describtion) { alert('يرجى إدخال النصيحة'); return; }
+
+            const user = JSON.parse(localStorage.getItem('hnd_user') || '{}');
+            const adminId = parseInt(user.id) || 1;
+            const typeSelect = document.getElementById('formType');
+            const categoryId = typeSelect.value;
+            
+            const data = { 
+                describtion, 
+                description: describtion,
+                type: typeSelect.options[typeSelect.selectedIndex]?.text || 'nutrition',
+                category_id: parseInt(categoryId),
+                admin_id: adminId,
+                title: describtion.substring(0, 50),
+                content: describtion,
+                is_active: 1
+            };
+            console.log('Sending tip data:', data);
+
+            try {
+                if (id) {
+                    await ApiService.tips.update(id, data);
+                    showToast('تم تحديث النصيحة بنجاح');
+                } else {
+                    await ApiService.tips.create(data);
+                    showToast('تم إضافة النصيحة بنجاح');
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save tip', error);
+                showToast('فشل حفظ النصيحة', 'error');
+            }
+        }
+
+        function openDeleteModal(id) { deleteId = id; deleteModal.show(); }
+
+        async function confirmDelete() {
+            if (!deleteId) return;
+            try {
+                await ApiService.tips.delete(deleteId);
+                showToast('تم حذف النصيحة بنجاح');
+                deleteId = null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete tip', error);
+                showToast('فشل حذف النصيحة', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

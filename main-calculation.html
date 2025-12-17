@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الحسابات الرئيسية - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-calculator me-2"></i>الحسابات الرئيسية</h2>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-3" id="totalCount">0 حساب</span>
+                        <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة حساب</button>
+                    </div>
+                </div>
+
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>رقم المستخدم</th><th>السعرات</th><th>البروتين</th><th>الدهون</th><th>الكربوهيدرات</th><th>معدل الأيض</th><th>مؤشر الكتلة</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <!-- Data will be loaded from API -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- إخفاء عناصر الباجنيشن -->
+                    <div class="pagination-container d-none"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة حساب</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted mb-3">حاسبة المؤشرات (للحساب فقط)</h6>
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label small">الوزن (كجم)</label>
+                                    <input type="number" class="form-control form-control-sm" id="formCalcWeight">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label small">الطول (سم)</label>
+                                    <input type="number" class="form-control form-control-sm" id="formCalcHeight">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label small">العمر</label>
+                                    <input type="number" class="form-control form-control-sm" id="formCalcAge">
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <label class="form-label small">الجنس</label>
+                                    <select class="form-select form-select-sm" id="formCalcGender">
+                                        <option value="male">ذكر</option>
+                                        <option value="female">أنثى</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">السعرات الحرارية</label><input type="number" class="form-control" id="formCalories" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">البروتين</label><input type="number" class="form-control" id="formProtin" step="0.1" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الدهون</label><input type="number" class="form-control" id="formFat" step="0.1" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الكربوهيدرات</label><input type="number" class="form-control" id="formCarbo" step="0.1" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">معدل الأيض (BMR)</label><input type="number" class="form-control" id="formBMR" required readonly style="background-color: #e9ecef;"></div>
+                <div class="col-md-4 mb-3"><label class="form-label">مؤشر كتلة الجسم (BMI)</label><input type="number" class="form-control" id="formBMI" step="0.1" required readonly style="background-color: #e9ecef;"></div>
+            </div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا الحساب؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData = [];
+        let formModal, deleteModal, deleteId = null;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('main-calculation');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadData();
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+            
+            // Add listeners for calculation inputs
+            ['formCalcWeight', 'formCalcHeight', 'formCalcAge', 'formCalcGender'].forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateMetrics);
+            });
+        });
+        
+        async function loadData() {
+            try {
+                const response = await ApiService.mainCalculations.getAll();
+                allData = response.data || response || [];
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function calculateMetrics() {
+            const weight = parseFloat(document.getElementById('formCalcWeight').value);
+            const height = parseFloat(document.getElementById('formCalcHeight').value);
+            const age = parseInt(document.getElementById('formCalcAge').value);
+            const gender = document.getElementById('formCalcGender').value;
+
+            if (!weight || !height) return;
+
+            // BMI Calculation
+            const heightInMeters = height / 100;
+            const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
+            document.getElementById('formBMI').value = bmi;
+
+            if (!age) return;
+
+            // BMR Calculation (Mifflin-St Jeor Equation)
+            // Men: 10W + 6.25H - 5A + 5
+            // Women: 10W + 6.25H - 5A - 161
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+            if (gender === 'male') {
+                bmr += 5;
+            } else {
+                bmr -= 161;
+            }
+            document.getElementById('formBMR').value = Math.round(bmr);
+        }
+        
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const totalCountElement = document.getElementById('totalCount');
+            
+            if (allData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">لا توجد بيانات</td></tr>';
+                totalCountElement.textContent = '0 حساب';
+            } else {
+                tbody.innerHTML = allData.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.user_id || item.user_name || '-'}</td>
+                        <td><strong>${item.calories || '-'}</strong></td>
+                        <td>${item.protin || item.protein || '-'}g</td>
+                        <td>${item.fat || '-'}g</td>
+                        <td>${item.carbo || item.carbs || '-'}g</td>
+                        <td>${item.BMR || item.bmr || '-'}</td>
+                        <td><span class="badge bg-${(item.BMI || item.bmi) < 25 ? 'success' : 'warning'}">${item.BMI || item.bmi || '-'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                totalCountElement.textContent = `${allData.length} حساب`;
+            }
+        }
+        
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة حساب';
+            document.getElementById('editId').value = '';
+            ['UserId','Calories','Protin','Fat','Carbo','BMR','BMI'].forEach(f => document.getElementById('form'+f).value = '');
+            ['CalcWeight','CalcHeight','CalcAge'].forEach(f => document.getElementById('form'+f).value = '');
+            document.getElementById('formCalcGender').value = 'male';
+            formModal.show();
+        }
+        
+        function openEditModal(id) {
+            const item = allData.find(c => c.id === id);
+            if (!item) return;
+            document.getElementById('modalTitle').textContent = 'تعديل الحساب';
+            document.getElementById('editId').value = id;
+            document.getElementById('formUserId').value = item.user_id;
+            document.getElementById('formCalories').value = item.calories;
+            document.getElementById('formProtin').value = item.protin || item.protein;
+            document.getElementById('formFat').value = item.fat;
+            document.getElementById('formCarbo').value = item.carbo || item.carbs;
+            document.getElementById('formBMR').value = item.BMR || item.bmr;
+            document.getElementById('formBMI').value = item.BMI || item.bmi;
+            
+            // Clear calc fields on edit as we don't have them stored
+            ['CalcWeight','CalcHeight','CalcAge'].forEach(f => document.getElementById('form'+f).value = '');
+            
+            formModal.show();
+        }
+        
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const data = {
+                user_id: parseInt(document.getElementById('formUserId').value),
+                calories: parseInt(document.getElementById('formCalories').value),
+                protin: parseFloat(document.getElementById('formProtin').value),
+                fat: parseFloat(document.getElementById('formFat').value),
+                carbo: parseFloat(document.getElementById('formCarbo').value),
+                BMR: parseInt(document.getElementById('formBMR').value),
+                BMI: parseFloat(document.getElementById('formBMI').value)
+            };
+            
+            try {
+                if (id) {
+                    await ApiService.mainCalculations.update(id, data);
+                    if (typeof showToast === 'function') showToast('تم تحديث البيانات بنجاح');
+                } else {
+                    await ApiService.mainCalculations.create(data);
+                    if (typeof showToast === 'function') showToast('تم إضافة الحساب بنجاح');
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save main calculation:', error);
+                if (typeof showToast === 'function') {
+                    showToast('فشل حفظ البيانات', 'error');
+                } else {
+                    alert('فشل حفظ البيانات');
+                }
+            }
+        }
+        
+        function openDeleteModal(id) {
+            deleteId = id;
+            deleteModal.show();
+        }
+        
+        async function confirmDelete() {
+            if (!deleteId) return;
+            try {
+                await ApiService.mainCalculations.delete(deleteId);
+                if (typeof showToast === 'function') showToast('تم حذف الحساب بنجاح');
+                deleteId = null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete main calculation:', error);
+                if (typeof showToast === 'function') {
+                    showToast('فشل حذف الحساب', 'error');
+                } else {
+                    alert('فشل حذف الحساب');
+                }
+                deleteId = null;
+                deleteModal.hide();
+            }
+        }
+    </script>
+</body>
+</html>

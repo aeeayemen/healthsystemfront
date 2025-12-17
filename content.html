@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المحتوى - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">إدارة المحتوى</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contentModal" onclick="resetForm()">
+                        <i class="fas fa-plus me-2"></i> إضافة محتوى
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <ul class="nav nav-tabs card-header-tabs" id="contentTabs" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tips" type="button" onclick="filterContent('tip')">نصائح صحية</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#articles" type="button" onclick="filterContent('article')">مقالات</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ads" type="button" onclick="filterContent('ad')">إعلانات</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#spiritual" type="button" onclick="filterContent('spiritual')">محتوى روحي</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="contentTable">
+                                <thead>
+                                    <tr>
+                                        <th>العنوان</th>
+                                        <th>الكاتب</th>
+                                        <th>التاريخ</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contentTableBody">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Modal -->
+    <div class="modal fade" id="contentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة محتوى جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="contentForm">
+                        <input type="hidden" id="contentId">
+                        <div class="mb-3">
+                            <label class="form-label">النوع</label>
+                            <select class="form-select" id="contentType" required>
+                                <option value="tip">نصيحة صحية</option>
+                                <option value="article">مقال</option>
+                                <option value="ad">إعلان</option>
+                                <option value="spiritual">محتوى روحي</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">العنوان</label>
+                            <input type="text" class="form-control" id="contentTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الكاتب</label>
+                            <input type="text" class="form-control" id="contentAuthor" placeholder="اسم الكاتب (اختياري)">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">صورة الغلاف</label>
+                            <input type="file" class="form-control" id="contentImage">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المحتوى</label>
+                            <textarea class="form-control" id="contentBody" rows="6" required></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="contentActive" checked>
+                            <label class="form-check-label">نشط</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let contentModal;
+        let currentType = 'tip';
+        let allContent = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('content');
+            contentModal = new bootstrap.Modal(document.getElementById('contentModal'));
+            loadContent();
+        });
+
+        function filterContent(type) {
+            currentType = type;
+            renderContent();
+        }
+
+        async function loadContent() {
+            try {
+                // Load tips as default content
+                const response = await ApiService.tips.getAll();
+                allContent = response.data || response || [];
+                renderContent();
+            } catch (error) {
+                console.error('Failed to load content:', error);
+                document.getElementById('contentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-5">فشل تحميل المحتوى</td></tr>';
+            }
+        }
+
+        function renderContent() {
+            const filtered = allContent.filter(c => {
+                if (currentType === 'tip') return true; // Show all for now
+                return c.type === currentType;
+            });
+            
+            const tbody = document.getElementById('contentTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-5">لا يوجد محتوى في هذا القسم</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td>
+                        <div class="fw-bold">${item.title || item.name || '-'}</div>
+                        <small class="text-muted text-truncate" style="max-width: 300px; display: inline-block;">${(item.body || item.content || item.description || '').substring(0, 50)}...</small>
+                    </td>
+                    <td>${item.author || 'الإدارة'}</td>
+                    <td>${item.date || item.created_at || new Date().toLocaleDateString('ar-SA')}</td>
+                    <td>
+                        <span class="badge bg-${item.active !== false ? 'success' : 'secondary'}-light text-${item.active !== false ? 'success' : 'secondary'}">
+                            ${item.active !== false ? 'نشط' : 'غير نشط'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-light text-primary" onclick="editContent(${item.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light text-danger" onclick="deleteContent(${item.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function resetForm() {
+            document.getElementById('contentForm').reset();
+            document.getElementById('contentId').value = '';
+            document.getElementById('contentType').value = currentType;
+            document.getElementById('modalTitle').innerText = 'إضافة محتوى جديد';
+        }
+
+        async function editContent(id) {
+            const item = allContent.find(c => c.id === id);
+            if (!item) return;
+
+            document.getElementById('contentId').value = item.id;
+            document.getElementById('contentType').value = item.type || 'tip';
+            document.getElementById('contentTitle').value = item.title || item.name || '';
+            document.getElementById('contentAuthor').value = item.author || '';
+            document.getElementById('contentBody').value = item.body || item.content || item.description || '';
+            document.getElementById('contentActive').checked = item.active !== false;
+            document.getElementById('modalTitle').innerText = 'تعديل المحتوى';
+            
+            contentModal.show();
+        }
+
+        async function deleteContent(id) {
+            if (confirm('هل أنت متأكد من حذف هذا المحتوى؟')) {
+                try {
+                    await ApiService.tips.delete(id);
+                    showToast('تم حذف المحتوى بنجاح');
+                    loadContent();
+                } catch (error) {
+                    console.error('Failed to delete content:', error);
+                    showToast('فشل حذف المحتوى', 'error');
+                }
+            }
+        }
+
+        document.getElementById('contentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('contentId').value;
+            const data = {
+                title: document.getElementById('contentTitle').value,
+                author: document.getElementById('contentAuthor').value,
+                content: document.getElementById('contentBody').value,
+                active: document.getElementById('contentActive').checked
+            };
+
+            try {
+                if (id) {
+                    await ApiService.tips.update(id, data);
+                    showToast('تم تحديث المحتوى بنجاح');
+                } else {
+                    await ApiService.tips.create(data);
+                    showToast('تم إضافة المحتوى بنجاح');
+                }
+                
+                contentModal.hide();
+                loadContent();
+            } catch (error) {
+                console.error('Failed to save content:', error);
+                showToast('فشل حفظ المحتوى', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

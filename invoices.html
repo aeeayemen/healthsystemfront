@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الفواتير - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">الفواتير</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#invoiceModal" onclick="resetForm()">
+                        <i class="fas fa-plus me-2"></i> إنشاء فاتورة
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="invoicesTable">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>المريض</th>
+                                        <th>المبلغ</th>
+                                        <th>التاريخ</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div class="modal fade" id="invoiceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إنشاء فاتورة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="invoiceForm">
+                        <input type="hidden" id="invoiceId">
+                        <div class="mb-3">
+                            <label class="form-label">المريض</label>
+                            <select class="form-select" id="invoicePatient" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المبلغ</label>
+                            <input type="number" class="form-control" id="invoiceAmount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">التاريخ</label>
+                            <input type="date" class="form-control" id="invoiceDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">حالة الدفع</label>
+                            <select class="form-select" id="invoiceStatus">
+                                <option value="paid">مدفوع</option>
+                                <option value="unpaid">غير مدفوع</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">سند الاستلام (اختياري)</label>
+                            <input type="file" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let invoiceModal;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('invoices');
+            invoiceModal = new bootstrap.Modal(document.getElementById('invoiceModal'));
+            loadPatients();
+            renderInvoices();
+        });
+
+        async function loadPatients() {
+            try {
+                const response = await ApiService.patients.getAll();
+                const patients = response.data || response;
+                document.getElementById('invoicePatient').innerHTML = '<option value="">اختر المريض...</option>' + 
+                    patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load patients', error);
+            }
+        }
+
+        async function renderInvoices() {
+            try {
+                const response = await ApiService.invoices.getAll();
+                const invoices = response.data || response;
+                const tbody = document.querySelector('#invoicesTable tbody');
+                
+                if (invoices.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد فواتير لعرضها</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = invoices.map(inv => `
+                <tr>
+                    <td>#INV-${inv.id.toString().padStart(4, '0')}</td>
+                    <td>${inv.patient?.name || inv.patient_name || 'غير محدد'}</td>
+                    <td>${inv.amount} ريال</td>
+                    <td>${inv.date}</td>
+                    <td>
+                        <span class="badge bg-${inv.status === 'paid' ? 'success' : 'danger'}-light text-${inv.status === 'paid' ? 'success' : 'danger'}">
+                            ${inv.status === 'paid' ? 'مدفوع' : 'غير مدفوع'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-light text-primary" onclick="editInvoice(${inv.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light text-danger" onclick="deleteInvoice(${inv.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load invoices', error);
+                document.querySelector('#invoicesTable tbody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('invoiceForm').reset();
+            document.getElementById('invoiceId').value = '';
+            document.getElementById('modalTitle').innerText = 'إنشاء فاتورة جديدة';
+        }
+
+        async function editInvoice(id) {
+            try {
+                const response = await ApiService.invoices.get(id);
+                const inv = response.data || response;
+
+                document.getElementById('invoiceId').value = inv.id;
+                document.getElementById('invoicePatient').value = inv.patient_id || inv.patientId;
+                document.getElementById('invoiceAmount').value = inv.amount;
+                document.getElementById('invoiceDate').value = inv.date;
+                document.getElementById('invoiceStatus').value = inv.status;
+                document.getElementById('modalTitle').innerText = 'تعديل الفاتورة';
+                
+                invoiceModal.show();
+            } catch (error) {
+                console.error('Failed to load invoice details', error);
+                showToast('فشل تحميل تفاصيل الفاتورة', 'error');
+            }
+        }
+
+        async function deleteInvoice(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الفاتورة؟')) {
+                try {
+                    await ApiService.invoices.delete(id);
+                    renderInvoices();
+                    showToast('تم حذف الفاتورة بنجاح');
+                } catch (error) {
+                    console.error('Failed to delete invoice', error);
+                    showToast('فشل حذف الفاتورة', 'error');
+                }
+            }
+        }
+
+        document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('invoiceId').value;
+            const data = {
+                patient_id: document.getElementById('invoicePatient').value,
+                amount: parseFloat(document.getElementById('invoiceAmount').value),
+                date: document.getElementById('invoiceDate').value,
+                status: document.getElementById('invoiceStatus').value
+            };
+
+            try {
+                if (id) {
+                    await ApiService.invoices.update(id, data);
+                    showToast('تم تحديث الفاتورة بنجاح');
+                } else {
+                    await ApiService.invoices.create(data);
+                    showToast('تم إنشاء الفاتورة بنجاح');
+                }
+                
+                invoiceModal.hide();
+                renderInvoices();
+            } catch (error) {
+                console.error('Failed to save invoice', error);
+                showToast('فشل حفظ الفاتورة', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

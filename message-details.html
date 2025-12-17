@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل الرسالة - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-envelope me-2"></i>تفاصيل الرسالة</h2>
+                    <a href="messages.html" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right me-2"></i>العودة للقائمة
+                    </a>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-comment me-2"></i>محتوى الرسالة</h5>
+                                <span class="badge" id="readBadge">-</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="bg-light p-4 rounded" id="messageContent" style="min-height: 150px; font-size: 1.1rem;">
+                                    -
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>معلومات الرسالة</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="text-muted small">id</label>
+                                    <p class="mb-0 fw-bold" id="msgId">-</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted small">user_id</label>
+                                    <p class="mb-0 fw-bold" id="userId">-</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted small">doctor_id</label>
+                                    <p class="mb-0 fw-bold" id="doctorId">-</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted small">time</label>
+                                    <p class="mb-0 fw-bold" id="msgTime">-</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted small">date</label>
+                                    <p class="mb-0 fw-bold" id="msgDate">-</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted small">read</label>
+                                    <p class="mb-0 fw-bold" id="msgRead">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary w-100 mt-3" id="markReadBtn" onclick="markAsRead()">
+                            <i class="fas fa-check me-2"></i>تحديد كمقروءة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let currentMessage = null;
+        let messageId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('messages');
+            loadDetails();
+        });
+
+        async function loadDetails() {
+            const params = new URLSearchParams(window.location.search);
+            messageId = params.get('id');
+
+            if (!messageId) {
+                alert('معرف الرسالة غير صحيح');
+                window.location.href = 'messages.html';
+                return;
+            }
+
+            try {
+                const response = await ApiService.messages.get(messageId);
+                currentMessage = response.data || response;
+
+                if (!currentMessage) {
+                    alert('الرسالة غير موجودة');
+                    window.location.href = 'messages.html';
+                    return;
+                }
+
+                // Handle array or single message
+                const message = Array.isArray(currentMessage) ? currentMessage[0] : currentMessage;
+
+                document.getElementById('msgId').textContent = message.id || messageId;
+                document.getElementById('userId').textContent = message.user_id || message.sender_id || '-';
+                document.getElementById('doctorId').textContent = message.doctor_id || message.receiver_id || '-';
+                document.getElementById('messageContent').textContent = message.message || message.content || message.body || message.text || message.massage || '-';
+                document.getElementById('msgTime').textContent = message.time || '-';
+                document.getElementById('msgDate').textContent = message.date || message.created_at || '-';
+                document.getElementById('msgRead').textContent = message.read ? 'نعم' : 'لا';
+
+                const readBadge = document.getElementById('readBadge');
+                readBadge.textContent = message.read ? 'مقروءة' : 'غير مقروءة';
+                readBadge.className = `badge ${message.read ? 'badge-read bg-success' : 'badge-unread bg-warning'}`;
+
+                // Hide mark as read button if already read
+                if (message.read) {
+                    document.getElementById('markReadBtn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Failed to load message:', error);
+                alert('فشل تحميل بيانات الرسالة');
+                window.location.href = 'messages.html';
+            }
+        }
+
+        async function markAsRead() {
+            if (!messageId) return;
+            
+            showToast('هذه الميزة تحتاج إلى API endpoint لتحديث الرسالة', 'warning');
+        }
+    </script>
+</body>
+</html>

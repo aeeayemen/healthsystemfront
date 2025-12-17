@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطط التغذية - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">خطط التغذية</h2>
+                    <div class="d-flex gap-2">
+                        <select class="form-select w-auto" id="statusFilter" onchange="renderPlans()">
+                            <option value="all">كل الحالات</option>
+                            <option value="active">نشطة</option>
+                            <option value="completed">مكتملة</option>
+                            <option value="cancelled">ملغاة</option>
+                        </select>
+                        <a href="diet-plan-editor.html" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i> إنشاء خطة جديدة
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="plansTable">
+                                <thead>
+                                    <tr>
+                                        <th>اسم الخطة</th>
+                                        <th>المستخدم</th>
+                                        <th>الطبيب</th>
+                                        <th>المدة</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="plansTableBody">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Modal -->
+    <div class="modal fade" id="planModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إنشاء خطة غذائية</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="planForm">
+                        <input type="hidden" id="planId">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">عنوان الخطة</label>
+                                <input type="text" class="form-control" id="planTitle" required placeholder="مثال: خطة تخفيف الوزن - شهر 1">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المريض</label>
+                                <select class="form-select" id="planPatient" required>
+                                    <!-- Injected by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الطبيب المشرف</label>
+                                <select class="form-select" id="planDoctor" required>
+                                    <!-- Injected by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">تاريخ البداية</label>
+                                <input type="date" class="form-control" id="planStart" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">تاريخ النهاية</label>
+                                <input type="date" class="form-control" id="planEnd" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">تفاصيل الخطة</label>
+                                <textarea class="form-control" id="planDetails" rows="5" placeholder="تفاصيل الوجبات والسعرات الحرارية..."></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="planStatus">
+                                    <option value="active">نشطة</option>
+                                    <option value="completed">مكتملة</option>
+                                    <option value="cancelled">ملغاة</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ الخطة</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let planModal;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('diet-plans');
+            planModal = new bootstrap.Modal(document.getElementById('planModal'));
+            renderPlans();
+            loadSelects();
+        });
+
+        async function loadSelects() {
+            try {
+                const [patientsRes, doctorsRes] = await Promise.all([
+                    ApiService.patients.getAll(),
+                    ApiService.doctors.getAll()
+                ]);
+
+                const patients = patientsRes.data || patientsRes;
+                const doctors = doctorsRes.data || doctorsRes;
+                
+                document.getElementById('planPatient').innerHTML = '<option value="">اختر المريض...</option>' + 
+                    patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                    
+                document.getElementById('planDoctor').innerHTML = '<option value="">اختر الطبيب...</option>' + 
+                    doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load selects', error);
+            }
+        }
+
+        async function renderPlans() {
+            const filter = document.getElementById('statusFilter').value;
+            const params = {};
+            if (filter !== 'all') params.status = filter;
+
+            try {
+                const response = await ApiService.dietPlans.getAll(params);
+                const plans = response.data || response;
+                const tbody = document.getElementById('plansTableBody');
+                
+                if (plans.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد خطط لعرضها</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = plans.map(plan => `
+                <tr>
+                    <td>
+                        <div class="fw-bold">${plan.title}</div>
+                        <small class="text-muted">${plan.calories || 0} سعرة حرارية</small>
+                    </td>
+                    <td>${plan.patient?.name || plan.patient_name || 'غير محدد'}</td>
+                    <td>${plan.doctor?.name || plan.doctor_name || 'غير محدد'}</td>
+                    <td>
+                        <div>${plan.start_date || plan.startDate}</div>
+                        <small class="text-muted">إلى ${plan.end_date || plan.endDate}</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-${getStatusColor(plan.status)}-light text-${getStatusColor(plan.status)}">
+                            ${getStatusName(plan.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="diet-plan-editor.html?id=${plan.id}" class="btn btn-sm btn-light text-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn btn-sm btn-light text-danger" onclick="deletePlan(${plan.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load diet plans', error);
+                document.getElementById('plansTableBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function getStatusColor(status) {
+            return { active: 'success', completed: 'primary', cancelled: 'danger' }[status] || 'secondary';
+        }
+
+        function getStatusName(status) {
+            return { active: 'نشطة', completed: 'مكتملة', cancelled: 'ملغاة' }[status] || status;
+        }
+
+        function resetForm() {
+            document.getElementById('planForm').reset();
+            document.getElementById('planId').value = '';
+            document.getElementById('modalTitle').innerText = 'إنشاء خطة غذائية';
+        }
+
+        async function editPlan(id) {
+            // Redirect to editor for editing
+            window.location.href = `diet-plan-editor.html?id=${id}`;
+        }
+
+        async function deletePlan(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الخطة؟')) {
+                try {
+                    await ApiService.dietPlans.delete(id);
+                    renderPlans();
+                    showToast('تم حذف الخطة بنجاح');
+                } catch (error) {
+                    console.error('Failed to delete plan', error);
+                    showToast('فشل حذف الخطة', 'error');
+                }
+            }
+        }
+
+        document.getElementById('planForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('planId').value;
+            const data = {
+                title: document.getElementById('planTitle').value,
+                patient_id: document.getElementById('planPatient').value,
+                doctor_id: document.getElementById('planDoctor').value,
+                start_date: document.getElementById('planStart').value,
+                end_date: document.getElementById('planEnd').value,
+                details: document.getElementById('planDetails').value,
+                status: document.getElementById('planStatus').value
+            };
+
+            try {
+                if (id) {
+                    await ApiService.dietPlans.update(id, data);
+                    showToast('تم تحديث الخطة بنجاح');
+                } else {
+                    await ApiService.dietPlans.create(data);
+                    showToast('تم إنشاء الخطة بنجاح');
+                }
+                
+                planModal.hide();
+                renderPlans();
+            } catch (error) {
+                console.error('Failed to save plan', error);
+                showToast('فشل حفظ البيانات', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاشتراكات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">إدارة الاشتراكات</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#subModal" onclick="resetForm()">
+                        <i class="fas fa-plus me-2"></i> اشتراك جديد
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="subsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>المريض</th>
+                                        <th>نوع الاشتراك</th>
+                                        <th>السعر</th>
+                                        <th>الفترة</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Modal -->
+    <div class="modal fade" id="subModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة اشتراك جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="subForm">
+                        <input type="hidden" id="subId">
+                        <div class="mb-3">
+                            <label class="form-label">المريض</label>
+                            <select class="form-select" id="subPatient" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">نوع الاشتراك</label>
+                            <select class="form-select" id="subType" required>
+                                <option value="monthly">شهري</option>
+                                <option value="quarterly">ربع سنوي</option>
+                                <option value="yearly">سنوي</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">السعر</label>
+                            <input type="number" class="form-control" id="subPrice" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">تاريخ البداية</label>
+                                <input type="date" class="form-control" id="subStart" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">تاريخ النهاية</label>
+                                <input type="date" class="form-control" id="subEnd" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">حالة الدفع</label>
+                            <select class="form-select" id="subStatus">
+                                <option value="active">نشط (مدفوع)</option>
+                                <option value="pending">معلق</option>
+                                <option value="expired">منتهي</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let subModal;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('subscriptions');
+            subModal = new bootstrap.Modal(document.getElementById('subModal'));
+            loadPatients();
+            renderSubs();
+        });
+
+        async function loadPatients() {
+            try {
+                const response = await ApiService.patients.getAll();
+                const patients = response.data || response;
+                document.getElementById('subPatient').innerHTML = '<option value="">اختر المريض...</option>' + 
+                    patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load patients', error);
+            }
+        }
+
+        async function renderSubs() {
+            try {
+                const response = await ApiService.subscriptions.getAll();
+                const subs = response.data || response;
+                const tbody = document.querySelector('#subsTable tbody');
+                
+                if (subs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">لا توجد اشتراكات لعرضها</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = subs.map(sub => `
+                <tr>
+                    <td>${sub.id}</td>
+                    <td>${sub.patient?.name || sub.patient_name || 'غير محدد'}</td>
+                    <td>${getTypeName(sub.type)}</td>
+                    <td>${sub.price} ريال</td>
+                    <td>${sub.start_date || sub.startDate} - ${sub.end_date || sub.endDate}</td>
+                    <td>
+                        <span class="badge bg-${getStatusColor(sub.status)}-light text-${getStatusColor(sub.status)}">
+                            ${getStatusName(sub.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-light text-primary" onclick="editSub(${sub.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light text-danger" onclick="deleteSub(${sub.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load subscriptions', error);
+                document.querySelector('#subsTable tbody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function getTypeName(type) {
+            return { monthly: 'شهري', quarterly: 'ربع سنوي', yearly: 'سنوي' }[type] || type;
+        }
+
+        function getStatusColor(status) {
+            return { active: 'success', pending: 'warning', expired: 'danger' }[status] || 'secondary';
+        }
+
+        function getStatusName(status) {
+            return { active: 'نشط', pending: 'معلق', expired: 'منتهي' }[status] || status;
+        }
+
+        function resetForm() {
+            document.getElementById('subForm').reset();
+            document.getElementById('subId').value = '';
+            document.getElementById('modalTitle').innerText = 'إضافة اشتراك جديد';
+        }
+
+        async function editSub(id) {
+            try {
+                const response = await ApiService.subscriptions.get(id);
+                const sub = response.data || response;
+
+                document.getElementById('subId').value = sub.id;
+                document.getElementById('subPatient').value = sub.patient_id || sub.patientId;
+                document.getElementById('subType').value = sub.type;
+                document.getElementById('subPrice').value = sub.price;
+                document.getElementById('subStart').value = sub.start_date || sub.startDate;
+                document.getElementById('subEnd').value = sub.end_date || sub.endDate;
+                document.getElementById('subStatus').value = sub.status;
+                document.getElementById('modalTitle').innerText = 'تعديل الاشتراك';
+                
+                subModal.show();
+            } catch (error) {
+                console.error('Failed to load subscription details', error);
+                showToast('فشل تحميل تفاصيل الاشتراك', 'error');
+            }
+        }
+
+        async function deleteSub(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الاشتراك؟')) {
+                try {
+                    await ApiService.subscriptions.delete(id);
+                    renderSubs();
+                    showToast('تم حذف الاشتراك بنجاح');
+                } catch (error) {
+                    console.error('Failed to delete subscription', error);
+                    showToast('فشل حذف الاشتراك', 'error');
+                }
+            }
+        }
+
+        document.getElementById('subForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('subId').value;
+            const data = {
+                patient_id: document.getElementById('subPatient').value,
+                type: document.getElementById('subType').value,
+                price: document.getElementById('subPrice').value,
+                start_date: document.getElementById('subStart').value,
+                end_date: document.getElementById('subEnd').value,
+                status: document.getElementById('subStatus').value
+            };
+
+            try {
+                if (id) {
+                    await ApiService.subscriptions.update(id, data);
+                    showToast('تم تحديث الاشتراك بنجاح');
+                } else {
+                    await ApiService.subscriptions.create(data);
+                    showToast('تم إضافة الاشتراك بنجاح');
+                }
+                
+                subModal.hide();
+                renderSubs();
+            } catch (error) {
+                console.error('Failed to save subscription', error);
+                showToast('فشل حفظ الاشتراك', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

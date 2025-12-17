@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل الطبيب - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="mb-4">
+                    <a href="doctors.html" class="text-decoration-none text-muted">
+                        <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
+                    </a>
+                </div>
+
+                <div class="row" id="doctorDetails">
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('doctors');
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            
+            if (id) {
+                renderDoctorDetails(id);
+            } else {
+                window.location.href = 'doctors.html';
+            }
+        });
+
+        async function renderDoctorDetails(id) {
+            try {
+                const response = await ApiService.doctors.get(id);
+                const doctor = response.data || response;
+                
+                if (!doctor) {
+                    document.getElementById('doctorDetails').innerHTML = '<div class="alert alert-danger">الطبيب غير موجود</div>';
+                    return;
+                }
+
+                document.getElementById('doctorDetails').innerHTML = `
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <img src="${doctor.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doctor.name)}" class="rounded-circle mb-3" width="120" height="120">
+                                <h4 class="fw-bold">${doctor.name}</h4>
+                                <p class="text-muted">${doctor.degree || doctor.specialty || '-'}</p>
+                                
+                                <div class="badge bg-${getStatusColor(doctor.status)} mb-3 p-2 px-3">
+                                    ${getStatusName(doctor.status)}
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    ${doctor.status === 'pending' ? `
+                                    <button class="btn btn-success" onclick="updateStatus(${doctor.id}, 'approved')">
+                                        <i class="fas fa-check me-2"></i> قبول الطبيب
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="updateStatus(${doctor.id}, 'rejected')">
+                                        <i class="fas fa-times me-2"></i> رفض الطبيب
+                                    </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">المعلومات الشخصية</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="text-muted small">البريد الإلكتروني</label>
+                                        <div class="fw-bold">${doctor.email || 'doctor@example.com'}</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="text-muted small">رقم الهاتف</label>
+                                        <div class="fw-bold">${doctor.phone || doctor.phone_number || '-'}</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="text-muted small">سعر الحمية</label>
+                                        <div class="fw-bold">${doctor.price || 0} ريال</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="text-muted small">تاريخ الانضمام</label>
+                                        <div class="fw-bold">${doctor.created_at || new Date().toLocaleDateString('ar-SA')}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">المستندات المرفقة</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    ${doctor.CV || doctor.cv ? `
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                            السيرة الذاتية
+                                        </div>
+                                        <a href="${doctor.CV || doctor.cv}" target="_blank" class="btn btn-sm btn-outline-primary">عرض</a>
+                                    </div>
+                                    ` : '<p class="text-muted text-center mb-0">لا توجد مستندات مرفقة</p>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load doctor:', error);
+                document.getElementById('doctorDetails').innerHTML = '<div class="alert alert-danger">فشل تحميل بيانات الطبيب</div>';
+            }
+        }
+
+        function getStatusColor(status) {
+            return { pending: 'warning', approved: 'success', rejected: 'danger' }[status] || 'secondary';
+        }
+
+        function getStatusName(status) {
+            return { pending: 'بانتظار الموافقة', approved: 'معتمد', rejected: 'مرفوض' }[status] || status;
+        }
+
+        async function updateStatus(id, status) {
+            if (confirm('هل أنت متأكد من تغيير حالة الطبيب؟')) {
+                try {
+                    await ApiService.doctors.updateStatus(id, status);
+                    renderDoctorDetails(id);
+                    showToast('تم تحديث الحالة بنجاح');
+                } catch (error) {
+                    console.error('Failed to update status:', error);
+                    showToast('فشل تحديث الحالة', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

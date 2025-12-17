@@ -1,0 +1,519 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المنتدى - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        .users-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            max-width: 300px;
+        }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: #e9ecef;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .user-badge .remove-user {
+            cursor: pointer;
+            color: #dc3545;
+            font-size: 0.75rem;
+        }
+
+        .user-badge .remove-user:hover {
+            color: #a71d2a;
+        }
+
+        .add-user-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: #4361ee;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .add-user-btn:hover {
+            background: #3a56d4;
+        }
+
+        .user-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-list-item .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #4361ee;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-comments me-2"></i>المنتدى</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>إضافة منتدى
+                    </button>
+                </div>
+
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>الرقم</th>
+                                        <th>الاسم</th>
+                                        <th>اسم الطبيب</th>
+                                        <th>المستخدمين</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة منتدى</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label class="form-label">اسم المنتدى</label>
+                            <input type="text" class="form-control" id="formName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الطبيب</label>
+                            <select class="form-select" id="formDoctorId" required>
+                                <option value="">اختر الطبيب...</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذا المنتدى؟</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User to Forum Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>إضافة مستخدم للمنتدى</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="addUserForumId">
+                    <div class="mb-3">
+                        <label class="form-label">بحث عن مستخدم</label>
+                        <input type="text" class="form-control" id="searchUserInput" placeholder="ابحث بالاسم أو البريد الإلكتروني...">
+                    </div>
+                    <div class="mb-3 d-none">
+                        <label class="form-label">اختر المستخدم</label>
+                        <select class="form-select" id="selectUser">
+                            <option value="">اختر مستخدم...</option>
+                        </select>
+                    </div>
+                    <div class="mt-3">
+                        <h6>المستخدمين المتاحين:</h6>
+                        <div id="availableUsersList" class="border rounded"
+                            style="max-height: 250px; overflow-y: auto;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove User Confirmation Modal -->
+    <div class="modal fade" id="removeUserModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="fas fa-user-minus me-2"></i>إزالة مستخدم</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="removeUserForumId">
+                    <input type="hidden" id="removeUserId">
+                    <p>هل أنت متأكد من إزالة هذا المستخدم من المنتدى؟</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmRemoveUser()">إزالة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let allData = [], doctorsData = [], usersData = [];
+        let formModal, deleteModal, addUserModal, removeUserModal, deleteId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('forum');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            addUserModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+            removeUserModal = new bootstrap.Modal(document.getElementById('removeUserModal'));
+            loadData();
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+        });
+
+        async function loadData() {
+            try {
+                const [forumsRes, doctorsRes, usersRes] = await Promise.all([
+                    ApiService.forums.getAll(),
+                    ApiService.doctors.getAll(),
+                    ApiService.users.getAll() // Get all users from /api/users
+                ]);
+
+                allData = forumsRes.data || forumsRes || [];
+                doctorsData = doctorsRes.data || doctorsRes || [];
+                usersData = usersRes.data || usersRes || [];
+                populateDoctorSelect();
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load forum data', error);
+                showToast('فشل تحميل بيانات المنتدى', 'error');
+            }
+        }
+
+        function getDoctorName(doctorId) {
+            const doctor = doctorsData.find(d => d.id === doctorId);
+            return doctor ? doctor.name : 'غير معروف';
+        }
+
+        function getUserName(userId) {
+            const user = usersData.find(u => u.id === userId);
+            return user ? user.name : 'غير معروف';
+        }
+
+        function populateDoctorSelect() {
+            const select = document.getElementById('formDoctorId');
+            select.innerHTML = '<option value="">اختر الطبيب...</option>' +
+                doctorsData.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        }
+
+
+
+        function renderUsersColumn(forum) {
+            const users = forum.users || []; // Assuming API returns users in forum object
+            let html = '<div class="users-badges">';
+
+            users.forEach(user => {
+                const userName = user.name || getUserName(user.id);
+                html += `
+                    <span class="user-badge">
+                        ${userName}
+                        <i class="fas fa-times remove-user" onclick="openRemoveUserModal(${forum.id}, ${user.id})" title="إزالة"></i>
+                    </span>
+                `;
+            });
+
+            html += `<button class="add-user-btn" onclick="openAddUserModal(${forum.id})">
+                <i class="fas fa-plus"></i>
+            </button>`;
+            html += '</div>';
+
+            return html;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = allData.length === 0
+                ? '<tr><td colspan="5" class="text-center text-muted py-4">لا توجد منتديات</td></tr>'
+                : allData.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td><i class="fas fa-folder me-2 text-warning"></i>${item.name}</td>
+                        <td><span class="badge bg-success">${getDoctorName(item.doctor_id)}</span></td>
+                        <td>${renderUsersColumn(item)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة منتدى';
+            document.getElementById('editId').value = '';
+            document.getElementById('formName').value = '';
+            document.getElementById('formDoctorId').value = '';
+            formModal.show();
+        }
+
+        async function openEditModal(id) {
+            try {
+                const response = await ApiService.forums.get(id);
+                const item = response.data || response;
+                
+                document.getElementById('modalTitle').textContent = 'تعديل المنتدى';
+                document.getElementById('editId').value = id;
+                document.getElementById('formName').value = item.name;
+                document.getElementById('formDoctorId').value = item.doctor_id;
+                formModal.show();
+            } catch (error) {
+                console.error('Failed to load forum details', error);
+                showToast('فشل تحميل تفاصيل المنتدى', 'error');
+            }
+        }
+
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('formName').value.trim();
+            const doctor_id = parseInt(document.getElementById('formDoctorId').value);
+            
+            if (!name || !doctor_id) { alert('يرجى ملء جميع الحقول'); return; }
+
+            const data = { name, doctor_id };
+
+            try {
+                if (id) {
+                    await ApiService.forums.update(id, data);
+                    showToast('تم تحديث المنتدى بنجاح');
+                } else {
+                    await ApiService.forums.create(data);
+                    showToast('تم إضافة المنتدى بنجاح');
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save forum', error);
+                showToast('فشل حفظ المنتدى', 'error');
+            }
+        }
+
+        function openDeleteModal(id) { deleteId = id; deleteModal.show(); }
+
+        async function confirmDelete() {
+            if (!deleteId) return;
+            try {
+                await ApiService.forums.delete(deleteId);
+                showToast('تم حذف المنتدى بنجاح');
+                deleteId = null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete forum', error);
+                showToast('فشل حذف المنتدى', 'error');
+            }
+        }
+
+        // User management functions
+        let currentAvailableUsers = [];
+
+        function openAddUserModal(forumId) {
+            console.log('Opening Add User Modal for Forum ID:', forumId);
+            try {
+                if (!addUserModal) {
+                    console.error('Modal instance not initialized');
+                    addUserModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+                }
+
+                document.getElementById('addUserForumId').value = forumId;
+                document.getElementById('searchUserInput').value = '';
+
+                // Get users not already in this forum
+                // Ensure forumId is treated as number for comparison
+                const id = parseInt(forumId);
+                const forum = allData.find(f => f.id === id);
+                
+                if (!forum) {
+                    console.error('Forum not found for ID:', id);
+                    return;
+                }
+
+                const currentUsers = forum ? (forum.users || []).map(u => u.id) : [];
+                currentAvailableUsers = (usersData || []).filter(u => !currentUsers.includes(u.id));
+
+                renderAvailableUsersList(currentAvailableUsers);
+                
+                // Setup search listener
+                document.getElementById('searchUserInput').onkeyup = (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const filtered = currentAvailableUsers.filter(u => 
+                        u.name.toLowerCase().includes(term) || 
+                        (u.email && u.email.toLowerCase().includes(term))
+                    );
+                    renderAvailableUsersList(filtered);
+                };
+
+                addUserModal.show();
+            } catch (error) {
+                console.error('Error in openAddUserModal:', error);
+                alert('حدث خطأ أثناء فتح النافذة: ' + error.message);
+            }
+        }
+
+        function renderAvailableUsersList(users) {
+            const listDiv = document.getElementById('availableUsersList');
+            if (users.length === 0) {
+                listDiv.innerHTML = '<div class="text-center text-muted py-3">لا يوجد مستخدمين متاحين</div>';
+            } else {
+                listDiv.innerHTML = users.map(u => `
+                    <div class="user-list-item">
+                        <div class="user-info">
+                            <div class="user-avatar">${(u.name || '?').charAt(0)}</div>
+                            <div>
+                                <div class="fw-bold">${u.name || 'غير معروف'}</div>
+                                <small class="text-muted">${u.email || '-'}</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="quickAddUser(${document.getElementById('addUserForumId').value}, ${u.id})">
+                            <i class="fas fa-plus"></i> إضافة
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function addUserToForum() {
+            const forumId = parseInt(document.getElementById('addUserForumId').value);
+            const userId = parseInt(document.getElementById('selectUser').value);
+
+            if (!userId) {
+                alert('يرجى اختيار مستخدم');
+                return;
+            }
+
+            quickAddUser(forumId, userId);
+        }
+
+        async function quickAddUser(forumId, userId) {
+            try {
+                await ApiService.forums.addUser(forumId, userId);
+                showToast('تم إضافة المستخدم بنجاح');
+                
+                // Remove user from current list locally
+                currentAvailableUsers = currentAvailableUsers.filter(u => u.id !== userId);
+                
+                // Re-render list with current search term if any
+                const term = document.getElementById('searchUserInput').value.toLowerCase();
+                const filtered = currentAvailableUsers.filter(u => 
+                    u.name.toLowerCase().includes(term) || 
+                    (u.email && u.email.toLowerCase().includes(term))
+                );
+                renderAvailableUsersList(filtered);
+
+                // Reload main data in background to update table
+                loadData();
+            } catch (error) {
+                console.error('Failed to add user to forum', error);
+                showToast('فشل إضافة المستخدم', 'error');
+            }
+        }
+
+        function openRemoveUserModal(forumId, userId) {
+            document.getElementById('removeUserForumId').value = forumId;
+            document.getElementById('removeUserId').value = userId;
+            removeUserModal.show();
+        }
+
+        async function confirmRemoveUser() {
+            const forumId = parseInt(document.getElementById('removeUserForumId').value);
+            const userId = parseInt(document.getElementById('removeUserId').value);
+
+            try {
+                await ApiService.forums.removeUser(forumId, userId);
+                showToast('تم إزالة المستخدم بنجاح');
+                removeUserModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to remove user from forum', error);
+                showToast('فشل إزالة المستخدم', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاستشارات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        /* تخصيصات إضافية */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .badge-confirmed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .badge-completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .badge-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        
+        .action-buttons .btn {
+            margin-left: 5px;
+            padding: 4px 8px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">الاستشارات الطبية</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#consultModal" onclick="resetForm()">
+                        <i class="fas fa-plus me-2"></i> حجز استشارة
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="consultationsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>المريض</th>
+                                        <th>الطبيب</th>
+                                        <th>التاريخ والوقت</th>
+                                        <th>الحالة</th>
+                                        <th>ملاحظات</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- سيتم تعبئتها بالبيانات الوهمية -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consultation Modal -->
+    <div class="modal fade" id="consultModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">حجز استشارة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="consultForm">
+                        <input type="hidden" id="consultId">
+                        <div class="mb-3">
+                            <label class="form-label">المريض</label>
+                            <select class="form-select" id="consultPatient" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الطبيب</label>
+                            <select class="form-select" id="consultDoctor" required></select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">التاريخ</label>
+                                <input type="date" class="form-control" id="consultDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الوقت</label>
+                                <input type="time" class="form-control" id="consultTime" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحالة</label>
+                            <select class="form-select" id="consultStatus">
+                                <option value="pending">معلقة</option>
+                                <option value="confirmed">مؤكدة</option>
+                                <option value="completed">مكتملة</option>
+                                <option value="cancelled">ملغاة</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="consultNotes" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let consultModal;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // تهيئة التخطيط
+            Layout.init('consultations');
+            
+            // تهيئة المودال
+            consultModal = new bootstrap.Modal(document.getElementById('consultModal'));
+            
+            // تحميل البيانات
+            loadSelects();
+            renderConsultations();
+            
+            // تعيين التاريخ الحالي كقيمة افتراضية
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('consultDate').value = today;
+            
+            // تعيين الوقت الحالي + ساعة كقيمة افتراضية
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('consultTime').value = timeString;
+        });
+
+        async function loadSelects() {
+            try {
+                const [patientsRes, doctorsRes] = await Promise.all([
+                    ApiService.patients.getAll(),
+                    ApiService.doctors.getAll()
+                ]);
+
+                const patients = patientsRes.data || patientsRes;
+                const doctors = doctorsRes.data || doctorsRes;
+
+                // تحميل المرضى في القائمة المنسدلة
+                const patientSelect = document.getElementById('consultPatient');
+                patientSelect.innerHTML = '<option value="">اختر المريض...</option>' + 
+                    patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                
+                // تحميل الأطباء في القائمة المنسدلة
+                const doctorSelect = document.getElementById('consultDoctor');
+                doctorSelect.innerHTML = '<option value="">اختر الطبيب...</option>' + 
+                    doctors.map(d => `<option value="${d.id}">${d.name} - ${d.specialization || d.specialty || ''}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load selects', error);
+            }
+        }
+
+        async function renderConsultations() {
+            try {
+                const response = await ApiService.consultations.getAll();
+                const consultations = response.data || response;
+                const tbody = document.querySelector('#consultationsTable tbody');
+                
+                if (consultations.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد استشارات مضافة بعد</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = consultations.map(c => {
+                    // تحويل التاريخ إلى تنسيق عربي
+                    let formattedDate = c.consultation_date;
+                    try {
+                        const dateObj = new Date(c.consultation_date);
+                        formattedDate = dateObj.toLocaleDateString('ar-SA', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    } catch (e) {}
+                    
+                    return `
+                    <tr>
+                        <td>${c.id}</td>
+                        <td>
+                            <div class="fw-bold">${c.patient?.name || c.patient_name || 'مريض غير معروف'}</div>
+                            <small class="text-muted">${c.patient?.age ? `(${c.patient.age} سنة)` : ''}</small>
+                        </td>
+                        <td>
+                            <div class="fw-bold">${c.doctor?.name || c.doctor_name || 'طبيب غير معروف'}</div>
+                            <small class="text-muted">${c.doctor?.specialization || c.doctor?.specialty || ''}</small>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold">${formattedDate}</span>
+                                <span class="text-primary"><i class="far fa-clock me-1"></i> ${c.time || ''}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-${c.status}">
+                                ${getStatusName(c.status)}
+                            </span>
+                        </td>
+                        <td>
+                            ${c.notes || '<span class="text-muted">لا توجد ملاحظات</span>'}
+                        </td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-light text-primary" onclick="editConsult(${c.id})" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light text-danger" onclick="deleteConsult(${c.id})" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light text-success" onclick="viewConsult(${c.id})" title="عرض التفاصيل">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load consultations', error);
+                document.querySelector('#consultationsTable tbody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'warning',
+                'confirmed': 'info', 
+                'completed': 'success',
+                'cancelled': 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function getStatusName(status) {
+            const names = {
+                'pending': 'معلقة',
+                'confirmed': 'مؤكدة',
+                'completed': 'مكتملة',
+                'cancelled': 'ملغاة'
+            };
+            return names[status] || status;
+        }
+
+        function resetForm() {
+            document.getElementById('consultForm').reset();
+            document.getElementById('consultId').value = '';
+            document.getElementById('modalTitle').innerText = 'حجز استشارة جديدة';
+            
+            // إعادة تعيين التاريخ والوقت الافتراضيين
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            document.getElementById('consultDate').value = today;
+            document.getElementById('consultTime').value = timeString;
+        }
+
+        async function editConsult(id) {
+            try {
+                const response = await ApiService.consultations.get(id);
+                const consult = response.data || response;
+
+                document.getElementById('consultId').value = consult.id;
+                document.getElementById('consultPatient').value = consult.patient_id;
+                document.getElementById('consultDoctor').value = consult.doctor_id;
+                document.getElementById('consultDate').value = consult.consultation_date;
+                document.getElementById('consultTime').value = consult.time;
+                document.getElementById('consultStatus').value = consult.status;
+                document.getElementById('consultNotes').value = consult.notes || '';
+                document.getElementById('modalTitle').innerText = 'تعديل الاستشارة';
+                
+                consultModal.show();
+            } catch (error) {
+                console.error('Failed to load consultation details', error);
+                alert('فشل تحميل تفاصيل الاستشارة');
+            }
+        }
+
+        async function viewConsult(id) {
+            try {
+                const response = await ApiService.consultations.get(id);
+                const consult = response.data || response;
+
+                // إنشاء نافذة عرض التفاصيل
+                const detailHtml = `
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">المريض:</h6>
+                                <p class="fw-bold">${consult.patient?.name || consult.patient_name || 'غير معروف'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">الطبيب:</h6>
+                                <p class="fw-bold">${consult.doctor?.name || consult.doctor_name || 'غير معروف'}</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">التاريخ:</h6>
+                                <p class="fw-bold">${consult.consultation_date}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">الوقت:</h6>
+                                <p class="fw-bold">${consult.time}</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="text-muted">الحالة:</h6>
+                                <p><span class="badge badge-${consult.status}">${getStatusName(consult.status)}</span></p>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="text-muted">ملاحظات:</h6>
+                                <p>${consult.notes || 'لا توجد ملاحظات'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // عرض التفاصيل في نافذة تنبيه أو مودال
+                const detailModal = new bootstrap.Modal(document.getElementById('detailModal') || createDetailModal());
+                document.getElementById('detailModalBody').innerHTML = detailHtml;
+                detailModal.show();
+            } catch (error) {
+                console.error('Failed to load consultation details', error);
+                alert('فشل تحميل تفاصيل الاستشارة');
+            }
+        }
+
+        function createDetailModal() {
+            // إنشاء مودال لعرض التفاصيل إذا لم يكن موجوداً
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal fade';
+            modalDiv.id = 'detailModal';
+            modalDiv.tabIndex = -1;
+            modalDiv.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">تفاصيل الاستشارة</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="detailModalBody"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+            return modalDiv;
+        }
+
+        async function deleteConsult(id) {
+            if (!confirm('هل أنت متأكد من حذف هذه الاستشارة؟')) return;
+            
+            try {
+                await ApiService.consultations.delete(id);
+                renderConsultations();
+                Layout.showToast('تم حذف الاستشارة بنجاح', 'success');
+            } catch (error) {
+                console.error('Failed to delete consultation', error);
+                Layout.showToast('فشل حذف الاستشارة', 'error');
+            }
+        }
+
+        document.getElementById('consultForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('consultId').value;
+            const data = {
+                patient_id: parseInt(document.getElementById('consultPatient').value),
+                doctor_id: parseInt(document.getElementById('consultDoctor').value),
+                consultation_date: document.getElementById('consultDate').value,
+                time: document.getElementById('consultTime').value,
+                status: document.getElementById('consultStatus').value,
+                notes: document.getElementById('consultNotes').value
+            };
+            
+            if (!data.patient_id || !data.doctor_id || !data.consultation_date || !data.time) {
+                alert('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+            
+            try {
+                if (id) {
+                    await ApiService.consultations.update(id, data);
+                    Layout.showToast('تم تعديل الاستشارة بنجاح', 'success');
+                } else {
+                    await ApiService.consultations.create(data);
+                    Layout.showToast('تم إضافة الاستشارة بنجاح', 'success');
+                }
+                
+                consultModal.hide();
+                renderConsultations();
+            } catch (error) {
+                console.error('Failed to save consultation', error);
+                Layout.showToast('فشل حفظ الاستشارة', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

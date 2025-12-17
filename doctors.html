@@ -1,0 +1,502 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأطباء - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+   
+        .wrapper {
+            display: flex;
+        }
+        #sidebar {
+            min-height: 100vh;
+            width: 250px;
+            background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+            color: white;
+            transition: all 0.3s;
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #content {
+            width: calc(100% - 250px);
+            margin-right: 250px;
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+        #navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 15px 30px;
+        }
+        .card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .table th {
+            border-top: none;
+            color: #2c3e50;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .badge-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .badge-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .rating-stars {
+            color: #ffc107;
+        }
+        .action-buttons .btn {
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-left: 3px;
+        }
+        .modal-header {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            #content {
+                width: 100%;
+                margin-right: 0;
+            }
+            .sidebar-toggled #sidebar {
+                width: 250px;
+            }
+            .sidebar-toggled #content {
+                margin-right: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+   
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">إدارة الأطباء</h2>
+                    <div>
+                        <select class="form-select d-inline-block w-auto me-2" id="statusFilter">
+                            <option value="all">الكل</option>
+                            <option value="pending">بانتظار الموافقة</option>
+                            <option value="approved">معتمد</option>
+                            <option value="rejected">مرفوض</option>
+                        </select>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#doctorModal" onclick="resetForm()">
+                            <i class="fas fa-plus me-2"></i> إضافة طبيب
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="doctorsTable">
+                                <thead>
+                                    <tr>
+                                        <th>الاسم</th>
+                                        <th>الجنس</th>
+                                        <th>الدرجة العلمية</th>
+                                        <th>رقم الهاتف</th>
+                                        <th>الحساب البنكي</th>
+                                        <th>السيرة الذاتية</th>
+                                        <th>التقييم</th>
+                                        <th>المنتديات</th>
+                                        <th>سعر الكشف</th>
+                                        <th>سنوات الخبرة</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="doctorsTableBody">
+                                    <!-- سيتم ملؤها بواسطة JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Modal -->
+    <div class="modal fade" id="doctorModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة طبيب جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="doctorForm">
+                        <input type="hidden" id="doctorId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم المستخدم (User ID)</label>
+                                <input type="number" class="form-control" id="doctorUserId" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الاسم الكامل</label>
+                                <input type="text" class="form-control" id="doctorName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الجنس</label>
+                                <select class="form-select" id="doctorGender" required>
+                                    <option value="male">ذكر</option>
+                                    <option value="female">أنثى</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الدرجة العلمية</label>
+                                <input type="text" class="form-control" id="doctorDegree" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" id="doctorPhone" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحساب البنكي</label>
+                                <input type="text" class="form-control" id="doctorBank">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">التخصص</label>
+                                <select class="form-select" id="doctorSpecialty" required>
+                                    <option value="تغذية علاجية">تغذية علاجية</option>
+                                    <option value="طب رياضي">طب رياضي</option>
+                                    <option value="باطنة">باطنة</option>
+                                    <option value="علاج طبيعي">علاج طبيعي</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">السيرة الذاتية (CV)</label>
+                                <input type="file" class="form-control" id="doctorCV">
+                                <small class="text-muted">يمكنك رفع ملف PDF أو Word</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">التقييم (من 5)</label>
+                                <select class="form-select" id="doctorRating">
+                                    <option value="5">5 نجوم</option>
+                                    <option value="4">4 نجوم</option>
+                                    <option value="3">3 نجوم</option>
+                                    <option value="2">2 نجوم</option>
+                                    <option value="1">1 نجمة</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">عدد المنتديات</label>
+                                <input type="number" class="form-control" id="doctorForums" min="0" value="0">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم الترخيص</label>
+                                <input type="text" class="form-control" id="doctorLicenseNumber" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">سعر الكشف</label>
+                                <input type="number" class="form-control" id="doctorConsultationFee">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">سنوات الخبرة</label>
+                                <input type="number" class="form-control" id="doctorYearsOfExperience">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">صورة الملف الشخصي</label>
+                                <input type="url" class="form-control" id="doctorProfileImage">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">نبذة عن الطبيب</label>
+                                <textarea class="form-control" id="doctorBio" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="doctorStatus">
+                                    <option value="pending">بانتظار الموافقة</option>
+                                    <option value="approved">معتمد</option>
+                                    <option value="rejected">مرفوض</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">إلغاء</button>
+                            <button type="submit" class="btn btn-primary">حفظ الطبيب</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        // DOM Elements
+        const doctorsTableBody = document.getElementById('doctorsTableBody');
+        const statusFilter = document.getElementById('statusFilter');
+        const doctorForm = document.getElementById('doctorForm');
+        const modalTitle = document.getElementById('modalTitle');
+        const doctorModalElement = document.getElementById('doctorModal');
+        let doctorModal;
+
+        // Initialize Layout
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('doctors');
+            doctorModal = new bootstrap.Modal(doctorModalElement);
+            renderDoctors();
+        });
+
+        // Initialize doctors table
+        async function renderDoctors() {
+            const status = statusFilter.value;
+            const params = {};
+            if (status !== 'all') {
+                params.application_status = status;
+            }
+            
+            try {
+                const response = await ApiService.doctors.getAll(params);
+                const doctors = response.data || response;
+                
+                doctorsTableBody.innerHTML = '';
+                
+                if (doctors.length === 0) {
+                    doctorsTableBody.innerHTML = '<tr><td colspan="10" class="text-center">لا يوجد أطباء لعرضهم</td></tr>';
+                    return;
+                }
+
+                doctors.forEach(doctor => {
+                    const row = document.createElement('tr');
+                    
+                    // Determine status badge
+                    let statusBadge = '';
+                    if (doctor.application_status === 'pending') {
+                        statusBadge = '<span class="badge badge-pending p-2">بانتظار الموافقة</span>';
+                    } else if (doctor.application_status === 'approved') {
+                        statusBadge = '<span class="badge badge-approved p-2">معتمد</span>';
+                    } else {
+                        statusBadge = '<span class="badge badge-rejected p-2">مرفوض</span>';
+                    }
+                    
+                    // Generate star rating HTML
+                    let starsHtml = '';
+                    const rating = doctor.rating || 0;
+                    const fullStars = Math.floor(rating);
+                    const hasHalfStar = rating % 1 >= 0.5;
+                    
+                    for (let i = 0; i < fullStars; i++) {
+                        starsHtml += '<i class="fas fa-star"></i>';
+                    }
+                    
+                    if (hasHalfStar) {
+                        starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                    }
+                    
+                    const emptyStars = 5 - Math.ceil(rating);
+                    for (let i = 0; i < emptyStars; i++) {
+                        starsHtml += '<i class="far fa-star"></i>';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${doctor.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0D8ABC&color=fff&size=35`}" class="rounded-circle me-3" alt="صورة الطبيب" width="35" height="35">
+                                <div>
+                                    <h6 class="mb-0">${doctor.name}</h6>
+                                    <small class="text-muted">${doctor.specialization || '-'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${doctor.gender === 'male' ? 'ذكر' : (doctor.gender === 'female' ? 'أنثى' : '-')}</td>
+                        <td>${doctor.degree || '-'}</td>
+                        <td>${doctor.phone_number || '-'}</td>
+                        <td><span class="text-muted">${doctor.bank_account || '-'}</span></td>
+                        <td>
+                            ${doctor.CV ? `<a href="${doctor.CV}" target="_blank" class="text-primary"><i class="fas fa-file-pdf me-1"></i> عرض CV</a>` : '-'}
+                        </td>
+                        <td>
+                            <div class="rating-stars">
+                                ${starsHtml}
+                                <span class="text-muted ms-1">(${rating})</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${doctor.forums_count || 0}</span>
+                        </td>
+                        <td>${doctor.consultation_fee || '-'} ريال</td>
+                        <td>${doctor.years_of_experience || '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editDoctor(${doctor.id})" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                ${doctor.application_status === 'pending' ? `
+                                <button class="btn btn-sm btn-outline-success" onclick="approveDoctor(${doctor.id})" title="موافقة">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                ` : ''}
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteDoctor(${doctor.id})" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    doctorsTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Failed to load doctors', error);
+                doctorsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        // Form reset
+        function resetForm() {
+            document.getElementById('doctorForm').reset();
+            document.getElementById('doctorId').value = '';
+            document.getElementById('doctorUserId').value = '';
+            modalTitle.textContent = 'إضافة طبيب جديد';
+        }
+
+        // Edit doctor
+        async function editDoctor(id) {
+            try {
+                const response = await ApiService.doctors.get(id);
+                const doctor = response.data || response;
+                
+                document.getElementById('doctorId').value = doctor.id;
+                document.getElementById('doctorUserId').value = doctor.user_id || '';
+                document.getElementById('doctorName').value = doctor.name;
+                document.getElementById('doctorGender').value = doctor.gender || 'male';
+                document.getElementById('doctorDegree').value = doctor.degree || '';
+                document.getElementById('doctorPhone').value = doctor.phone_number || '';
+                document.getElementById('doctorBank').value = doctor.bank_account || '';
+                document.getElementById('doctorSpecialty').value = doctor.specialization || '';
+                document.getElementById('doctorRating').value = Math.floor(doctor.rating || 5);
+                document.getElementById('doctorForums').value = doctor.forums_count || 0;
+                document.getElementById('doctorStatus').value = doctor.application_status || 'pending';
+                document.getElementById('doctorLicenseNumber').value = doctor.license_number || '';
+                document.getElementById('doctorConsultationFee').value = doctor.consultation_fee || '';
+                document.getElementById('doctorYearsOfExperience').value = doctor.years_of_experience || '';
+                document.getElementById('doctorProfileImage').value = doctor.profile_image || '';
+                document.getElementById('doctorBio').value = doctor.bio || '';
+                
+                modalTitle.textContent = 'تعديل بيانات الطبيب';
+                doctorModal.show();
+            } catch (error) {
+                console.error('Failed to load doctor details', error);
+                alert('فشل تحميل بيانات الطبيب');
+            }
+        }
+
+        // Approve doctor
+        async function approveDoctor(id) {
+            if (confirm('هل أنت متأكد من الموافقة على هذا الطبيب؟')) {
+                try {
+                    await ApiService.doctors.approve(id);
+                    renderDoctors();
+                    alert('تمت الموافقة على الطبيب بنجاح');
+                } catch (error) {
+                    console.error('Failed to approve doctor', error);
+                    alert('فشل الموافقة على الطبيب');
+                }
+            }
+        }
+
+        // Delete doctor
+        async function deleteDoctor(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الطبيب؟')) {
+                try {
+                    await ApiService.doctors.delete(id);
+                    renderDoctors();
+                    alert('تم حذف الطبيب بنجاح');
+                } catch (error) {
+                    console.error('Failed to delete doctor', error);
+                    alert('فشل حذف الطبيب');
+                }
+            }
+        }
+
+        // Form submission
+        doctorForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('doctorId').value;
+            const data = {
+                user_id: parseInt(document.getElementById('doctorUserId').value),
+                name: document.getElementById('doctorName').value,
+                gender: document.getElementById('doctorGender').value,
+                degree: document.getElementById('doctorDegree').value,
+                phone_number: document.getElementById('doctorPhone').value,
+                bank_account: document.getElementById('doctorBank').value,
+                specialization: document.getElementById('doctorSpecialty').value,
+                rating: parseFloat(document.getElementById('doctorRating').value),
+                forums_count: parseInt(document.getElementById('doctorForums').value),
+                application_status: document.getElementById('doctorStatus').value,
+                license_number: document.getElementById('doctorLicenseNumber').value,
+                consultation_fee: document.getElementById('doctorConsultationFee').value,
+                years_of_experience: document.getElementById('doctorYearsOfExperience').value,
+                profile_image: document.getElementById('doctorProfileImage').value,
+                bio: document.getElementById('doctorBio').value,
+                CV: document.getElementById('doctorCV').value || null
+            };
+            
+            // Handle CV file upload if needed (would require FormData)
+            // For now assuming JSON API
+            
+            try {
+                if (id) {
+                    await ApiService.doctors.update(id, data);
+                    alert('تم تحديث بيانات الطبيب بنجاح');
+                } else {
+                    await ApiService.doctors.create(data);
+                    alert('تم إضافة الطبيب بنجاح');
+                }
+                
+                doctorModal.hide();
+                renderDoctors();
+            } catch (error) {
+                console.error('Failed to save doctor', error);
+                alert('فشل حفظ البيانات');
+            }
+        });
+
+        // Filter change event
+        statusFilter.addEventListener('change', renderDoctors);
+    </script>
+</body>
+</html>

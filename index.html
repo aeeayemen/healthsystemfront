@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - مشروع التغذية العلاجية</title>
+    
+    <!-- Bootstrap 5 RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+     <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-image {
+            flex: 1;
+            background: linear-gradient(#9d0176, #9d017689), 
+                        url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 40px;
+            text-align: center;
+            flex-direction: column;
+        }
+        
+        .login-image h2 {
+            font-weight: 700;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .login-image p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .login-form {
+            flex: 1;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .logo i {
+            font-size: 50px;
+            color: var(--primary);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-group-text {
+            border-left: none;
+            border-right: 1px solid #ced4da;
+        }
+        
+        .form-control {
+            border-right: none;
+            border-left: 1px solid #ced4da;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(106, 17, 203, 0.3);
+        }
+        
+        .btn-outline-secondary {
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .login-image { 
+                display: none; 
+            }
+            
+            .login-form {
+                padding: 40px 25px;
+            }
+        }
+        
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .forgot-password:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-card mx-auto">
+            <div class="login-image">
+                <div class="logo">
+                    <img src="assets/img/logo.png" width="200px" height="auto" alt="">
+                </div>
+                <h2>مشروع التغذية العلاجية</h2>
+                <p class="lead">منصتك المتكاملة لإدارة العيادات والمرضى</p>
+                <div class="mt-4">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-user-md fs-4 me-2"></i>
+                        <span>إدارة الأطباء والمواعيد</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-users fs-4 me-2"></i>
+                        <span>متابعة الحالات المرضية</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="fas fa-chart-line fs-4 me-2"></i>
+                        <span>تقارير وتحليلات شاملة</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="login-form">
+                <h3 class="mb-2 text-primary fw-bold">مرحباً بك</h3>
+                <p class="text-muted mb-4">قم بتسجيل الدخول للمتابعة</p>
+                
+                <!-- Alert Message -->
+                <div class="alert alert-danger" id="errorAlert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span id="errorMessage">البريد الإلكتروني أو كلمة المرور غير صحيحة</span>
+                </div>
+                
+                <div class="alert alert-success" id="successAlert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span>تم تسجيل الدخول بنجاح!</span>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-envelope text-primary"></i></span>
+                            <input type="email" class="form-control" id="email" required placeholder="example@email.com" value="admin@gmail.com">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">كلمة المرور</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-lock text-primary"></i></span>
+                            <input type="password" class="form-control" id="password" required placeholder="••••••••" value="password">
+                        </div>
+                        <div class="text-end mt-2">
+                            <a href="#" class="forgot-password small">نسيت كلمة المرور؟</a>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i> دخول
+                    </button>
+                    <button type="button" onclick="resetSystem()" class="btn btn-outline-secondary w-100 py-2">
+                        <i class="fas fa-redo me-2"></i> إعادة تعيين النظام (حذف البيانات)
+                    </button>
+                </form>
+                
+                <div class="mt-4 pt-3 border-top text-center">
+                    <p class="text-muted small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        بيانات الدخول الافتراضية:<br>
+                        <strong>admin@gmail.com</strong> / <strong>password</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="copyright">
+        © 2023 مشروع التغذية العلاجية. جميع الحقوق محفوظة.
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script>
+        // عناصر DOM
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorAlert = document.getElementById('errorAlert');
+        const successAlert = document.getElementById('successAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        // تعيين بيانات الدخول الافتراضية
+        window.onload = function() {
+            // Clear any existing session to avoid confusion
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('hnd_user');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isLoggedIn');
+            
+            emailInput.value = "admin@gmail.com";
+            passwordInput.value = "password";
+        };
+        
+        // معالجة تسجيل الدخول
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            // إخفاء جميع التنبيهات أولاً
+            hideAlerts();
+            
+            // التحقق من الحقول الفارغة
+            if (!email || !password) {
+                showError("يرجى ملء جميع الحقول المطلوبة");
+                return;
+            }
+            
+            try {
+                // Show loading state
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري التحقق...';
+
+                // Call API Login
+                // Using direct fetch as requested to match Route::post('/login', [AuthController::class, 'login']);
+                const fetchResponse = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!fetchResponse.ok) {
+                    const errorData = await fetchResponse.json();
+                    throw new Error(errorData.message || 'Login failed');
+                }
+
+                const response = await fetchResponse.json();
+                
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+
+                // Check for token in response
+                const token = response.token || (response.data && response.data.token) || response.access_token;
+                const user = response.user || (response.data && response.data.user);
+
+                if (token) {
+                    // تسجيل الدخول ناجح
+                    showSuccess();
+                    
+                    // تخزين بيانات المستخدم والتوكن في localStorage
+                    localStorage.setItem('auth_token', token);
+                    
+                    if (user) {
+                        localStorage.setItem('hnd_user', JSON.stringify(user));
+                        // Backward compatibility
+                        localStorage.setItem('currentUser', JSON.stringify(user));
+                    }
+                    
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    // إعادة توجيه إلى صفحة الرئيسية بعد تأخير بسيط
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    console.error('Login response:', response);
+                    throw new Error('فشل في الحصول على رمز الدخول');
+                }
+
+            } catch (error) {
+                console.error('Login Error:', error);
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i> دخول';
+                
+                showError(error.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
+            }
+        });
+        
+        // إظهار رسالة الخطأ
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorAlert.classList.add('show');
+            successAlert.classList.remove('show');
+            
+            // إخفاء التنبيه بعد 5 ثواني
+            setTimeout(() => {
+                errorAlert.classList.remove('show');
+            }, 5000);
+        }
+        
+        // إظهار رسالة النجاح
+        function showSuccess() {
+            errorAlert.classList.remove('show');
+            successAlert.classList.add('show');
+        }
+        
+        // إخفاء جميع التنبيهات
+        function hideAlerts() {
+            errorAlert.classList.remove('show');
+            successAlert.classList.remove('show');
+        }
+        
+        // إعادة تعيين النظام
+        function resetSystem() {
+            if(confirm('سيتم حذف جميع البيانات المحلية وإعادة تعيين النظام إلى حالته الأولية. هل أنت متأكد؟')) {
+                localStorage.clear();
+                
+                // عرض رسالة نجاح
+                showSuccess();
+                successAlert.innerHTML = '<i class="fas fa-check-circle me-2"></i> تم حذف جميع البيانات وإعادة تعيين النظام بنجاح!';
+                
+                // إعادة تعيين الحقول إلى القيم الافتراضية
+                emailInput.value = "admin@gmail.com";
+                passwordInput.value = "password";
+                
+                // إخفاء التنبيه بعد 3 ثواني
+                setTimeout(() => {
+                    successAlert.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // محاكاة وظيفة "نسيت كلمة المرور"
+        document.querySelector('.forgot-password').addEventListener('click', function(e) {
+            e.preventDefault();
+            const email = prompt("الرجاء إدخال بريدك الإلكتروني لإعادة تعيين كلمة المرور:");
+            
+            if (email) {
+                alert(`تم إرسال طلب إعادة تعيين كلمة المرور إلى ${email}`);
+            }
+        });
+    </script>
+</body>
+</html>

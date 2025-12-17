@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المرضى - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">إدارة المرضى</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#patientModal" onclick="resetForm()">
+                        <i class="fas fa-plus me-2"></i> إضافة مريض
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="patientsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>اسم المريض</th>
+                                        <th>العمر</th>
+                                        <th>الوزن / الطول</th>
+                                        <th>الحالة الصحية</th>
+                                        <th>الطبيب المعالج</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Modal -->
+    <div class="modal fade" id="patientModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة مريض جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="patientForm">
+                        <input type="hidden" id="patientId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">اسم المريض</label>
+                                <input type="text" class="form-control" id="patientName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">العمر</label>
+                                <input type="number" class="form-control" id="patientAge" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الوزن (كجم)</label>
+                                <input type="number" class="form-control" id="patientWeight" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الطول (سم)</label>
+                                <input type="number" class="form-control" id="patientHeight" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحالة الصحية</label>
+                                <select class="form-select" id="patientCondition">
+                                    <option value="سليم">سليم</option>
+                                    <option value="سمنة درجة أولى">سمنة درجة أولى</option>
+                                    <option value="سمنة مفرطة">سمنة مفرطة</option>
+                                    <option value="نحافة">نحافة</option>
+                                    <option value="سكري">سكري</option>
+                                    <option value="ضغط">ضغط</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الطبيب المعالج</label>
+                                <select class="form-select" id="patientDoctor">
+                                    <!-- Injected by JS -->
+                                </select>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">أمراض مزمنة / ملاحظات</label>
+                                <textarea class="form-control" id="patientNotes" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let patientModal;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('patients');
+            patientModal = new bootstrap.Modal(document.getElementById('patientModal'));
+            renderPatients();
+            loadDoctors();
+        });
+
+        async function loadDoctors() {
+            try {
+                const response = await ApiService.doctors.getAll();
+                const doctors = response.data || response;
+                const select = document.getElementById('patientDoctor');
+                select.innerHTML = '<option value="">اختر الطبيب...</option>' + 
+                    doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load doctors', error);
+            }
+        }
+
+        async function renderPatients() {
+            try {
+                const response = await ApiService.patients.getAll();
+                const patients = response.data || response;
+                const tbody = document.querySelector('#patientsTable tbody');
+                
+                if (patients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">لا يوجد مرضى لعرضهم</td></tr>';
+                    return;
+                }
+
+                // We might need to fetch doctor names if not included in patient object
+                // Assuming patient object has doctor_name or doctor object
+                
+                tbody.innerHTML = patients.map(patient => `
+                <tr>
+                    <td>${patient.id}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light rounded-circle p-2 me-2 text-success">
+                                <i class="fas fa-user-injured"></i>
+                            </div>
+                            ${patient.name}
+                        </div>
+                    </td>
+                    <td>${patient.age || '-'}</td>
+                    <td>${patient.weight || '-'} كجم / ${patient.height || '-'} سم</td>
+                    <td><span class="badge bg-info-light text-info">${patient.condition || 'غير محدد'}</span></td>
+                    <td>${patient.doctor?.name || patient.doctor_name || '<span class="text-muted">غير محدد</span>'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-light text-primary" onclick="editPatient(${patient.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light text-danger" onclick="deletePatient(${patient.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load patients', error);
+                document.querySelector('#patientsTable tbody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('patientForm').reset();
+            document.getElementById('patientId').value = '';
+            document.getElementById('modalTitle').innerText = 'إضافة مريض جديد';
+        }
+
+        async function editPatient(id) {
+            try {
+                const response = await ApiService.patients.get(id);
+                const patient = response.data || response;
+
+                document.getElementById('patientId').value = patient.id;
+                document.getElementById('patientName').value = patient.name;
+                document.getElementById('patientAge').value = patient.age;
+                document.getElementById('patientWeight').value = patient.weight;
+                document.getElementById('patientHeight').value = patient.height;
+                document.getElementById('patientCondition').value = patient.condition || 'سليم';
+                document.getElementById('patientDoctor').value = patient.doctor_id || patient.doctorId || '';
+                document.getElementById('patientNotes').value = patient.notes || '';
+                document.getElementById('modalTitle').innerText = 'تعديل بيانات المريض';
+                
+                patientModal.show();
+            } catch (error) {
+                console.error('Failed to load patient details', error);
+                showToast('فشل تحميل بيانات المريض', 'error');
+            }
+        }
+
+        async function deletePatient(id) {
+            if (confirm('هل أنت متأكد من حذف هذا المريض؟')) {
+                try {
+                    await ApiService.patients.delete(id);
+                    renderPatients();
+                    showToast('تم حذف المريض بنجاح');
+                } catch (error) {
+                    console.error('Failed to delete patient', error);
+                    showToast('فشل حذف المريض', 'error');
+                }
+            }
+        }
+
+        document.getElementById('patientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('patientId').value;
+            const data = {
+                name: document.getElementById('patientName').value,
+                age: document.getElementById('patientAge').value,
+                weight: document.getElementById('patientWeight').value,
+                height: document.getElementById('patientHeight').value,
+                condition: document.getElementById('patientCondition').value,
+                doctor_id: document.getElementById('patientDoctor').value, // Changed to doctor_id to match likely API
+                notes: document.getElementById('patientNotes').value
+            };
+
+            try {
+                if (id) {
+                    await ApiService.patients.update(id, data);
+                    showToast('تم تحديث البيانات بنجاح');
+                } else {
+                    await ApiService.patients.create(data);
+                    showToast('تم إضافة المريض بنجاح');
+                }
+                
+                patientModal.hide();
+                renderPatients();
+            } catch (error) {
+                console.error('Failed to save patient', error);
+                showToast('فشل حفظ البيانات', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

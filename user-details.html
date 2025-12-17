@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المستخدم - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="mb-4">
+                    <a href="users.html" class="text-decoration-none text-muted">
+                        <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
+                    </a>
+                </div>
+
+                <div class="row" id="userDetails">
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('users');
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            
+            if (id) {
+                renderUserDetails(id);
+            } else {
+                window.location.href = 'users.html';
+            }
+        });
+
+        async function renderUserDetails(id) {
+            try {
+                const response = await ApiService.users.get(id);
+                const user = response.data || response;
+                
+                if (!user) {
+                    document.getElementById('userDetails').innerHTML = '<div class="alert alert-danger">المستخدم غير موجود</div>';
+                    return;
+                }
+
+                // Try to get doctor info if user has a doctorId
+                let doctor = null;
+                if (user.doctor_id || user.doctorId) {
+                    try {
+                        const doctorResponse = await ApiService.doctors.get(user.doctor_id || user.doctorId);
+                        doctor = doctorResponse.data || doctorResponse;
+                    } catch (e) {
+                        console.log('Doctor not found');
+                    }
+                }
+
+                let html = `
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="bg-light rounded-circle d-inline-flex p-4 mb-3 text-primary">
+                                    <i class="fas fa-user fa-4x"></i>
+                                </div>
+                                <h4 class="fw-bold">${user.name}</h4>
+                                <p class="text-muted">${user.email}</p>
+                                
+                                <div class="d-flex justify-content-center gap-2 mb-4">
+                                    <span class="badge bg-${user.status === 'active' ? 'success' : 'danger'}-light text-${user.status === 'active' ? 'success' : 'danger'}">
+                                        ${user.status === 'active' ? 'نشط' : 'معطل'}
+                                    </span>
+                                    <span class="badge bg-${user.type === 'paying' || user.type === 'subscribed' ? 'warning' : 'secondary'}-light text-${user.type === 'paying' || user.type === 'subscribed' ? 'warning' : 'secondary'}">
+                                        ${user.type === 'paying' || user.type === 'subscribed' ? 'مشترك' : 'عادي'}
+                                    </span>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-primary" onclick="window.location.href='chat.html?userId=${user.id}'">
+                                        <i class="fas fa-comment-alt me-2"></i> مراسلة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <!-- Account Info -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">معلومات الحساب</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="text-muted small">نوع المستخدم</label>
+                                        <div class="fw-bold">${getTypeName(user.type)}</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="text-muted small">تاريخ التسجيل</label>
+                                        <div class="fw-bold">${user.created_at || new Date().toLocaleDateString('ar-SA')}</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="text-muted small">الطبيب المعالج</label>
+                                        <div class="fw-bold">
+                                            ${doctor ? `<a href="doctor-details.html?id=${doctor.id}" class="text-decoration-none">${doctor.name}</a>` : 'غير محدد'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Health Data -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-heartbeat me-2 text-danger"></i> البيانات الصحية</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="text-muted small">الطول</label>
+                                        <div class="fw-bold">${user.height || '-'} سم</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="text-muted small">الوزن</label>
+                                        <div class="fw-bold">${user.weight || '-'} كجم</div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="text-muted small">النشاط البدني</label>
+                                        <div class="fw-bold">${user.physical_activity || user.activityLevel || 'غير محدد'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medical Tests -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-flask me-2 text-info"></i> الفحوصات الطبية</h5>
+                                <a href="medical-tests.html?userId=${user.id}" class="btn btn-sm btn-light">عرض الكل</a>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted text-center">لا توجد فحوصات حديثة</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('userDetails').innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                document.getElementById('userDetails').innerHTML = '<div class="alert alert-danger">فشل تحميل بيانات المستخدم</div>';
+            }
+        }
+
+        function getTypeName(type) {
+            return { admin: 'مسؤول', normal: 'عادي', paying: 'مشترك', subscribed: 'مشترك' }[type] || type || 'عادي';
+        }
+    </script>
+</body>
+</html>

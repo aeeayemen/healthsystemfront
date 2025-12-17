@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدكاترة المقبولين - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-user-check me-2"></i>الدكاترة المقبولين</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>إضافة دكتور
+                    </button>
+                </div>
+
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>الرقم</th><th>الاسم</th><th>الجنس</th><th>الدرجة</th><th>الحساب البنكي</th><th>رقم الهاتف</th><th>السيرة الذاتية</th><th>رقم المشرف</th><th>سعر الكشف</th><th>سنوات الخبرة</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>1</td><td>د. أحمد الشريف</td><td><span class="badge bg-primary">ذكر</span></td><td>دكتوراه تغذية علاجية</td><td>SA1234567890123456789012</td><td>0501111111</td><td><a href="https://example.com/cv1.pdf" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(1)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(1)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>2</td><td>د. سمية خالد</td><td><span class="badge bg-pink">أنثى</span></td><td>ماجستير علوم تغذية</td><td>SA9876543210987654321098</td><td>0502222222</td><td><a href="https://example.com/cv2.pdf" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(2)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(2)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>3</td><td>د. عمر الفهد</td><td><span class="badge bg-primary">ذكر</span></td><td>بكالوريوس تغذية</td><td>SA5555666677778888999900</td><td>0503333333</td><td><a href="https://example.com/cv3.pdf" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(3)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(3)"><i class="fas fa-trash"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog modal-lg"><div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة دكتور</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+                <div class="row">
+                <div class="col-md-6 mb-3"><label class="form-label">رقم المستخدم (User ID)</label><input type="number" class="form-control" id="formUserId" required></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">الاسم</label><input type="text" class="form-control" id="formName" required></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">الجنس</label><select class="form-select" id="formGender" required><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">الدرجة العلمية</label><input type="text" class="form-control" id="formDegree" required></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="formPhone" required></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">الحساب البنكي</label><input type="text" class="form-control" id="formBankAccount"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">رابط السيرة الذاتية</label><input type="url" class="form-control" id="formCV"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">رقم الترخيص</label><input type="text" class="form-control" id="formLicenseNumber" required></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">سعر الكشف</label><input type="number" class="form-control" id="formConsultationFee"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">سنوات الخبرة</label><input type="number" class="form-control" id="formYearsOfExperience"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">صورة الملف الشخصي</label><input type="url" class="form-control" id="formProfileImage"></div>
+                    <div class="col-md-12 mb-3"><label class="form-label">نبذة عن الطبيب</label><textarea class="form-control" id="formBio" rows="3"></textarea></div>
+                </div>
+            </form></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+        </div></div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا الدكتور؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('doctors-approved');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        
+        async function loadData(){
+            try {
+                const response = await ApiService.doctors.getAll({application_status: 'approved'});
+                const doctors = response.data || response || [];
+                allData = doctors;
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load doctors:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+        
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=allData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="11" class="text-center text-muted py-4">لا يوجد دكاترة مقبولين</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td>${item.name}</td><td><span class="badge ${item.gender==='male'?'bg-primary':'bg-pink'}">${item.gender==='male'?'ذكر':'أنثى'}</span></td><td>${item.degree || '-'}</td><td><code>${item.bank_account||'-'}</code></td><td>${item.phone_number || '-'}</td><td>${item.CV ? `<a href="${item.CV}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a>` : '-'}</td><td><span class="badge bg-success">${item.admin_id || '-'}</span></td><td>${item.consultation_fee||'-'} ريال</td><td>${item.years_of_experience||'-'}</td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderPagination(){const totalPages=Math.ceil(allData.length/perPage);const start=(currentPage-1)*perPage+1;const end=Math.min(currentPage*perPage,allData.length);document.getElementById('paginationInfo').textContent=`عرض ${allData.length>0?start:0} - ${end} من ${allData.length}`;let html=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=totalPages;i++)html+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;html+=`<li class="page-item ${currentPage===totalPages||totalPages===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=html;}
+        function goToPage(page){const totalPages=Math.ceil(allData.length/perPage);if(page>=1&&page<=totalPages){currentPage=page;renderTable();}}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة دكتور';document.getElementById('editId').value='';document.getElementById('formUserId').value='';document.getElementById('formName').value='';document.getElementById('formGender').value='male';document.getElementById('formDegree').value='';document.getElementById('formPhone').value='';document.getElementById('formBankAccount').value='';document.getElementById('formCV').value='';document.getElementById('formLicenseNumber').value='';document.getElementById('formConsultationFee').value='';document.getElementById('formYearsOfExperience').value='';document.getElementById('formProfileImage').value='';document.getElementById('formBio').value='';formModal.show();}
+        
+        async function openEditModal(id){
+            try {
+                const response = await ApiService.doctors.get(id);
+                const item = response.data || response;
+                document.getElementById('modalTitle').textContent='تعديل الدكتور';
+                document.getElementById('editId').value=id;
+                document.getElementById('formUserId').value=item.user_id || '';
+                document.getElementById('formName').value=item.name;
+                document.getElementById('formGender').value=item.gender || 'male';
+                document.getElementById('formDegree').value=item.degree || '';
+                document.getElementById('formPhone').value=item.phone_number || '';
+                document.getElementById('formBankAccount').value=item.bank_account || '';
+                document.getElementById('formCV').value=item.CV || '';
+                document.getElementById('formLicenseNumber').value=item.license_number || '';
+                document.getElementById('formConsultationFee').value=item.consultation_fee || '';
+                document.getElementById('formYearsOfExperience').value=item.years_of_experience || '';
+                document.getElementById('formProfileImage').value=item.profile_image || '';
+                document.getElementById('formBio').value=item.bio || '';
+                formModal.show();
+            } catch (error) {
+                console.error('Failed to load doctor:', error);
+                alert('فشل تحميل بيانات الدكتور');
+            }
+        }
+        
+        async function saveData(){
+            const id=document.getElementById('editId').value;
+            const data = {
+                user_id: parseInt(document.getElementById('formUserId').value),
+                name: document.getElementById('formName').value.trim(),
+                gender: document.getElementById('formGender').value,
+                degree: document.getElementById('formDegree').value.trim(),
+                phone_number: document.getElementById('formPhone').value.trim(),
+                bank_account: document.getElementById('formBankAccount').value.trim(),
+                CV: document.getElementById('formCV').value.trim(),
+                license_number: document.getElementById('formLicenseNumber').value.trim(),
+                consultation_fee: document.getElementById('formConsultationFee').value,
+                years_of_experience: document.getElementById('formYearsOfExperience').value,
+                profile_image: document.getElementById('formProfileImage').value.trim(),
+                bio: document.getElementById('formBio').value.trim(),
+                specialization: 'تغذية علاجية',
+                application_status: 'approved'
+            };
+            
+            if(!data.user_id||!data.name||!data.degree||!data.phone_number){alert('يرجى ملء الحقول المطلوبة');return;}
+            
+            try {
+                if(id){
+                    await ApiService.doctors.update(id, data);
+                    showToast('تم تحديث بيانات الدكتور بنجاح');
+                } else {
+                    await ApiService.doctors.create(data);
+                    showToast('تم إضافة الدكتور بنجاح');
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save doctor:', error);
+                showToast('فشل حفظ البيانات', 'error');
+            }
+        }
+        
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        
+        async function confirmDelete(){
+            if(!deleteId)return;
+            try {
+                await ApiService.doctors.delete(deleteId);
+                showToast('تم حذف الدكتور بنجاح');
+                deleteId=null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete doctor:', error);
+                showToast('فشل حذف الدكتور', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

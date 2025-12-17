@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المستخدمين المشتركين - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-user-plus me-2"></i>المستخدمين المشتركين</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة مشترك</button>
+                </div>
+
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead><tr><th>رقم المستخدم</th><th>صورة</th><th>الاسم الكامل</th><th>الجنس</th><th>الطول</th><th>الوزن</th><th>رقم الهاتف</th><th>تاريخ الميلاد</th><th>النشاط البدني</th><th>إجراءات</th></tr></thead>
+                            <tbody id="tableBody">
+                                <tr><td>1</td><td><img src="https://via.placeholder.com/40" class="rounded-circle" width="40" height="40"></td><td>أحمد محمد الشمري</td><td><span class="badge bg-primary">ذكر</span></td><td>175 سم</td><td>80 كجم</td><td>0501234567</td><td>1990-05-15</td><td>متوسط</td><td><button class="btn btn-sm btn-outline-info me-1" onclick="viewDetails(1)"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(1)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(1)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>2</td><td><img src="https://via.placeholder.com/40" class="rounded-circle" width="40" height="40"></td><td>سارة علي العتيبي</td><td><span class="badge bg-pink">أنثى</span></td><td>160 سم</td><td>58 كجم</td><td>0557654321</td><td>1995-08-20</td><td>عالي</td><td><button class="btn btn-sm btn-outline-info me-1" onclick="viewDetails(2)"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(2)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(2)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>3</td><td><img src="https://via.placeholder.com/40" class="rounded-circle" width="40" height="40"></td><td>خالد عمر الزهراني</td><td><span class="badge bg-primary">ذكر</span></td><td>180 سم</td><td>85 كجم</td><td>0541112233</td><td>1988-12-10</td><td>منخفض</td><td><button class="btn btn-sm btn-outline-info me-1" onclick="viewDetails(3)"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(3)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(3)"><i class="fas fa-trash"></i></button></td></tr>
+                                <tr><td>4</td><td><img src="https://via.placeholder.com/40" class="rounded-circle" width="40" height="40"></td><td>فاطمة حسن المالكي</td><td><span class="badge bg-pink">أنثى</span></td><td>165 سم</td><td>62 كجم</td><td>0509998877</td><td>1992-03-25</td><td>متوسط</td><td><button class="btn btn-sm btn-outline-info me-1" onclick="viewDetails(4)"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(4)"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(4)"><i class="fas fa-trash"></i></button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container"><div class="text-muted" id="paginationInfo"></div><nav><ul class="pagination mb-0" id="pagination"></ul></nav></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة مشترك</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
+            <div class="row">
+                <div class="col-md-6 mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">الاسم الكامل</label><input type="text" class="form-control" id="formFullname" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الجنس</label><select class="form-select" id="formGender" required><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الطول (سم)</label><input type="number" class="form-control" id="formHeight" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">الوزن (كجم)</label><input type="number" class="form-control" id="formWeight" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="formPhone" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">تاريخ الميلاد</label><input type="date" class="form-control" id="formBirthdate"></div>
+            </div>
+        </form></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
+    </div></div></div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>هل أنت متأكد من حذف هذا المشترك؟</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div>
+    </div></div></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let allData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('users-subscribed');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        
+        async function loadData(){
+            try {
+                const response = await ApiService.patients.getAll();
+                const patients = response.data || response || [];
+                allData = patients.map(p => ({
+                    id: p.id,
+                    user_id: p.user_id,
+                    fullname: p.fullname || p.name || '-',
+                    gender: p.gender || 'male',
+                    height: p.height || 0,
+                    weight: p.weight || 0,
+                    phone_number: p.phone_number || p.phone || '-',
+                    birthdate: p.birthdate || p.date_of_birth || '-',
+                    physical_activity: p.physical_activity || '-'
+                }));
+                allData = patients.map(p => ({
+                    id: p.id,
+                    user_id: p.user_id,
+                    fullname: p.fullname || p.name || '-',
+                    gender: p.gender || 'male',
+                    height: p.height || 0,
+                    weight: p.weight || 0,
+                    phone_number: p.phone_number || p.phone || '-',
+                    birthdate: p.birthdate || p.date_of_birth || '-',
+                    physical_activity: p.physical_activity || '-'
+                }));
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+        
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=allData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="10" class="text-center text-muted py-4">لا توجد بيانات</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td><img src="https://via.placeholder.com/40" class="rounded-circle" width="40" height="40" alt="User"></td><td>${item.fullname}</td><td><span class="badge ${item.gender==='male'?'bg-primary':'bg-pink'}">${item.gender==='male'?'ذكر':'أنثى'}</span></td><td>${item.height} سم</td><td>${item.weight} كجم</td><td>${item.phone_number}</td><td>${item.birthdate||'-'}</td><td>${item.physical_activity||'-'}</td><td><button class="btn btn-sm btn-outline-info me-1" onclick="viewDetails(${item.id})"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        
+        function renderPagination(){const tp=Math.ceil(allData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${allData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,allData.length)} من ${allData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
+        
+        function goToPage(p){const tp=Math.ceil(allData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
+        function viewDetails(id){window.location.href=`subscribed-user-details.html?id=${id}`;}
+        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة مشترك';document.getElementById('editId').value='';document.getElementById('formUserId').value='';document.getElementById('formFullname').value='';document.getElementById('formGender').value='male';document.getElementById('formHeight').value='';document.getElementById('formWeight').value='';document.getElementById('formPhone').value='';document.getElementById('formBirthdate').value='';formModal.show();}
+        
+        async function openEditModal(id){
+            try {
+                const item = allData.find(s=>s.id===id);
+                if(!item)return;
+                document.getElementById('modalTitle').textContent='تعديل المشترك';
+                document.getElementById('editId').value=id;
+                document.getElementById('formUserId').value=item.user_id||'';
+                document.getElementById('formFullname').value=item.fullname||'';
+                document.getElementById('formGender').value=item.gender||'male';
+                document.getElementById('formHeight').value=item.height||'';
+                document.getElementById('formWeight').value=item.weight||'';
+                document.getElementById('formPhone').value=item.phone_number||'';
+                document.getElementById('formBirthdate').value=item.birthdate||'';
+                formModal.show();
+            } catch (error) {
+                console.error('Failed to load patient:', error);
+                alert('فشل تحميل البيانات');
+            }
+        }
+        
+        async function saveData(){
+            const id=document.getElementById('editId').value;
+            const user_id=parseInt(document.getElementById('formUserId').value);
+            const fullname=document.getElementById('formFullname').value.trim();
+            const gender=document.getElementById('formGender').value;
+            const height=parseInt(document.getElementById('formHeight').value);
+            const weight=parseInt(document.getElementById('formWeight').value);
+            const phone_number=document.getElementById('formPhone').value.trim();
+            const birthdate=document.getElementById('formBirthdate').value;
+            if(!fullname||!height||!weight||!phone_number){alert('يرجى ملء الحقول المطلوبة');return;}
+            
+            const data = { user_id, fullname, gender, height, weight, phone_number, birthdate };
+            
+            try {
+                if(id){
+                    await ApiService.patients.update(id, data);
+                } else {
+                    await ApiService.patients.create(data);
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save patient:', error);
+                alert('فشل حفظ البيانات: ' + (error.message || 'خطأ غير معروف'));
+            }
+        }
+        
+        function openDeleteModal(id){deleteId=id;deleteModal.show();}
+        
+        async function confirmDelete(){
+            if(!deleteId)return;
+            try {
+                await ApiService.patients.delete(deleteId);
+                deleteId=null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete patient:', error);
+                alert('فشل حذف البيانات');
+            }
+        }
+    </script>
+</body>
+</html>

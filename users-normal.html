@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المستخدمين العاديين - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-users me-2"></i>المستخدمين العاديين</h2>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-3" id="totalCount">0 مستخدم</span>
+                        <button class="btn btn-primary" onclick="openAddModal()">
+                            <i class="fas fa-plus me-2"></i>إضافة مستخدم
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>الرقم</th>
+                                        <th>الاسم</th>
+                                        <th>البريد الإلكتروني</th>
+                                        <th>كلمة المرور</th>
+                                        <th>النوع</th>
+                                        <th>تاريخ الإنشاء</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- يمكنك إخفاء هذا الجزء إذا أردت -->
+                        <div class="pagination-container d-none">
+                            <div class="text-muted" id="paginationInfo">عرض 0 من 0</div>
+                            <nav>
+                                <ul class="pagination mb-0" id="pagination"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة مستخدم</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label class="form-label">الاسم</label>
+                            <input type="text" class="form-control" id="formName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-control" id="formEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">كلمة المرور</label>
+                            <input type="password" class="form-control" id="formPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الدور</label>
+                            <select class="form-select" id="formRole" required>
+                                <option value="user">مستخدم عادي</option>
+                                <option value="admin">مسؤول</option>
+                                <option value="doctor">طبيب</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذا المستخدم؟</p>
+                    <p class="text-muted small">هذا الإجراء لا يمكن التراجع عنه.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let allData = [];
+        let formModal, deleteModal;
+        let deleteId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('users-normal');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadData();
+            setupEventListeners();
+        });
+
+        async function loadData() {
+            try {
+                const response = await ApiService.users.getNormal();
+                const users = response.data || response || [];
+                allData = users;
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load users:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const totalCountElement = document.getElementById('totalCount');
+
+            if (allData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد بيانات</td></tr>';
+                totalCountElement.textContent = '0 مستخدم';
+            } else {
+                tbody.innerHTML = allData.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.name || '-'}</td>
+                        <td>${item.email || '-'}</td>
+                        <td><code>******</code></td>
+                        <td><span class="badge bg-secondary">${item.type || item.role || 'normal'}</span></td>
+                        <td>${item.created_at ? item.created_at.split('T')[0] : '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                totalCountElement.textContent = `${allData.length} مستخدم`;
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة مستخدم';
+            document.getElementById('editId').value = '';
+            document.getElementById('formName').value = '';
+            document.getElementById('formEmail').value = '';
+            document.getElementById('formPassword').value = '';
+            document.getElementById('formPassword').required = true;
+            document.getElementById('formRole').value = 'user';
+            formModal.show();
+        }
+
+        async function openEditModal(id) {
+            try {
+                const response = await ApiService.users.get(id);
+                const user = response.data || response;
+                if (!user) return;
+
+                document.getElementById('modalTitle').textContent = 'تعديل المستخدم';
+                document.getElementById('editId').value = id;
+                document.getElementById('formName').value = user.name || '';
+                document.getElementById('formEmail').value = user.email || '';
+                document.getElementById('formPassword').value = '';
+                document.getElementById('formPassword').required = false;
+                document.getElementById('formRole').value = user.role || 'user';
+                formModal.show();
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                alert('فشل تحميل بيانات المستخدم');
+            }
+        }
+
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('formName').value.trim();
+            const email = document.getElementById('formEmail').value.trim();
+            const password = document.getElementById('formPassword').value.trim();
+
+            if (!name || !email) {
+                alert('يرجى ملء الحقول المطلوبة');
+                return;
+            }
+
+            if (!id && !password) {
+                alert('يرجى إدخال كلمة المرور');
+                return;
+            }
+
+            const data = {
+                name: name,
+                email: email,
+                type: 'user',
+                role: document.getElementById('formRole').value
+            };
+
+            if (password) {
+                data.password = password;
+            }
+
+            try {
+                if (id) {
+                    await ApiService.users.update(id, data);
+                } else {
+                    await ApiService.users.create(data);
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save user:', error);
+                alert('فشل حفظ البيانات: ' + (error.message || 'خطأ غير معروف'));
+            }
+        }
+
+        function openDeleteModal(id) {
+            deleteId = id;
+            deleteModal.show();
+        }
+
+        async function confirmDelete() {
+            if (!deleteId) return;
+
+            try {
+                await ApiService.users.delete(deleteId);
+                deleteId = null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete user:', error);
+                alert('فشل حذف المستخدم');
+            }
+        }
+    </script>
+</body>
+</html>

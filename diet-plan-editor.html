@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محرر الحمية الغذائية - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        .meal-card {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+        }
+        .day-tab {
+            min-width: 100px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <a href="diet-plans.html" class="text-decoration-none text-muted small">
+                            <i class="fas fa-arrow-right me-1"></i> العودة
+                        </a>
+                        <h2 class="fw-bold text-primary mt-1" id="pageTitle">إنشاء خطة جديدة</h2>
+                    </div>
+                    <button class="btn btn-success" onclick="savePlan()">
+                        <i class="fas fa-save me-2"></i> حفظ الخطة
+                    </button>
+                </div>
+
+                <div class="row">
+                    <!-- Basic Info -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">معلومات أساسية</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="basicForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">عنوان الخطة</label>
+                                        <input type="text" class="form-control" id="planTitle" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">المريض</label>
+                                        <select class="form-select" id="planPatient" required></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">الطبيب</label>
+                                        <select class="form-select" id="planDoctor" required></select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6 mb-3">
+                                            <label class="form-label">تاريخ البداية</label>
+                                            <input type="date" class="form-control" id="planStart" required>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <label class="form-label">تاريخ النهاية</label>
+                                            <input type="date" class="form-control" id="planEnd" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">الحالة</label>
+                                        <select class="form-select" id="planStatus">
+                                            <option value="active">نشطة</option>
+                                            <option value="completed">مكتملة</option>
+                                            <option value="cancelled">ملغاة</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Days & Meals -->
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">جدول الوجبات</h5>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="addDay()">
+                                        <i class="fas fa-plus"></i> إضافة يوم
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <ul class="nav nav-pills mb-3 gap-2 overflow-auto flex-nowrap pb-2" id="daysTabs" role="tablist">
+                                    <!-- Injected by JS -->
+                                </ul>
+                                <div class="tab-content" id="daysContent">
+                                    <!-- Injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let currentPlan = {
+            days: []
+        };
+        let dayCount = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('diet-plans');
+            loadSelects();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            
+            if (id) {
+                loadPlan(id);
+            } else {
+                addDay(); // Start with Day 1
+            }
+        });
+
+        async function loadSelects() {
+            try {
+                const [patientsRes, doctorsRes] = await Promise.all([
+                    ApiService.patients.getAll(),
+                    ApiService.doctors.getAll()
+                ]);
+                
+                const patients = patientsRes.data || patientsRes || [];
+                const doctors = doctorsRes.data || doctorsRes || [];
+                
+                document.getElementById('planPatient').innerHTML = '<option value="">اختر المريض...</option>' + 
+                    patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                    
+                document.getElementById('planDoctor').innerHTML = '<option value="">اختر الطبيب...</option>' + 
+                    doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load selects:', error);
+            }
+        }
+
+        async function loadPlan(id) {
+            try {
+                const response = await ApiService.dietPlans.get(id);
+                const plan = response.data || response;
+                
+                if (!plan) return;
+
+                currentPlan = plan;
+                document.getElementById('pageTitle').innerText = 'تعديل الخطة';
+                document.getElementById('planTitle').value = plan.title || plan.name || '';
+                document.getElementById('planPatient').value = plan.patientId || plan.patient_id || '';
+                document.getElementById('planDoctor').value = plan.doctorId || plan.doctor_id || '';
+                document.getElementById('planStart').value = plan.startDate || plan.start_date || '';
+                document.getElementById('planEnd').value = plan.endDate || plan.end_date || '';
+                document.getElementById('planStatus').value = plan.status || 'active';
+
+                // Load Days
+                if (plan.days && plan.days.length > 0) {
+                    plan.days.forEach((day, index) => {
+                        renderDayTab(index + 1);
+                        renderDayContent(index + 1, day);
+                    });
+                    dayCount = plan.days.length;
+                    // Activate first tab
+                    new bootstrap.Tab(document.querySelector('#daysTabs button')).show();
+                } else {
+                    addDay();
+                }
+            } catch (error) {
+                console.error('Failed to load plan:', error);
+                addDay();
+            }
+        }
+
+        function addDay() {
+            dayCount++;
+            renderDayTab(dayCount);
+            renderDayContent(dayCount, { meals: [] });
+            
+            // Activate new tab
+            setTimeout(() => {
+                const triggerEl = document.querySelector(`#day-tab-${dayCount}`);
+                bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+            }, 10);
+        }
+
+        function renderDayTab(num) {
+            const tabs = document.getElementById('daysTabs');
+            const li = document.createElement('li');
+            li.className = 'nav-item';
+            li.innerHTML = `
+                <button class="nav-link day-tab ${num === 1 ? 'active' : ''}" id="day-tab-${num}" data-bs-toggle="tab" data-bs-target="#day-${num}" type="button">
+                    اليوم ${num}
+                </button>
+            `;
+            tabs.appendChild(li);
+        }
+
+        function renderDayContent(num, dayData) {
+            const content = document.getElementById('daysContent');
+            const div = document.createElement('div');
+            div.className = `tab-pane fade ${num === 1 ? 'show active' : ''}`;
+            div.id = `day-${num}`;
+            
+            div.innerHTML = `
+                <div class="d-flex justify-content-between mb-3">
+                    <h6>وجبات اليوم ${num}</h6>
+                    <button class="btn btn-sm btn-outline-primary" onclick="addMeal(${num})">
+                        <i class="fas fa-plus"></i> إضافة وجبة
+                    </button>
+                </div>
+                <div id="meals-container-${num}">
+                    <!-- Meals go here -->
+                </div>
+            `;
+            content.appendChild(div);
+
+            // Render existing meals
+            if (dayData.meals) {
+                dayData.meals.forEach(meal => addMeal(num, meal));
+            }
+        }
+
+        function addMeal(dayNum, mealData = null) {
+            const container = document.getElementById(`meals-container-${dayNum}`);
+            const mealId = Date.now(); // Simple ID
+            
+            const mealHtml = `
+                <div class="meal-card" id="meal-${mealId}">
+                    <div class="d-flex justify-content-between mb-2">
+                        <select class="form-select form-select-sm w-auto meal-type">
+                            <option value="breakfast" ${mealData?.type === 'breakfast' ? 'selected' : ''}>إفطار</option>
+                            <option value="lunch" ${mealData?.type === 'lunch' ? 'selected' : ''}>غداء</option>
+                            <option value="dinner" ${mealData?.type === 'dinner' ? 'selected' : ''}>عشاء</option>
+                            <option value="snack" ${mealData?.type === 'snack' ? 'selected' : ''}>سناك</option>
+                        </select>
+                        <button class="btn btn-sm text-danger" onclick="removeMeal('${mealId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" class="form-control form-control-sm mb-2 meal-name" placeholder="اسم الوجبة" value="${mealData?.name || ''}">
+                        <textarea class="form-control form-control-sm meal-desc" rows="2" placeholder="المكونات والوصف...">${mealData?.description || ''}</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-3">
+                            <input type="number" class="form-control form-control-sm meal-cal" placeholder="سعرات" value="${mealData?.calories || ''}">
+                        </div>
+                        <div class="col-3">
+                            <input type="number" class="form-control form-control-sm meal-protein" placeholder="بروتين" value="${mealData?.protein || ''}">
+                        </div>
+                        <div class="col-3">
+                            <input type="number" class="form-control form-control-sm meal-carbs" placeholder="كارب" value="${mealData?.carbs || ''}">
+                        </div>
+                        <div class="col-3">
+                            <input type="number" class="form-control form-control-sm meal-fats" placeholder="دهون" value="${mealData?.fats || ''}">
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', mealHtml);
+        }
+
+        function removeMeal(id) {
+            document.getElementById(`meal-${id}`).remove();
+        }
+
+        async function savePlan() {
+            // Collect Data
+            const planData = {
+                title: document.getElementById('planTitle').value,
+                patient_id: document.getElementById('planPatient').value,
+                doctor_id: document.getElementById('planDoctor').value,
+                start_date: document.getElementById('planStart').value,
+                end_date: document.getElementById('planEnd').value,
+                status: document.getElementById('planStatus').value,
+                days: []
+            };
+
+            // Collect Days & Meals
+            for (let i = 1; i <= dayCount; i++) {
+                const dayContainer = document.getElementById(`meals-container-${i}`);
+                if (!dayContainer) continue;
+
+                const meals = [];
+                dayContainer.querySelectorAll('.meal-card').forEach(card => {
+                    meals.push({
+                        type: card.querySelector('.meal-type').value,
+                        name: card.querySelector('.meal-name').value,
+                        description: card.querySelector('.meal-desc').value,
+                        calories: card.querySelector('.meal-cal').value,
+                        protein: card.querySelector('.meal-protein').value,
+                        carbs: card.querySelector('.meal-carbs').value,
+                        fats: card.querySelector('.meal-fats').value
+                    });
+                });
+
+                planData.days.push({ dayNum: i, meals: meals });
+            }
+
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('id');
+
+                if (id) {
+                    await ApiService.dietPlans.update(id, planData);
+                    showToast('تم تحديث الخطة بنجاح');
+                } else {
+                    await ApiService.dietPlans.create(planData);
+                    showToast('تم إنشاء الخطة بنجاح');
+                }
+
+                setTimeout(() => window.location.href = 'diet-plans.html', 1000);
+            } catch (error) {
+                console.error('Failed to save plan:', error);
+                showToast('فشل حفظ الخطة', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

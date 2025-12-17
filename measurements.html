@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>القياسات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">القياسات الحيوية</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#measureModal" onclick="resetForm()">
+                        <i class="fas fa-plus me-2"></i> تسجيل قياس جديد
+                    </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">سجل القياسات</h5>
+                                    <select class="form-select w-auto" id="filterPatient" onchange="filterMeasurements()">
+                                        <option value="">كل المرضى</option>
+                                        <!-- Injected by JS -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="measurementsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>التاريخ</th>
+                                                <th>المريض</th>
+                                                <th>الوزن (kg)</th>
+                                                <th>الخصر (cm)</th>
+                                                <th>BMI</th>
+                                                <th>ضغط الدم</th>
+                                                <th>السكري</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Injected by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Measurement Modal -->
+    <div class="modal fade" id="measureModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">تسجيل قياس جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="measureForm">
+                        <input type="hidden" id="measureId">
+                        <div class="mb-3">
+                            <label class="form-label">المريض</label>
+                            <select class="form-select" id="measurePatient" required>
+                                <!-- Injected by JS -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">التاريخ</label>
+                            <input type="date" class="form-control" id="measureDate" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الوزن (kg)</label>
+                                <input type="number" class="form-control" id="measureWeight" required step="0.1">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الطول (cm)</label>
+                                <input type="number" class="form-control" id="measureHeight" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">محيط الخصر (cm)</label>
+                                <input type="number" class="form-control" id="measureWaist" step="0.1">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">مستوى النشاط</label>
+                                <select class="form-select" id="measureActivity">
+                                    <option value="low">منخفض</option>
+                                    <option value="moderate">متوسط</option>
+                                    <option value="high">عالي</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ضغط الدم</label>
+                                <input type="text" class="form-control" id="measureBP" placeholder="120/80">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">السكري</label>
+                                <input type="number" class="form-control" id="measureSugar" placeholder="mg/dL">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let measureModal;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('measurements');
+            measureModal = new bootstrap.Modal(document.getElementById('measureModal'));
+            loadPatients();
+            renderMeasurements();
+        });
+
+        async function loadPatients() {
+            try {
+                const response = await ApiService.patients.getAll();
+                const patients = response.data || response;
+                const options = patients.map(p => {
+                    const name = p.name || 'Patient';
+                    return `<option value="${p.id}">${name}</option>`;
+                }).join('');
+                
+                document.getElementById('filterPatient').innerHTML = '<option value="">كل المرضى</option>' + options;
+                document.getElementById('measurePatient').innerHTML = '<option value="">اختر المريض...</option>' + options;
+            } catch (error) {
+                console.error('Failed to load patients', error);
+            }
+        }
+
+        async function renderMeasurements() {
+            const patientId = document.getElementById('filterPatient').value;
+            const params = {};
+            if (patientId) params.patient_id = patientId;
+
+            try {
+                const response = await ApiService.measurements.getAll(params);
+                const measurements = response.data || response;
+                const tbody = document.querySelector('#measurementsTable tbody');
+
+                if (measurements.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">لا توجد قياسات لعرضها</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = measurements.map(m => {
+                    const bmi = m.bmi || (m.weight / ((m.height/100) ** 2)).toFixed(1);
+                    return `
+                    <tr>
+                        <td>${m.measurement_date || m.date}</td>
+                        <td>${m.patient?.name || m.patient_name || 'غير محدد'}</td>
+                        <td>${m.weight}</td>
+                        <td>${m.waist || '-'}</td>
+                        <td><span class="fw-bold" title="${getBMIStatusText(bmi)}">${bmi}</span></td>
+                        <td>${m.blood_pressure || m.bloodPressure || '-'}</td>
+                        <td>${m.blood_sugar || m.bloodSugar || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-light text-primary" onclick="editMeasurement(${m.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light text-danger" onclick="deleteMeasurement(${m.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load measurements', error);
+                document.querySelector('#measurementsTable tbody').innerHTML = '<tr><td colspan="8" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function filterMeasurements() {
+            renderMeasurements();
+        }
+
+        function getBMIStatusText(bmi) {
+            if (bmi < 18.5) return 'نحافة';
+            if (bmi < 25) return 'وزن مثالي';
+            if (bmi < 30) return 'وزن زائد';
+            return 'سمنة';
+        }
+
+        function resetForm() {
+            document.getElementById('measureForm').reset();
+            document.getElementById('measureId').value = '';
+            document.getElementById('measureDate').valueAsDate = new Date();
+        }
+
+        async function editMeasurement(id) {
+            try {
+                const response = await ApiService.measurements.get(id);
+                const m = response.data || response;
+
+                document.getElementById('measureId').value = m.id;
+                document.getElementById('measurePatient').value = m.patient_id || m.patientId;
+                document.getElementById('measureDate').value = m.measurement_date || m.date;
+                document.getElementById('measureWeight').value = m.weight;
+                document.getElementById('measureHeight').value = m.height;
+                document.getElementById('measureWaist').value = m.waist || '';
+                document.getElementById('measureActivity').value = m.activity_level || m.activityLevel || 'moderate';
+                document.getElementById('measureBP').value = m.blood_pressure || m.bloodPressure || '';
+                document.getElementById('measureSugar').value = m.blood_sugar || m.bloodSugar || '';
+                
+                measureModal.show();
+            } catch (error) {
+                console.error('Failed to load measurement details', error);
+                showToast('فشل تحميل تفاصيل القياس', 'error');
+            }
+        }
+
+        async function saveMeasurement() {
+            const id = document.getElementById('measureId').value;
+            const patientId = document.getElementById('measurePatient').value;
+            const measurementDate = document.getElementById('measureDate').value;
+            const weight = document.getElementById('measureWeight').value;
+            const height = document.getElementById('measureHeight').value;
+
+            if (!patientId || !weight || !height) {
+                alert('يرجى ملء الحقول الأساسية');
+                return;
+            }
+
+            const data = {
+                patient_id: parseInt(patientId),
+                measurement_date: measurementDate,
+                weight: parseFloat(weight),
+                height: parseFloat(height),
+                waist: parseFloat(document.getElementById('measureWaist').value) || null,
+                activity_level: document.getElementById('measureActivity').value,
+                blood_pressure: document.getElementById('measureBP').value,
+                blood_sugar: parseFloat(document.getElementById('measureSugar').value) || null,
+                bmi: (weight / ((height/100) ** 2)).toFixed(1)
+            };
+
+            try {
+                if (id) {
+                    await ApiService.measurements.update(id, data);
+                    showToast('تم تحديث البيانات بنجاح');
+                } else {
+                    await ApiService.measurements.create(data);
+                    showToast('تم حفظ البيانات بنجاح');
+                }
+                
+                measureModal.hide();
+                renderMeasurements();
+            } catch (error) {
+                console.error('Failed to save measurement', error);
+                showToast('فشل حفظ البيانات', 'error');
+            }
+        }
+
+        async function deleteMeasurement(id) {
+            if (confirm('هل أنت متأكد من حذف هذا القياس؟')) {
+                try {
+                    await ApiService.measurements.delete(id);
+                    renderMeasurements();
+                    showToast('تم حذف القياس بنجاح');
+                } catch (error) {
+                    console.error('Failed to delete measurement', error);
+                    showToast('فشل حذف القياس', 'error');
+                }
+            }
+        }
+
+        document.getElementById('measureForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveMeasurement();
+        });
+    </script>
+</body>
+</html>

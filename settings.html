@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <h2 class="mb-4 fw-bold text-primary">الإعدادات العامة</h2>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="settingsForm">
+                                    <h5 class="card-title mb-4">معلومات التطبيق</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">اسم التطبيق</label>
+                                        <input type="text" class="form-control" value="مشروع التغذية العلاجية">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">لوجو التطبيق</label>
+                                        <input type="file" class="form-control">
+                                        <div class="mt-2">
+                                            <img src="https://via.placeholder.com/100" class="rounded" alt="Logo Preview">
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <h5 class="card-title mb-4">إعدادات الإشعارات</h5>
+                                    
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="emailNotif" checked>
+                                        <label class="form-check-label">تفعيل إشعارات البريد الإلكتروني</label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="pushNotif" checked>
+                                        <label class="form-check-label">تفعيل الإشعارات الفورية</label>
+                                    </div>
+
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="smsNotif">
+                                        <label class="form-check-label">تفعيل إشعارات SMS</label>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <h5 class="card-title mb-4">النسخ الاحتياطي والاستعادة</h5>
+                                    
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-outline-primary mb-2" onclick="backupData()">
+                                            <i class="fas fa-download me-2"></i> تحميل نسخة احتياطية
+                                        </button>
+                                        <div class="form-text">قم بتحميل نسخة من جميع بيانات النظام</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">استعادة نسخة احتياطية</label>
+                                        <input type="file" class="form-control mb-2" id="restoreFile">
+                                        <button type="button" class="btn btn-outline-warning" onclick="restoreData()">
+                                            <i class="fas fa-upload me-2"></i> استعادة البيانات
+                                        </button>
+                                    </div>
+
+                                    <div class="text-end mt-4">
+                                        <button type="submit" class="btn btn-primary">حفظ الإعدادات</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('settings');
+            loadSettings();
+        });
+
+        async function loadSettings() {
+            try {
+                const response = await ApiService.settings.get();
+                const settings = response.data || response;
+                
+                // Assuming settings is an object with key-value pairs
+                if (settings.app_name) document.querySelector('input[value="مشروع التغذية العلاجية"]').value = settings.app_name;
+                if (settings.email_notifications !== undefined) document.getElementById('emailNotif').checked = settings.email_notifications;
+                if (settings.push_notifications !== undefined) document.getElementById('pushNotif').checked = settings.push_notifications;
+                if (settings.sms_notifications !== undefined) document.getElementById('smsNotif').checked = settings.sms_notifications;
+            } catch (error) {
+                console.error('Failed to load settings', error);
+            }
+        }
+        
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                app_name: document.querySelector('input[type="text"]').value,
+                email_notifications: document.getElementById('emailNotif').checked,
+                push_notifications: document.getElementById('pushNotif').checked,
+                sms_notifications: document.getElementById('smsNotif').checked
+            };
+
+            try {
+                await ApiService.settings.update(data);
+                showToast('تم حفظ الإعدادات بنجاح');
+            } catch (error) {
+                console.error('Failed to save settings', error);
+                showToast('فشل حفظ الإعدادات', 'error');
+            }
+        });
+
+        // Backup and Restore functions kept as local utilities for now, 
+        // or could be connected to API endpoints if backend supports it.
+        async function backupData() {
+            try {
+                showToast('جاري إنشاء النسخة الاحتياطية...', 'info');
+                const response = await ApiService.settings.backup();
+                const data = response.data || response;
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast('تم تحميل النسخة الاحتياطية');
+            } catch (error) {
+                console.error('Failed to backup data:', error);
+                showToast('فشل إنشاء النسخة الاحتياطية', 'error');
+            }
+        }
+
+        function restoreData() {
+            const fileInput = document.getElementById('restoreFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('الرجاء اختيار ملف لاستعادته');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    showToast('جاري استعادة البيانات...', 'info');
+                    await ApiService.settings.restore(data);
+                    showToast('تم استعادة البيانات بنجاح');
+                    setTimeout(() => location.reload(), 1500);
+                } catch (error) {
+                    console.error('Failed to restore data:', error);
+                    showToast('فشل استعادة البيانات: ' + (error.message || 'ملف غير صالح'), 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>

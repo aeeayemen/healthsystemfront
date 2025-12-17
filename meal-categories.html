@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فئات الوجبات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-layer-group me-2"></i>فئات الوجبات</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>إضافة فئة
+                    </button>
+                </div>
+                <div class="card"><div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>الفئة</th>
+                                    <th>الكربوهيدرات</th>
+                                    <th>البروتين</th>
+                                    <th>الدهون</th>
+                                    <th>السعرات</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة فئة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label class="form-label">اسم الفئة (بالعربي)</label>
+                            <input type="text" class="form-control" id="formNameAr" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">اسم الفئة (بالإنجليزي)</label>
+                            <input type="text" class="form-control" id="formNameEn" required dir="ltr">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الكربوهيدرات (carbohydrates)</label>
+                                <input type="number" class="form-control" id="formcarbohydrates" step="0.1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">البروتين (protein)</label>
+                                <input type="number" class="form-control" id="formprotein" step="0.1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الدهون (fat)</label>
+                                <input type="number" class="form-control" id="formFat" step="0.1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">السعرات (energy)</label>
+                                <input type="number" class="form-control" id="formEnergy" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">صورة الفئة</label>
+                            <input type="file" class="form-control" id="formImage" accept="image/*">
+                            <div id="imagePreview" class="mt-2" style="display:none;">
+                                <img id="previewImg" src="" alt="معاينة" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>هل أنت متأكد من حذف هذه الفئة؟</p>
+                    <p class="text-muted small">سيتم حذف جميع الوجبات المرتبطة بهذه الفئة.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let formModal, deleteModal, deleteId = null;
+        let allData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('meal-categories');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadData();
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+            
+            // Image preview handler
+            document.getElementById('formImage').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('previewImg').src = e.target.result;
+                        document.getElementById('imagePreview').style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    document.getElementById('imagePreview').style.display = 'none';
+                }
+            });
+        });
+
+        async function loadData() {
+            try {
+                const response = await ApiService.mealCategories.getAll();
+                allData = response.data || response || [];
+                
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = allData.length === 0 
+                    ? '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد فئات</td></tr>'
+                    : allData.map(c => `
+                        <tr>
+                            <td>${c.id}</td>
+                            <td><strong>${c.name_ar || c.name || '-'}</strong><br><small class="text-muted">${c.name_en || ''}</small></td>
+                            <td>${c.carbohydrates  || 0} جم</td>
+                            <td>${c.protein || 0} جم</td>
+                            <td>${c.fat || 0} جم</td>
+                            <td><strong>${c.energy || 0}</strong> سعرة</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${c.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${c.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة فئة';
+            document.getElementById('editId').value = '';
+            document.getElementById('formNameAr').value = '';
+            document.getElementById('formNameEn').value = '';
+            document.getElementById('formcarbohydrates').value = '';
+            document.getElementById('formprotein').value = '';
+            document.getElementById('formFat').value = '';
+            document.getElementById('formEnergy').value = '';
+            document.getElementById('formImage').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            formModal.show();
+        }
+
+        async function openEditModal(id) {
+            try {
+                const category = allData.find(c => c.id === id);
+                if (!category) return;
+
+                document.getElementById('modalTitle').textContent = 'تعديل الفئة';
+                document.getElementById('editId').value = id;
+                document.getElementById('formNameAr').value = category.name_ar || category.name || '';
+                document.getElementById('formNameEn').value = category.name_en || '';
+                document.getElementById('formcarbohydrates').value = category.carbohydrates || '';
+                document.getElementById('formprotein').value = category.protein || '';
+                document.getElementById('formFat').value = category.fat || '';
+                document.getElementById('formEnergy').value = category.energy || '';
+                document.getElementById('formImage').value = '';
+                
+                // Show existing image if available
+                if (category.image) {
+                    document.getElementById('previewImg').src = 'http://localhost:8000/' + category.image;
+                    document.getElementById('imagePreview').style.display = 'block';
+                } else {
+                    document.getElementById('imagePreview').style.display = 'none';
+                }
+                
+                formModal.show();
+            } catch (error) {
+                console.error('Failed to load category:', error);
+                alert('فشل تحميل البيانات');
+            }
+        }
+
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const name_ar = document.getElementById('formNameAr').value.trim();
+            const name_en = document.getElementById('formNameEn').value.trim();
+            const carbohydrates = parseFloat(document.getElementById('formcarbohydrates').value) || 0;
+            const protein = parseFloat(document.getElementById('formprotein').value) || 0;
+            const fat = parseFloat(document.getElementById('formFat').value) || 0;
+            const energy = parseInt(document.getElementById('formEnergy').value) || 0;
+            const imageFile = document.getElementById('formImage').files[0];
+            
+            if (!name_ar || !name_en) {
+                alert('يرجى إدخال اسم الفئة بالعربي والإنجليزي');
+                return;
+            }
+
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('name_ar', name_ar);
+            formData.append('name_en', name_en);
+            formData.append('carbohydrates', carbohydrates);
+            formData.append('protein', protein);
+            formData.append('fat', fat);
+            formData.append('energy', energy);
+            
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            try {
+                if (id) {
+                    // For update, we need to use POST with _method override
+                    formData.append('_method', 'PUT');
+                    await ApiService.uploadFormData(`/meal-categories/${id}`, 'POST', formData);
+                } else {
+                    await ApiService.uploadFormData('/meal-categories', 'POST', formData);
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save category:', error);
+                alert('فشل حفظ البيانات: ' + (error.message || 'خطأ غير معروف'));
+            }
+        }
+
+        function openDeleteModal(id) {
+            deleteId = id;
+            deleteModal.show();
+        }
+
+        async function confirmDelete() {
+            if (!deleteId) return;
+            
+            try {
+                await ApiService.mealCategories.delete(deleteId);
+                deleteId = null;
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete category:', error);
+                alert('فشل حذف الفئة');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإشعارات - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">نظام الإشعارات</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#notificationModal" onclick="resetForm()">
+                        <i class="fas fa-paper-plane me-2"></i> إرسال إشعار جديد
+                    </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">سجل الإشعارات المرسلة</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="notificationsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>العنوان</th>
+                                                <th>الرسالة</th>
+                                                <th>المستلمون</th>
+                                                <th>تاريخ الإرسال</th>
+                                                <th>الحالة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Injected by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">إرسال إشعار جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="notificationForm">
+                        <div class="mb-3">
+                            <label class="form-label">عنوان الإشعار</label>
+                            <input type="text" class="form-control" id="notifTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">نص الرسالة</label>
+                            <textarea class="form-control" id="notifBody" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">إرسال إلى</label>
+                            <select class="form-select" id="notifTarget" onchange="toggleTargetSelect()">
+                                <option value="all">جميع المستخدمين</option>
+                                <option value="patients">المرضى فقط</option>
+                                <option value="doctors">الأطباء فقط</option>
+                                <option value="specific">مستخدم محدد</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="specificUserDiv" style="display: none;">
+                            <label class="form-label">اختر المستخدم</label>
+                            <select class="form-select" id="notifUser">
+                                <!-- Injected by JS -->
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-paper-plane me-2"></i> إرسال
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let notificationModal;
+        let allNotifications = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('notifications');
+            notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            renderNotifications();
+            loadUsers();
+        });
+
+        async function loadUsers() {
+            try {
+                const response = await ApiService.users.getAll();
+                const users = response.data || response || [];
+                const select = document.getElementById('notifUser');
+                select.innerHTML = '<option value="">اختر...</option>' + 
+                    users.map(u => `<option value="${u.id}">${u.name || u.email} (${getRoleName(u.role)})</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+
+        function toggleTargetSelect() {
+            const target = document.getElementById('notifTarget').value;
+            document.getElementById('specificUserDiv').style.display = target === 'specific' ? 'block' : 'none';
+        }
+
+        async function renderNotifications() {
+            try {
+                const response = await ApiService.notifications.getAll();
+                allNotifications = response.data || response || [];
+
+                const tbody = document.querySelector('#notificationsTable tbody');
+                tbody.innerHTML = allNotifications.length === 0 
+                    ? '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد إشعارات</td></tr>'
+                    : allNotifications.map(n => `
+                    <tr>
+                        <td>${n.title || '-'}</td>
+                        <td>${(n.body || n.message || '-').substring(0, 50)}...</td>
+                        <td><span class="badge bg-secondary-light text-secondary">${getTargetName(n.target || 'all')}</span></td>
+                        <td>${n.date || n.created_at || '-'}</td>
+                        <td>
+                            <span class="badge bg-${n.status === 'read' ? 'success' : 'primary'}-light text-${n.status === 'read' ? 'success' : 'primary'}">
+                                ${n.status === 'read' ? 'مقرؤة' : 'مرسلة'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-light text-danger" onclick="deleteNotification(${n.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load notifications:', error);
+                document.querySelector('#notificationsTable tbody').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function getTargetName(target) {
+            return { all: 'الجميع', patients: 'المرضى', doctors: 'الأطباء', specific: 'مستخدم محدد' }[target] || target;
+        }
+        
+        function getRoleName(role) {
+            return { admin: 'مسؤول', doctor: 'طبيب', patient: 'مريض' }[role] || role;
+        }
+
+        function resetForm() {
+            document.getElementById('notificationForm').reset();
+            toggleTargetSelect();
+        }
+
+        async function deleteNotification(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الإشعار من السجل؟')) {
+                try {
+                    await ApiService.notifications.delete(id);
+                    renderNotifications();
+                    showToast('تم حذف الإشعار');
+                } catch (error) {
+                    console.error('Failed to delete notification:', error);
+                    alert('فشل حذف الإشعار');
+                }
+            }
+        }
+
+        document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                title: document.getElementById('notifTitle').value,
+                body: document.getElementById('notifBody').value,
+                target: document.getElementById('notifTarget').value
+            };
+
+            if (data.target === 'specific') {
+                data.userId = document.getElementById('notifUser').value;
+            }
+
+            try {
+                await ApiService.notifications.send(data);
+                notificationModal.hide();
+                renderNotifications();
+                showToast('تم إرسال الإشعار بنجاح');
+            } catch (error) {
+                console.error('Failed to send notification:', error);
+                alert('فشل إرسال الإشعار: ' + (error.message || 'خطأ غير معروف'));
+            }
+        });
+    </script>
+</body>
+</html>

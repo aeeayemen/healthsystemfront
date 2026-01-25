@@ -1,7 +1,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -167,7 +166,10 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">رقم المستخدم (User ID)</label>
-                                <input type="number" class="form-control" id="doctorUserId" required>
+                                <select class="form-select" id="doctorUserId" required>
+                                    <option value="">اختر المستخدم...</option>
+                                    <!-- Populated by JS -->
+                                </select>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">الاسم الكامل</label>
@@ -234,7 +236,11 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">صورة الملف الشخصي</label>
-                                <input type="url" class="form-control" id="doctorProfileImage">
+                                <input type="file" class="form-control" id="doctorProfileImage" accept="image/*">
+                                <div id="currentImagePreview" class="mt-2 d-none">
+                                    <small class="text-muted d-block">الصورة الحالية:</small>
+                                    <img src="" alt="Current Profile" class="img-thumbnail" style="height: 50px;">
+                                </div>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">نبذة عن الطبيب</label>
@@ -275,6 +281,7 @@
         // Initialize Layout
         document.addEventListener('DOMContentLoaded', () => {
             Layout.init('doctors');
+            loadUsers();
             doctorModal = new bootstrap.Modal(doctorModalElement);
             renderDoctors();
         });
@@ -333,7 +340,7 @@
                     row.innerHTML = `
                         <td>
                             <div class="d-flex align-items-center">
-                                <img src="${doctor.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0D8ABC&color=fff&size=35`}" class="rounded-circle me-3" alt="صورة الطبيب" width="35" height="35">
+                                <img src="${doctor.profile_image ? IMAGE_BASE_URL + doctor.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0D8ABC&color=fff&size=35`}" class="rounded-circle me-3" alt="صورة الطبيب" width="35" height="35">
                                 <div>
                                     <h6 class="mb-0">${doctor.name}</h6>
                                     <small class="text-muted">${doctor.specialization || '-'}</small>
@@ -412,7 +419,14 @@
                 document.getElementById('doctorLicenseNumber').value = doctor.license_number || '';
                 document.getElementById('doctorConsultationFee').value = doctor.consultation_fee || '';
                 document.getElementById('doctorYearsOfExperience').value = doctor.years_of_experience || '';
-                document.getElementById('doctorProfileImage').value = doctor.profile_image || '';
+                document.getElementById('doctorProfileImage').value = ''; // Clear file input
+                const currentImage = document.getElementById('currentImagePreview');
+                if (doctor.profile_image) {
+                    currentImage.classList.remove('d-none');
+                    currentImage.querySelector('img').src = IMAGE_BASE_URL + doctor.profile_image;
+                } else {
+                    currentImage.classList.add('d-none');
+                }
                 document.getElementById('doctorBio').value = doctor.bio || '';
                 
                 modalTitle.textContent = 'تعديل بيانات الطبيب';
@@ -456,34 +470,41 @@
             e.preventDefault();
             
             const id = document.getElementById('doctorId').value;
-            const data = {
-                user_id: parseInt(document.getElementById('doctorUserId').value),
-                name: document.getElementById('doctorName').value,
-                gender: document.getElementById('doctorGender').value,
-                degree: document.getElementById('doctorDegree').value,
-                phone_number: document.getElementById('doctorPhone').value,
-                bank_account: document.getElementById('doctorBank').value,
-                specialization: document.getElementById('doctorSpecialty').value,
-                rating: parseFloat(document.getElementById('doctorRating').value),
-                forums_count: parseInt(document.getElementById('doctorForums').value),
-                application_status: document.getElementById('doctorStatus').value,
-                license_number: document.getElementById('doctorLicenseNumber').value,
-                consultation_fee: document.getElementById('doctorConsultationFee').value,
-                years_of_experience: document.getElementById('doctorYearsOfExperience').value,
-                profile_image: document.getElementById('doctorProfileImage').value,
-                bio: document.getElementById('doctorBio').value,
-                CV: document.getElementById('doctorCV').value || null
-            };
+            const formData = new FormData();
             
-            // Handle CV file upload if needed (would require FormData)
-            // For now assuming JSON API
+            formData.append('user_id', document.getElementById('doctorUserId').value);
+            formData.append('name', document.getElementById('doctorName').value);
+            formData.append('gender', document.getElementById('doctorGender').value);
+            formData.append('degree', document.getElementById('doctorDegree').value);
+            formData.append('phone_number', document.getElementById('doctorPhone').value);
+            formData.append('bank_account', document.getElementById('doctorBank').value);
+            formData.append('specialization', document.getElementById('doctorSpecialty').value);
+            formData.append('rating', document.getElementById('doctorRating').value);
+            formData.append('forums_count', document.getElementById('doctorForums').value);
+            formData.append('application_status', document.getElementById('doctorStatus').value);
+            formData.append('license_number', document.getElementById('doctorLicenseNumber').value);
+            formData.append('consultation_fee', document.getElementById('doctorConsultationFee').value);
+            formData.append('years_of_experience', document.getElementById('doctorYearsOfExperience').value);
+            formData.append('bio', document.getElementById('doctorBio').value);
+
+            // Handle File Uploads
+            const profileImageInput = document.getElementById('doctorProfileImage');
+            if (profileImageInput.files.length > 0) {
+                formData.append('profile_image', profileImageInput.files[0]);
+            }
+
+            const cvInput = document.getElementById('doctorCV');
+            if (cvInput.files.length > 0) {
+                formData.append('CV', cvInput.files[0]);
+            }
             
             try {
                 if (id) {
-                    await ApiService.doctors.update(id, data);
+                    formData.append('_method', 'PUT');
+                    await ApiService.uploadFormData(`/doctors/${id}`, 'POST', formData);
                     alert('تم تحديث بيانات الطبيب بنجاح');
                 } else {
-                    await ApiService.doctors.create(data);
+                    await ApiService.uploadFormData('/doctors', 'POST', formData);
                     alert('تم إضافة الطبيب بنجاح');
                 }
                 
@@ -491,12 +512,25 @@
                 renderDoctors();
             } catch (error) {
                 console.error('Failed to save doctor', error);
-                alert('فشل حفظ البيانات');
+                alert('فشل حفظ البيانات: ' + error.message);
             }
         });
 
         // Filter change event
         statusFilter.addEventListener('change', renderDoctors);
+        // Load Users for Select
+        async function loadUsers() {
+            try {
+                const response = await ApiService.users.getAll(); 
+                const users = response.data || response;
+                const select = document.getElementById('doctorUserId');
+                
+                select.innerHTML = '<option value="">اختر المستخدم...</option>' + 
+                    users.map(u => `<option value="${u.id}">${u.name} (${u.email})</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load users', error);
+            }
+        }
     </script>
 </body>
 </html>

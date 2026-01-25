@@ -37,7 +37,7 @@
         <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة حساب</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
             <div class="row">
-                <div class="col-md-6 mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+                <div class="col-md-6 mb-3"><label class="form-label">رقم المستخدم</label><select class="form-select" id="formUserId" required><option value="">اختر المستخدم...</option></select></div>
                 <div class="col-md-6 mb-3"><label class="form-label">التاريخ</label><input type="date" class="form-control" id="formDate" required></div>
                 <div class="col-md-4 mb-3"><label class="form-label">الوزن (كجم)</label><input type="number" class="form-control" id="formWeight" step="0.1" required></div>
                 <div class="col-md-4 mb-3"><label class="form-label">محيط الخصر (سم)</label><input type="number" class="form-control" id="formWaist" required></div>
@@ -60,7 +60,7 @@
     <script src="assets/js/api.js"></script><script src="assets/js/layout.js"></script>
     <script>
         let allData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
-        document.addEventListener('DOMContentLoaded',()=>{Layout.init('weekly-calculations');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('weekly-calculations');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();loadUsers();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
         
         async function loadData(){
             try {
@@ -71,6 +71,18 @@
             } catch (error) {
                 console.error('Failed to load weekly calculations:', error);
                 document.getElementById('tableBody').innerHTML = '<tr><td colspan="12" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+        
+        async function loadUsers() {
+            try {
+                const response = await ApiService.users.getAll(); 
+                const users = response.data || response;
+                const select = document.getElementById('formUserId');
+                select.innerHTML = '<option value="">اختر المستخدم...</option>' + 
+                    users.map(u => `<option value="${u.id}">${u.name} (${u.email})</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load users', error);
             }
         }
         

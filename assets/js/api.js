@@ -1,6 +1,8 @@
 const API_BASE_URL = 'https://health-system-backend-ewm2.onrender.com/api'; // Update this with your actual backend URL
+const IMAGE_BASE_URL = API_BASE_URL.replace('/api', '/'); // Base URL for images/uploads
 
 const ApiService = {
+
     // Helper for making requests
     async request(endpoint, method = 'GET', body = null) {
         const token = localStorage.getItem('auth_token');

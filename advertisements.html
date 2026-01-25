@@ -72,7 +72,11 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">رابط الصورة</label>
-                                <input type="url" class="form-control" id="formImage" required>
+                                <input type="file" class="form-control" id="formImage" accept="image/*">
+                                <div id="currentImagePreview" class="mt-2 d-none">
+                                    <small class="text-muted d-block">الصورة الحالية:</small>
+                                    <img src="" alt="Current Image" class="img-thumbnail" style="height: 50px;">
+                                </div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">رقم الهاتف</label>
@@ -170,7 +174,7 @@
                         <td>${item.id}</td>
                         <td><span class="badge bg-secondary">${item.admin_id || '-'}</span></td>
                         <td>${item.date || item.created_at?.split('T')[0] || '-'}</td>
-                        <td><img src="${item.image}" alt="إعلان" class="img-preview" onclick="showImage('${item.image}')"></td>
+                        <td><img src="${IMAGE_BASE_URL}${item.image}" alt="إعلان" class="img-preview" onclick="showImage('${IMAGE_BASE_URL}${item.image}')"></td>
                         <td class="text-truncate" style="max-width: 150px;">${item.describtion}</td>
                         <td>${item.phone_number}</td>
                         <td><span class="badge ${item.type === 'عرض' ? 'bg-success' : 'bg-info'}">${item.type}</span></td>
@@ -210,7 +214,14 @@
                 document.getElementById('modalTitle').textContent = 'تعديل الإعلان';
                 document.getElementById('editId').value = id;
                 document.getElementById('formDescribtion').value = item.describtion;
-                document.getElementById('formImage').value = item.image;
+                document.getElementById('formImage').value = ''; // Clear file input
+                const currentImage = document.getElementById('currentImagePreview');
+                if (item.image) {
+                    currentImage.classList.remove('d-none');
+                    currentImage.querySelector('img').src = IMAGE_BASE_URL + item.image;
+                } else {
+                    currentImage.classList.add('d-none');
+                }
                 document.getElementById('formPhone').value = item.phone_number;
                 document.getElementById('formType').value = item.type;
                 document.getElementById('formGPS').value = item.GPS;
@@ -224,34 +235,37 @@
         async function saveData() {
             const id = document.getElementById('editId').value;
             const describtion = document.getElementById('formDescribtion').value.trim();
-            const image = document.getElementById('formImage').value.trim();
+            const imageInput = document.getElementById('formImage');
             const phone_number = document.getElementById('formPhone').value.trim();
             const type = document.getElementById('formType').value;
             const GPS = document.getElementById('formGPS').value.trim();
 
-            if (!describtion || !image || !phone_number) { alert('يرجى ملء الحقول المطلوبة'); return; }
+            if (!describtion || !phone_number) { alert('يرجى ملء الحقول المطلوبة'); return; }
+            if (!id && imageInput.files.length === 0) { alert('يرجى اختيار صورة'); return; }
 
             const user = JSON.parse(localStorage.getItem('hnd_user') || '{}');
             const adminId = parseInt(user.id) || 1;
 
-            const data = { 
-                describtion, 
-                image, 
-                phone_number, 
-                type, 
-                GPS,
-                admin_id: adminId,
-                title: describtion.substring(0, 50), // Adding title as it might be required
-                is_active: 1
-            };
-            console.log('Sending advertisement data:', data);
+            const formData = new FormData();
+            formData.append('describtion', describtion);
+            formData.append('phone_number', phone_number);
+            formData.append('type', type);
+            formData.append('GPS', GPS);
+            formData.append('admin_id', adminId);
+            formData.append('title', describtion.substring(0, 50));
+            formData.append('is_active', 1);
+
+            if (imageInput.files.length > 0) {
+                formData.append('image', imageInput.files[0]);
+            }
 
             try {
                 if (id) {
-                    await ApiService.advertisements.update(id, data);
+                    formData.append('_method', 'PUT');
+                    await ApiService.uploadFormData(`/advertisements/${id}`, 'POST', formData);
                     showToast('تم تحديث الإعلان بنجاح');
                 } else {
-                    await ApiService.advertisements.create(data);
+                    await ApiService.uploadFormData('/advertisements', 'POST', formData);
                     showToast('تم إضافة الإعلان بنجاح');
                 }
                 formModal.hide();

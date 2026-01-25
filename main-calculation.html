@@ -69,7 +69,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3"><label class="form-label">رقم المستخدم</label><input type="number" class="form-control" id="formUserId" required></div>
+                <div class="col-md-4 mb-3"><label class="form-label">رقم المستخدم</label><select class="form-select" id="formUserId" required><option value="">اختر المستخدم...</option></select></div>
                 <div class="col-md-4 mb-3"><label class="form-label">السعرات الحرارية</label><input type="number" class="form-control" id="formCalories" required></div>
                 <div class="col-md-4 mb-3"><label class="form-label">البروتين</label><input type="number" class="form-control" id="formProtin" step="0.1" required></div>
                 <div class="col-md-4 mb-3"><label class="form-label">الدهون</label><input type="number" class="form-control" id="formFat" step="0.1" required></div>
@@ -96,6 +96,7 @@
             formModal = new bootstrap.Modal(document.getElementById('formModal'));
             deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
             loadData();
+            loadUsers();
             document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
             
             // Add listeners for calculation inputs
@@ -112,6 +113,18 @@
             } catch (error) {
                 console.error('Failed to load data:', error);
                 document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await ApiService.users.getAll(); 
+                const users = response.data || response;
+                const select = document.getElementById('formUserId');
+                select.innerHTML = '<option value="">اختر المستخدم...</option>' + 
+                    users.map(u => `<option value="${u.id}">${u.name} (${u.email})</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load users', error);
             }
         }
 

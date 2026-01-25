@@ -99,7 +99,7 @@
                 document.getElementById('userId').textContent = test.user_id || '-';
                 document.getElementById('testName').textContent = test.name || '-';
                 document.getElementById('createdAt').textContent = test.created_at || '-';
-                document.getElementById('testImage').src = test.image || '';
+                document.getElementById('testImage').src = test.image ? IMAGE_BASE_URL + test.image : '';
             } catch (error) {
                 console.error('Failed to load test:', error);
                 alert('فشل تحميل بيانات الفحص');

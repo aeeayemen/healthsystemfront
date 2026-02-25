@@ -72,8 +72,14 @@
                                 <input type="text" class="form-control" id="formName" required>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label">الفئة</label>
+                                <select class="form-select" id="formCategoryId" required>
+                                    <option value="">اختر الفئة...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">رمز الوجبة (meal_id)</label>
-                                <input type="text" class="form-control" id="formMealId" required>
+                                <input type="text" class="form-control" id="formMealId">
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">وصف الحصة</label>
@@ -111,73 +117,88 @@
     <script src="assets/js/api.js"></script>
     <script src="assets/js/layout.js"></script>
     <script>
-        let allData = [], currentPage = 1;
+        let categories = [];
+        let paginationData = null;
         let formModal, deleteModal, deleteId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             Layout.init('meals');
             formModal = new bootstrap.Modal(document.getElementById('formModal'));
             deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadCategories();
             loadData();
             document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
         });
 
-        async function loadData() {
+        async function loadCategories() {
             try {
-                const response = await ApiService.meals.getAll();
-                allData = response.data || response;
+                const response = await ApiService.mealCategories.getAll();
+                categories = response.data || response;
+                const select = document.getElementById('formCategoryId');
+                select.innerHTML = '<option value="">اختر الفئة...</option>' + 
+                    categories.map(c => `<option value="${c.id}">${c.name_ar} (${c.name_en})</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load categories', error);
+            }
+        }
+
+        async function loadData(page = 1) {
+            try {
+                const response = await ApiService.meals.getAll({ page });
+                paginationData = response;
                 renderTable();
+                renderPagination();
             } catch (error) {
                 console.error('Failed to load meals', error);
                 showToast('فشل تحميل الوجبات', 'error');
             }
         }
 
-
-
         function renderTable() {
             const tbody = document.getElementById('tableBody');
+            const data = paginationData.data || [];
 
-            tbody.innerHTML = allData.length === 0 
-                ? '<tr><td colspan="10" class="text-center text-muted py-4">لا توجد وجبات</td></tr>'
-                : allData.map(item => `
+            tbody.innerHTML = data.length === 0 
+                ? '<tr><td colspan="5" class="text-center text-muted py-4">لا توجد وجبات</td></tr>'
+                : data.map(item => `
                     <tr>
                         <td>${item.id}</td>
                         <td><code>${item.meal_id || '-'}</code></td>
                         <td><strong>${item.name}</strong></td>
-                        <td class="text-truncate" style="max-width: 200px;">${item.describtion}</td>
+                        <td class="text-truncate" style="max-width: 200px;">${item.describtion || '-'}</td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('');
-            renderPagination();
         }
 
         function renderPagination() {
-            const totalPages = Math.ceil(filteredData.length / perPage);
-            const start = (currentPage - 1) * perPage + 1;
-            const end = Math.min(currentPage * perPage, filteredData.length);
-            document.getElementById('paginationInfo').textContent = `عرض ${filteredData.length > 0 ? start : 0} - ${end} من ${filteredData.length}`;
+            const p = paginationData;
+            if (!p || !p.last_page) return;
 
-            let html = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1})">السابق</a></li>`;
-            for (let i = 1; i <= totalPages; i++) html += `<li class="page-item ${currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;
-            html += `<li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">التالي</a></li>`;
+            document.getElementById('paginationInfo').textContent = `عرض ${p.from || 0} - ${p.to || 0} من ${p.total}`;
+
+            let html = `<li class="page-item ${p.current_page === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadData(${p.current_page - 1})">السابق</a></li>`;
+            
+            // Simple logic for first 10 pages or surrounding pages
+            for (let i = 1; i <= p.last_page; i++) {
+                if (i === 1 || i === p.last_page || (i >= p.current_page - 2 && i <= p.current_page + 2)) {
+                    html += `<li class="page-item ${p.current_page === i ? 'active' : ''}"><a class="page-link" href="#" onclick="loadData(${i})">${i}</a></li>`;
+                } else if (i === p.current_page - 3 || i === p.current_page + 3) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            html += `<li class="page-item ${p.current_page === p.last_page ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadData(${p.current_page + 1})">التالي</a></li>`;
             document.getElementById('pagination').innerHTML = html;
-        }
-
-        function goToPage(page) {
-            const totalPages = Math.ceil(filteredData.length / perPage);
-            if (page >= 1 && page <= totalPages) { currentPage = page; renderTable(); }
         }
 
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'إضافة وجبة';
             document.getElementById('editId').value = '';
-            document.getElementById('formName').value = '';
-            document.getElementById('formMealId').value = '';
-            document.getElementById('formDescribtion').value = '';
+            document.getElementById('dataForm').reset();
             formModal.show();
         }
 
@@ -188,9 +209,10 @@
                 
                 document.getElementById('modalTitle').textContent = 'تعديل الوجبة';
                 document.getElementById('editId').value = id;
-                document.getElementById('formName').value = item.name;
+                document.getElementById('formName').value = item.name || '';
                 document.getElementById('formMealId').value = item.meal_id || '';
-                document.getElementById('formDescribtion').value = item.describtion;
+                document.getElementById('formDescribtion').value = item.describtion || '';
+                document.getElementById('formCategoryId').value = item.category_id || '';
                 formModal.show();
             } catch (error) {
                 console.error('Failed to load meal details', error);
@@ -203,10 +225,16 @@
             const name = document.getElementById('formName').value.trim();
             const meal_id = document.getElementById('formMealId').value.trim();
             const describtion = document.getElementById('formDescribtion').value.trim();
+            const category_id = document.getElementById('formCategoryId').value;
 
-            if (!name || !meal_id) { alert('يرجى ملء الحقول المطلوبة'); return; }
+            if (!name) { alert('يرجى ملء اسم الوجبة'); return; }
 
-            const data = { name, meal_id, describtion };
+            const data = { 
+                name, 
+                meal_id: meal_id || null, 
+                describtion,
+                category_id: category_id || null
+            };
 
             try {
                 if (id) {
@@ -217,7 +245,7 @@
                     showToast('تم إضافة الوجبة بنجاح');
                 }
                 formModal.hide();
-                loadData();
+                loadData(paginationData ? paginationData.current_page : 1);
             } catch (error) {
                 console.error('Failed to save meal', error);
                 showToast('فشل حفظ الوجبة', 'error');

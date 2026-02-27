@@ -348,7 +348,12 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i> دخول';
                 
-                showError(error.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
+                let errorMsg = error.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+                if (errorMsg === "Your email address is not verified.") {
+                    errorMsg = "يرجى تأكيد بريدك الإلكتروني أولاً.";
+                }
+                
+                showError(errorMsg);
             }
         });
         

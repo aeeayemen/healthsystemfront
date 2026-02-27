@@ -247,6 +247,8 @@
         © 2023 مشروع التغذية العلاجية. جميع الحقوق محفوظة.
     </div>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/js/api.js"></script>
     <script>
         // عناصر DOM
@@ -350,7 +352,15 @@
                 
                 let errorMsg = error.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة";
                 if (errorMsg === "Your email address is not verified.") {
-                    errorMsg = "يرجى تأكيد بريدك الإلكتروني أولاً.";
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تنبيه',
+                        text: 'يرجى تأكيد بريدك الإلكتروني أولاً لتتمكن من الدخول.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#9d0176', // استخدام اللون الأساسي
+                        iconColor: '#9d0176'
+                    });
+                    return; // إيقاف التنفيذ حتى لا تظهر الرسالة العادية
                 }
                 
                 showError(errorMsg);

@@ -64,7 +64,7 @@
                             <div class="card-body text-center">
                                 <img src="${doctor.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(doctor.name)}" class="rounded-circle mb-3" width="120" height="120">
                                 <h4 class="fw-bold">${doctor.name}</h4>
-                                <p class="text-muted">${doctor.degree || doctor.specialty || '-'}</p>
+                                <p class="text-muted">${doctor.specialization || doctor.specialty || '-'}</p>
                                 
                                 <div class="badge bg-${getStatusColor(doctor.status)} mb-3 p-2 px-3">
                                     ${getStatusName(doctor.status)}
@@ -125,7 +125,17 @@
                                         </div>
                                         <a href="${doctor.CV || doctor.cv}" target="_blank" class="btn btn-sm btn-outline-primary">عرض</a>
                                     </div>
-                                    ` : '<p class="text-muted text-center mb-0">لا توجد مستندات مرفقة</p>'}
+                                    ` : ''}
+                                    ${doctor.degree ? `
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-file-alt text-info me-2"></i>
+                                            الدرجة العلمية
+                                        </div>
+                                        <a href="${doctor.degree}" target="_blank" class="btn btn-sm btn-outline-primary">عرض</a>
+                                    </div>
+                                    ` : ''}
+                                    ${!(doctor.CV || doctor.cv) && !doctor.degree ? '<p class="text-muted text-center mb-0">لا توجد مستندات مرفقة</p>' : ''}
                                 </div>
                             </div>
                         </div>

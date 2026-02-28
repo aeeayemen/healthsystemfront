@@ -56,7 +56,10 @@
                 </div>
                 <div class="col-md-6 mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="formPhone" required></div>
                 <div class="col-md-6 mb-3"><label class="form-label">الحساب البنكي</label><input type="text" class="form-control" id="formBankAccount"></div>
-                <div class="col-md-6 mb-3"><label class="form-label">رابط السيرة الذاتية</label><input type="url" class="form-control" id="formCV"></div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">السيرة الذاتية</label>
+                    <input type="file" class="form-control" id="formCV" accept=".pdf,.doc,.docx">
+                </div>
                 <div class="col-md-6 mb-3"><label class="form-label">رقم الترخيص</label><input type="text" class="form-control" id="formLicenseNumber" required></div>
                 <div class="col-md-6 mb-3"><label class="form-label">سعر الكشف</label><input type="number" class="form-control" id="formConsultationFee"></div>
                 <div class="col-md-6 mb-3"><label class="form-label">سنوات الخبرة</label><input type="number" class="form-control" id="formYearsOfExperience"></div>
@@ -206,7 +209,10 @@
             }
             formData.append('phone_number', document.getElementById('formPhone').value.trim());
             formData.append('bank_account', document.getElementById('formBankAccount').value.trim());
-            formData.append('CV', document.getElementById('formCV').value.trim()); // Still URL for now unless changed to file
+            const cvInput = document.getElementById('formCV');
+            if (cvInput.files.length > 0) {
+                formData.append('CV', cvInput.files[0]);
+            }
             formData.append('license_number', document.getElementById('formLicenseNumber').value.trim());
             formData.append('consultation_fee', document.getElementById('formConsultationFee').value);
             formData.append('years_of_experience', document.getElementById('formYearsOfExperience').value);

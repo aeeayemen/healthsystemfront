@@ -63,7 +63,7 @@ async function renderDoctors() {
                         </div>
                     </td>
                     <td>${doctor.gender === 'male' ? 'ذكر' : (doctor.gender === 'female' ? 'أنثى' : '-')}</td>
-                    <td>${doctor.degree || '-'}</td>
+                    <td>${doctor.degree ? `<a href="${doctor.degree}" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i> تحميل</a>` : '-'}</td>
                     <td>${doctor.phone || '-'}</td>
                     <td>${doctor.bank_account || '-'}</td>
                     <td>
@@ -112,7 +112,7 @@ async function editDoctor(id) {
         document.getElementById('doctorId').value = doc.id;
         document.getElementById('doctorName').value = doc.name;
         document.getElementById('doctorGender').value = doc.gender || 'male';
-        document.getElementById('doctorDegree').value = doc.degree || '';
+        document.getElementById('doctorDegree').value = '';
         document.getElementById('doctorPhone').value = doc.phone || '';
         document.getElementById('doctorBank').value = doc.bank_account || '';
         document.getElementById('doctorSpecialty').value = doc.specialization || '';

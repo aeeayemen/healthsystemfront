@@ -184,7 +184,11 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">الدرجة العلمية</label>
-                                <input type="text" class="form-control" id="doctorDegree" required>
+                                <input type="file" class="form-control" id="doctorDegree" accept=".pdf,.png,.jpg,.jpeg">
+                                <div id="currentDegreePreview" class="mt-2 d-none">
+                                    <small class="text-muted d-block">الملف الحالي:</small>
+                                    <a href="#" id="currentDegreeLink" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i> عرض الملف</a>
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">رقم الهاتف</label>
@@ -348,7 +352,7 @@
                             </div>
                         </td>
                         <td>${doctor.gender === 'male' ? 'ذكر' : (doctor.gender === 'female' ? 'أنثى' : '-')}</td>
-                        <td>${doctor.degree || '-'}</td>
+                        <td>${doctor.degree ? `<a href="${doctor.degree}" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i> تحميل</a>` : '-'}</td>
                         <td>${doctor.phone_number || '-'}</td>
                         <td><span class="text-muted">${doctor.bank_account || '-'}</span></td>
                         <td>
@@ -409,7 +413,14 @@
                 document.getElementById('doctorUserId').value = doctor.user_id || '';
                 document.getElementById('doctorName').value = doctor.name;
                 document.getElementById('doctorGender').value = doctor.gender || 'male';
-                document.getElementById('doctorDegree').value = doctor.degree || '';
+                document.getElementById('doctorDegree').value = '';
+                const currentDegree = document.getElementById('currentDegreePreview');
+                if (doctor.degree) {
+                    currentDegree.classList.remove('d-none');
+                    document.getElementById('currentDegreeLink').href = doctor.degree;
+                } else {
+                    currentDegree.classList.add('d-none');
+                }
                 document.getElementById('doctorPhone').value = doctor.phone_number || '';
                 document.getElementById('doctorBank').value = doctor.bank_account || '';
                 document.getElementById('doctorSpecialty').value = doctor.specialization || '';
@@ -475,7 +486,11 @@
             formData.append('user_id', document.getElementById('doctorUserId').value);
             formData.append('name', document.getElementById('doctorName').value);
             formData.append('gender', document.getElementById('doctorGender').value);
-            formData.append('degree', document.getElementById('doctorDegree').value);
+            // Handle Degree file upload
+            const degreeInput = document.getElementById('doctorDegree');
+            if (degreeInput.files.length > 0) {
+                formData.append('degree', degreeInput.files[0]);
+            }
             formData.append('phone_number', document.getElementById('doctorPhone').value);
             formData.append('bank_account', document.getElementById('doctorBank').value);
             formData.append('specialization', document.getElementById('doctorSpecialty').value);

@@ -114,7 +114,7 @@
     <script src="assets/js/api.js"></script>
     <script src="assets/js/layout.js"></script>
     <script>
-        let allData = [], currentPage = 1;
+        let paginationData = { data: [] }, currentPage = 1;
         let formModal, deleteModal, deleteId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -143,14 +143,15 @@
             }
         }
 
-        async function loadData() {
+        async function loadData(page = 1) {
+            currentPage = page;
             try {
-                const response = await ApiService.tips.getAll();
-                allData = response.data || response;
+                const response = await ApiService.tips.getAll({ page: currentPage });
+                paginationData = response;
                 renderTable();
             } catch (error) {
                 console.error('Failed to load tips', error);
-                showToast('فشل تحميل النصائح', 'error');
+                if (typeof showToast === 'function') showToast('فشل تحميل النصائح', 'error');
             }
         }
 
@@ -162,10 +163,11 @@
 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
+            const tips = paginationData.data || [];
 
-            tbody.innerHTML = allData.length === 0 
-                ? '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد نصائح</td></tr>'
-                : allData.map(item => `
+            tbody.innerHTML = tips.length === 0 
+                ? '<tr><td colspan="4" class="text-center text-muted py-4">لا توجد نصائح</td></tr>'
+                : tips.map(item => `
                     <tr>
                         <td>${item.id}</td>
                         <td>${item.describtion || item.description || item.content || item.title || '-'}</td>
@@ -180,20 +182,34 @@
         }
 
         function renderPagination() {
-            const totalPages = Math.ceil(filteredData.length / perPage);
+            const total = paginationData.total || 0;
+            const perPage = paginationData.per_page || 10;
+            const lastPage = paginationData.last_page || 1;
+            
             const start = (currentPage - 1) * perPage + 1;
-            const end = Math.min(currentPage * perPage, filteredData.length);
-            document.getElementById('paginationInfo').textContent = `عرض ${filteredData.length > 0 ? start : 0} - ${end} من ${filteredData.length}`;
+            const end = Math.min(currentPage * perPage, total);
+            
+            document.getElementById('paginationInfo').textContent = `عرض ${total > 0 ? start : 0} - ${end} من ${total}`;
 
             let html = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1})">السابق</a></li>`;
-            for (let i = 1; i <= totalPages; i++) html += `<li class="page-item ${currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;
-            html += `<li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">التالي</a></li>`;
+            
+            for (let i = 1; i <= lastPage; i++) {
+                if (i === 1 || i === lastPage || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `<li class="page-item ${currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+            
+            html += `<li class="page-item ${currentPage === lastPage || lastPage === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">التالي</a></li>`;
             document.getElementById('pagination').innerHTML = html;
         }
 
         function goToPage(page) {
-            const totalPages = Math.ceil(filteredData.length / perPage);
-            if (page >= 1 && page <= totalPages) { currentPage = page; renderTable(); }
+            const lastPage = paginationData.last_page || 1;
+            if (page >= 1 && page <= lastPage) { 
+                loadData(page); 
+            }
         }
 
         function openAddModal() {

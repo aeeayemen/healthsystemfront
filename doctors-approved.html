@@ -50,7 +50,14 @@
                 </div>
                     <div class="col-md-6 mb-3"><label class="form-label">الاسم</label><input type="text" class="form-control" id="formName" required></div>
                     <div class="col-md-6 mb-3"><label class="form-label">الجنس</label><select class="form-select" id="formGender" required><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">الدرجة العلمية</label><input type="text" class="form-control" id="formDegree" required></div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">الدرجة العلمية</label>
+                        <input type="file" class="form-control" id="formDegree" accept=".pdf,.png,.jpg,.jpeg">
+                        <div id="currentDegreePreview" class="mt-2 d-none">
+                            <small class="text-muted d-block">الملف الحالي:</small>
+                            <a href="#" id="currentDegreeLink" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i> عرض الملف</a>
+                        </div>
+                    </div>
                     <div class="col-md-6 mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="formPhone" required></div>
                     <div class="col-md-6 mb-3"><label class="form-label">الحساب البنكي</label><input type="text" class="form-control" id="formBankAccount"></div>
                     <div class="col-md-6 mb-3"><label class="form-label">رابط السيرة الذاتية</label><input type="url" class="form-control" id="formCV"></div>
@@ -116,7 +123,7 @@
             }
         }
         
-        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=allData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="11" class="text-center text-muted py-4">لا يوجد دكاترة مقبولين</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td>${item.name}</td><td><span class="badge ${item.gender==='male'?'bg-primary':'bg-pink'}">${item.gender==='male'?'ذكر':'أنثى'}</span></td><td>${item.degree || '-'}</td><td><code>${item.bank_account||'-'}</code></td><td>${item.phone_number || '-'}</td><td>${item.CV ? `<a href="${item.CV}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a>` : '-'}</td><td><span class="badge bg-success">${item.admin_id || '-'}</span></td><td>${item.consultation_fee||'-'} ريال</td><td>${item.years_of_experience||'-'}</td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=allData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="11" class="text-center text-muted py-4">لا يوجد دكاترة مقبولين</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td>${item.name}</td><td><span class="badge ${item.gender==='male'?'bg-primary':'bg-pink'}">${item.gender==='male'?'ذكر':'أنثى'}</span></td><td>${item.degree ? `<a href="${item.degree}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i></a>` : '-'}</td><td><code>${item.bank_account||'-'}</code></td><td>${item.phone_number || '-'}</td><td>${item.CV ? `<a href="${item.CV}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a>` : '-'}</td><td><span class="badge bg-success">${item.admin_id || '-'}</span></td><td>${item.consultation_fee||'-'} ريال</td><td>${item.years_of_experience||'-'}</td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
         function renderPagination(){const totalPages=Math.ceil(allData.length/perPage);const start=(currentPage-1)*perPage+1;const end=Math.min(currentPage*perPage,allData.length);document.getElementById('paginationInfo').textContent=`عرض ${allData.length>0?start:0} - ${end} من ${allData.length}`;let html=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=totalPages;i++)html+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;html+=`<li class="page-item ${currentPage===totalPages||totalPages===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=html;}
         function goToPage(page){const totalPages=Math.ceil(allData.length/perPage);if(page>=1&&page<=totalPages){currentPage=page;renderTable();}}
         function openAddModal(){
@@ -126,6 +133,7 @@
             document.getElementById('formName').value='';
             document.getElementById('formGender').value='male';
             document.getElementById('formDegree').value='';
+            document.getElementById('currentDegreePreview').classList.add('d-none');
             document.getElementById('formPhone').value='';
             document.getElementById('formBankAccount').value='';
             document.getElementById('formCV').value='';
@@ -147,7 +155,14 @@
                 document.getElementById('formUserId').value=item.user_id || '';
                 document.getElementById('formName').value=item.name;
                 document.getElementById('formGender').value=item.gender || 'male';
-                document.getElementById('formDegree').value=item.degree || '';
+                document.getElementById('formDegree').value='';
+                const currentDegree = document.getElementById('currentDegreePreview');
+                if (item.degree) {
+                    currentDegree.classList.remove('d-none');
+                    document.getElementById('currentDegreeLink').href = item.degree;
+                } else {
+                    currentDegree.classList.add('d-none');
+                }
                 document.getElementById('formPhone').value=item.phone_number || '';
                 document.getElementById('formBankAccount').value=item.bank_account || '';
                 document.getElementById('formCV').value=item.CV || '';
@@ -179,7 +194,10 @@
             formData.append('user_id', document.getElementById('formUserId').value);
             formData.append('name', document.getElementById('formName').value.trim());
             formData.append('gender', document.getElementById('formGender').value);
-            formData.append('degree', document.getElementById('formDegree').value.trim());
+            const degreeInput = document.getElementById('formDegree');
+            if (degreeInput.files.length > 0) {
+                formData.append('degree', degreeInput.files[0]);
+            }
             formData.append('phone_number', document.getElementById('formPhone').value.trim());
             formData.append('bank_account', document.getElementById('formBankAccount').value.trim());
             formData.append('CV', document.getElementById('formCV').value.trim());
@@ -195,7 +213,7 @@
                 formData.append('profile_image', profileImageInput.files[0]);
             }
             
-            if(!formData.get('user_id')||!formData.get('name')||!formData.get('degree')||!formData.get('phone_number')){alert('يرجى ملء الحقول المطلوبة');return;}
+            if(!formData.get('user_id')||!formData.get('name')||!formData.get('phone_number')){alert('يرجى ملء الحقول المطلوبة');return;}
             
             try {
                 if(id){

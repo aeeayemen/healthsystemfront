@@ -1,7 +1,7 @@
 // API definition removed - using static ApiService in api.js
 
 function isAuthenticated() {
-    return !!localStorage.getItem('auth_token');
+    return !!localStorage.getItem('hnd_token');
 }
 
 function getCurrentUser() {
@@ -10,17 +10,17 @@ function getCurrentUser() {
 }
 
 // Check Auth
-// function checkAuth() {
-//     const user = getCurrentUser();
-//     const isLoginPage = window.location.pathname.includes('dashboard.html');
+function checkAuth() {
+    const user = getCurrentUser();
+    const isLoginPage = window.location.pathname.includes('index.html');
 
-//     if (!isAuthenticated() && !isLoginPage) {
-//         window.location.href = 'dashboard.html';
-//     } else if (isAuthenticated() && isLoginPage) {
-//         window.location.href = 'dashboard.html';
-//     }
-//     return user;
-// }
+    if (!isAuthenticated() && !isLoginPage) {
+        window.location.href = 'index.html';
+    } else if (isAuthenticated() && isLoginPage) {
+        window.location.href = 'dashboard.html';
+    }
+    return user;
+}
 
 // Sidebar & Header Injection
 function initLayout() {
@@ -42,6 +42,7 @@ function initLayout() {
             <li><a href="subscriptions.html" class="${isActive('subscriptions.html')}"><i class="fas fa-credit-card"></i> الاشتراكات</a></li>
             <li><a href="invoices.html" class="${isActive('invoices.html')}"><i class="fas fa-file-invoice-dollar"></i> الفواتير</a></li>
             <li><a href="chat.html" class="${isActive('chat.html')}"><i class="fas fa-comment-dots"></i> المحادثات</a></li>
+            <li><a href="athkar.html" class="${isActive('athkar.html')}"><i class="fas fa-book-open"></i> إدارة الأذكار</a></li>
             <li><a href="settings.html" class="${isActive('settings.html')}"><i class="fas fa-cog"></i> الإعدادات</a></li>
         </ul>
     `;
@@ -77,16 +78,10 @@ function isActive(page) {
     return window.location.pathname.includes(page) ? 'active' : '';
 }
 
-async function logout() {
-    try {
-        await ApiService.auth.logout();
-    } catch (error) {
-        console.error('Logout failed:', error);
-    } finally {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('hnd_user');
-        window.location.href = 'index.html';
-    }
+function logout() {
+    localStorage.removeItem('hnd_token');
+    localStorage.removeItem('hnd_user');
+    window.location.href = 'index.html';
 }
 
 function showToast(message, type = 'success') {
@@ -96,7 +91,7 @@ function showToast(message, type = 'success') {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    if (!window.location.pathname.includes('dashboard.html')) {
+    if (!window.location.pathname.includes('index.html')) {
         initLayout();
     }
 });

@@ -43,6 +43,7 @@ function initLayout() {
             <li><a href="invoices.html" class="${isActive('invoices.html')}"><i class="fas fa-file-invoice-dollar"></i> الفواتير</a></li>
             <li><a href="chat.html" class="${isActive('chat.html')}"><i class="fas fa-comment-dots"></i> المحادثات</a></li>
             <li><a href="settings.html" class="${isActive('settings.html')}"><i class="fas fa-cog"></i> الإعدادات</a></li>
+            <li><a href="athkar.html" class="${isActive('athkar.html')}"><i class="fas fa-book-open"></i> إدارة الأذكار</a></li>
         </ul>
     `;
 

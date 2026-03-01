@@ -247,32 +247,10 @@
         © 2023 مشروع التغذية العلاجية. جميع الحقوق محفوظة.
     </div>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="assets/js/api.js"></script>
     <script>
-        // بيانات المستخدمين الثابتة
-        const users = [
-            {
-                email: "admin@gmail.com",
-                password: "password",
-                name: "مدير النظام",
-                role: "admin",
-                avatar: "https://ui-avatars.com/api/?name=مدير+النظام&background=6a11cb&color=fff&size=128"
-            },
-            {
-                email: "doctor@clinic.com",
-                password: "doctor123",
-                name: "د. أحمد محمد",
-                role: "doctor",
-                avatar: "https://ui-avatars.com/api/?name=د.+أحمد&background=2575fc&color=fff&size=128"
-            },
-            {
-                email: "reception@clinic.com",
-                password: "reception123",
-                name: "موظف الاستقبال",
-                role: "reception",
-                avatar: "https://ui-avatars.com/api/?name=موظف+استقبال&background=28a745&color=fff&size=128"
-            }
-        ];
-        
         // عناصر DOM
         const loginForm = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
@@ -283,12 +261,18 @@
         
         // تعيين بيانات الدخول الافتراضية
         window.onload = function() {
+            // Clear any existing session to avoid confusion
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('hnd_user');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isLoggedIn');
+            
             emailInput.value = "admin@gmail.com";
             passwordInput.value = "password";
         };
         
         // معالجة تسجيل الدخول
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = emailInput.value.trim();
@@ -303,31 +287,91 @@
                 return;
             }
             
-            // البحث عن المستخدم
-            const user = users.find(u => u.email === email && u.password === password);
-            
-            if (user) {
-                // تسجيل الدخول ناجح
-                showSuccess();
+            try {
+                // Show loading state
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري التحقق...';
+
+                // Call API Login
+                // Using direct fetch as requested to match Route::post('/login', [AuthController::class, 'login']);
+                const fetchResponse = await fetch('https://health-system-backend-l7m5.onrender.com/api/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!fetchResponse.ok) {
+                    const errorData = await fetchResponse.json();
+                    throw new Error(errorData.message || 'Login failed');
+                }
+
+                const response = await fetchResponse.json();
                 
-                // تخزين بيانات المستخدم في localStorage
-                localStorage.setItem('hnd_user', JSON.stringify(user));
-                localStorage.setItem('hnd_token', 'mock-jwt-token-123456');
-                
-                // إعادة توجيه إلى صفحة الرئيسية بعد تأخير بسيط
-                setTimeout(() => {
-                    // هنا يمكن توجيه المستخدم إلى الصفحة المناسبة حسب الدور
-                    if (user.role === 'admin' || user.role === 'doctor') {
-                        window.location.href = 'dashboard.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+
+                // Check for token in response
+                const token = response.token || (response.data && response.data.token) || response.access_token;
+                const user = response.user || (response.data && response.data.user);
+
+                if (token) {
+                    // تسجيل الدخول ناجح
+                    showSuccess();
+                    
+                    // تخزين بيانات المستخدم والتوكن في localStorage
+                    localStorage.setItem('auth_token', token);
+                    
+                    if (user) {
+                        localStorage.setItem('hnd_user', JSON.stringify(user));
+                        // Backward compatibility
+                        localStorage.setItem('currentUser', JSON.stringify(user));
                     }
-                }, 1500);
-            } else {
-                // فشل تسجيل الدخول
-                showError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
-                passwordInput.value = "";
-                passwordInput.focus();
+                    
+                    localStorage.setItem('isLoggedIn', 'true');
+                    
+                    // إعادة توجيه إلى صفحة الرئيسية بعد تأخير بسيط
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    console.error('Login response:', response);
+                    throw new Error('فشل في الحصول على رمز الدخول');
+                }
+
+            } catch (error) {
+                console.error('Login Error:', error);
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i> دخول';
+                
+                let errorMsg = error.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+                /*
+                if (errorMsg === "Your email address is not verified.") {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'تنبيه',
+                        text: 'يرجى تأكيد بريدك الإلكتروني أولاً لتتمكن من الدخول.',
+                        showCancelButton: true,
+                        confirmButtonText: 'إعادة إرسال رابط التفعيل',
+                        cancelButtonText: 'حسناً',
+                        confirmButtonColor: '#9d0176',
+                        iconColor: '#9d0176'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            resendVerification(email);
+                        }
+                    });
+                    return;
+                }
+                */
+                
+                showError(errorMsg);
             }
         });
         
@@ -341,6 +385,51 @@
             setTimeout(() => {
                 errorAlert.classList.remove('show');
             }, 5000);
+        }
+
+        // وظيفة إعادة إرسال رابط التفعيل
+        async function resendVerification(email) {
+            try {
+                // إظهار loading
+                Swal.fire({
+                    title: 'جاري الإرسال...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch('https://health-system-backend-l7m5.onrender.com/api/email/resend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الإرسال!',
+                        text: 'تم إرسال رابط تفعيل جديد إلى بريدك الإلكتروني بنجاح.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#9d0176'
+                    });
+                } else {
+                    throw new Error(data.message || 'فشل إرسال الرابط');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: error.message || 'حدث خطأ أثناء محاولة إرسال الرابط.',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#d33'
+                });
+            }
         }
         
         // إظهار رسالة النجاح
@@ -381,12 +470,7 @@
             const email = prompt("الرجاء إدخال بريدك الإلكتروني لإعادة تعيين كلمة المرور:");
             
             if (email) {
-                const user = users.find(u => u.email === email);
-                if (user) {
-                    alert(`تم إرسال رابط إعادة تعيين كلمة المرور إلى ${email}\n(هذه محاكاة - في التطبيق الحقيقي سيتم إرسال بريد إلكتروني فعلي)`);
-                } else {
-                    alert("البريد الإلكتروني غير مسجل في النظام");
-                }
+                alert(`تم إرسال طلب إعادة تعيين كلمة المرور إلى ${email}`);
             }
         });
     </script>

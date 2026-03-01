@@ -53,7 +53,17 @@ const Layout = {
                     { name: 'فئات الوجبات', link: 'meal-categories.html', id: 'meal-categories' }
                 ]
             },
-            { name: 'إدارة الأذكار', icon: 'fas fa-book-open', link: 'athkar.html', id: 'athkar' },
+             {
+                type: 'dropdown',
+                name: 'الاذكار',
+                icon: 'fas fa-book',
+                id: 'athkar-menu',
+                items: [
+                    { name: 'إدارة الأذكار', icon: 'fas fa-book-open', link: 'athkar.html', id: 'athkar' },
+
+                ]
+            },
+           
         ];
 
         let html = `

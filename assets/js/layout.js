@@ -52,7 +52,8 @@ const Layout = {
                     { name: 'الوجبات', link: 'meals.html', id: 'meals' },
                     { name: 'فئات الوجبات', link: 'meal-categories.html', id: 'meal-categories' }
                 ]
-            }
+            },
+            { name: 'إدارة الأذكار', icon: 'fas fa-book-open', link: 'athkar.html', id: 'athkar' },
         ];
 
         let html = `

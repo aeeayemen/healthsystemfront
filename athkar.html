@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأذكار - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-primary">إدارة الأذكار</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#athkarModal" onclick="resetForm()">
+                        <i class="fas fa-plus me-2"></i> إضافة ذكر
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <ul class="nav nav-tabs card-header-tabs" id="athkarTabs" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab" type="button" onclick="filterAthkar(1)">أذكار الصباح</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" type="button" onclick="filterAthkar(2)">أذكار المساء</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="athkarTable">
+                                <thead>
+                                    <tr>
+                                        <th>العنوان</th>
+                                        <th>الذكر</th>
+                                        <th>عدد المرات</th>
+                                        <th>الفضل</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="athkarTableBody">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Athkar Modal -->
+    <div class="modal fade" id="athkarModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة ذكر جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="athkarForm">
+                        <input type="hidden" id="athkarId">
+                        <div class="mb-3">
+                            <label class="form-label">الفئة</label>
+                            <select class="form-select" id="athkarCategory" required>
+                                <option value="1">أذكار الصباح</option>
+                                <option value="2">أذكار المساء</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">عنوان الذكر (اختياري)</label>
+                            <input type="text" class="form-control" id="athkarTitle">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الذكر</label>
+                            <textarea class="form-control" id="athkarContent" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">عدد المرات</label>
+                            <input type="number" class="form-control" id="athkarTimes" value="1" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">فضل الذكر (اختياري)</label>
+                            <textarea class="form-control" id="athkarBenefit" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="athkarActive" checked>
+                            <label class="form-check-label">نشط</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">حفظ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/mock-data.js"></script>
+    <script src="assets/js/db.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let athkarModal;
+        let currentCategoryId = 1; // 1: Morning, 2: Evening
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('athkar');
+            athkarModal = new bootstrap.Modal(document.getElementById('athkarModal'));
+            renderAthkar();
+        });
+
+        function filterAthkar(categoryId) {
+            currentCategoryId = categoryId;
+            renderAthkar();
+        }
+
+        function renderAthkar() {
+            let athkar = db.get('athkar');
+            if (!athkar || athkar.length === 0) {
+                athkar = [
+                    { id: 1, category_id: 1, title: 'آية الكرسي', content: 'اللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ...', times: 1, benefit: 'يحفظ من الشيطان', active: true },
+                    { id: 2, category_id: 2, title: 'آية الكرسي', content: 'اللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ...', times: 1, benefit: 'يحفظ من الشيطان', active: true },
+                    { id: 3, category_id: 1, title: '', content: 'رضيت بالله رباً، وبالإسلام ديناً وبمحمد صلى الله عليه وسلم نبياً.', times: 3, benefit: 'كان حقاً على الله في أن يرضيه يوم القيامة.', active: true }
+                ];
+                athkar.forEach(a => db.add('athkar', a));
+            }
+
+            const filtered = athkar.filter(a => a.category_id == currentCategoryId);
+            const tbody = document.getElementById('athkarTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">لا توجد أذكار في هذه الفئة</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td>${item.title ? item.title : '<small class="text-muted">بدون عنوان</small>'}</td>
+                    <td><small class="text-truncate d-inline-block" style="max-width: 300px;">${item.content}</small></td>
+                    <td>${item.times}</td>
+                    <td><small>${item.benefit || '-'}</small></td>
+                    <td>
+                        <span class="badge bg-${item.active ? 'success' : 'secondary'}-light text-${item.active ? 'success' : 'secondary'}">
+                            ${item.active ? 'نشط' : 'غير نشط'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-light text-primary" onclick="editAthkar(${item.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light text-danger" onclick="deleteAthkar(${item.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function resetForm() {
+            document.getElementById('athkarForm').reset();
+            document.getElementById('athkarId').value = '';
+            document.getElementById('athkarCategory').value = currentCategoryId;
+            document.getElementById('modalTitle').innerText = 'إضافة ذكر جديد';
+        }
+
+        function editAthkar(id) {
+            const item = db.getById('athkar', id);
+            if (!item) return;
+
+            document.getElementById('athkarId').value = item.id;
+            document.getElementById('athkarCategory').value = item.category_id;
+            document.getElementById('athkarTitle').value = item.title || '';
+            document.getElementById('athkarContent').value = item.content;
+            document.getElementById('athkarTimes').value = item.times;
+            document.getElementById('athkarBenefit').value = item.benefit || '';
+            document.getElementById('athkarActive').checked = item.active;
+            
+            document.getElementById('modalTitle').innerText = 'تعديل الذكر';
+            athkarModal.show();
+        }
+
+        function deleteAthkar(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الذكر؟')) {
+                db.delete('athkar', id);
+                renderAthkar();
+                showToast('تم حذف الذكر بنجاح', 'success');
+            }
+        }
+
+        document.getElementById('athkarForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('athkarId').value;
+            const data = {
+                category_id: parseInt(document.getElementById('athkarCategory').value),
+                title: document.getElementById('athkarTitle').value,
+                content: document.getElementById('athkarContent').value,
+                times: parseInt(document.getElementById('athkarTimes').value) || 1,
+                benefit: document.getElementById('athkarBenefit').value,
+                active: document.getElementById('athkarActive').checked
+            };
+
+            if (id) {
+                db.update('athkar', id, data);
+                showToast('تم تحديث الذكر بنجاح', 'success');
+            } else {
+                db.add('athkar', data);
+                showToast('تم إضافة الذكر بنجاح', 'success');
+            }
+            
+            athkarModal.hide();
+            renderAthkar();
+        });
+    </script>
+</body>
+</html>

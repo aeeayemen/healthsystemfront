@@ -140,7 +140,7 @@
         }
 
         function renderAthkar() {
-            const filtered = allAthkar.filter(a => a.category_id == currentCategoryId);
+            const filtered = allAthkar.filter(a => a.category == currentCategoryId);
             const tbody = document.getElementById('athkarTableBody');
             
             if (filtered.length === 0) {

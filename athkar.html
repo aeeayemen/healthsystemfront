@@ -112,12 +112,27 @@
     <script>
         let athkarModal;
         let currentCategoryId = 1; // 1: Morning, 2: Evening
+        let allAthkar = [];
         
         document.addEventListener('DOMContentLoaded', () => {
             Layout.init('athkar');
             athkarModal = new bootstrap.Modal(document.getElementById('athkarModal'));
-            renderAthkar();
+            fetchAthkar();
         });
+
+        async function fetchAthkar() {
+            try {
+                const tbody = document.getElementById('athkarTableBody');
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
+                
+                const response = await ApiService.athkar.getAll();
+                allAthkar = response.data || response; // Handle both direct array and {data: []}
+                renderAthkar();
+            } catch (error) {
+                console.error('Failed to fetch athkar:', error);
+                document.getElementById('athkarTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-5">حدث خطأ أثناء تحميل البيانات: ${error.message}</td></tr>`;
+            }
+        }
 
         function filterAthkar(categoryId) {
             currentCategoryId = categoryId;
@@ -125,17 +140,7 @@
         }
 
         function renderAthkar() {
-            let athkar = db.get('athkar');
-            if (!athkar || athkar.length === 0) {
-                athkar = [
-                    { id: 1, category_id: 1, title: 'آية الكرسي', content: 'اللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ...', times: 1, benefit: 'يحفظ من الشيطان', active: true },
-                    { id: 2, category_id: 2, title: 'آية الكرسي', content: 'اللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ...', times: 1, benefit: 'يحفظ من الشيطان', active: true },
-                    { id: 3, category_id: 1, title: '', content: 'رضيت بالله رباً، وبالإسلام ديناً وبمحمد صلى الله عليه وسلم نبياً.', times: 3, benefit: 'كان حقاً على الله في أن يرضيه يوم القيامة.', active: true }
-                ];
-                athkar.forEach(a => db.add('athkar', a));
-            }
-
-            const filtered = athkar.filter(a => a.category_id == currentCategoryId);
+            const filtered = allAthkar.filter(a => a.category_id == currentCategoryId);
             const tbody = document.getElementById('athkarTableBody');
             
             if (filtered.length === 0) {
@@ -174,7 +179,7 @@
         }
 
         function editAthkar(id) {
-            const item = db.getById('athkar', id);
+            const item = allAthkar.find(a => a.id == id);
             if (!item) return;
 
             document.getElementById('athkarId').value = item.id;
@@ -189,15 +194,19 @@
             athkarModal.show();
         }
 
-        function deleteAthkar(id) {
+        async function deleteAthkar(id) {
             if (confirm('هل أنت متأكد من حذف هذا الذكر؟')) {
-                db.delete('athkar', id);
-                renderAthkar();
-                showToast('تم حذف الذكر بنجاح', 'success');
+                try {
+                    await ApiService.athkar.delete(id);
+                    await fetchAthkar();
+                    showToast('تم حذف الذكر بنجاح', 'success');
+                } catch (error) {
+                    showToast('فشل حذف الذكر: ' + error.message, 'danger');
+                }
             }
         }
 
-        document.getElementById('athkarForm').addEventListener('submit', (e) => {
+        document.getElementById('athkarForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('athkarId').value;
             const data = {
@@ -209,16 +218,20 @@
                 active: document.getElementById('athkarActive').checked
             };
 
-            if (id) {
-                db.update('athkar', id, data);
-                showToast('تم تحديث الذكر بنجاح', 'success');
-            } else {
-                db.add('athkar', data);
-                showToast('تم إضافة الذكر بنجاح', 'success');
+            try {
+                if (id) {
+                    await ApiService.athkar.update(id, data);
+                    showToast('تم تحديث الذكر بنجاح', 'success');
+                } else {
+                    await ApiService.athkar.create(data);
+                    showToast('تم إضافة الذكر بنجاح', 'success');
+                }
+                
+                athkarModal.hide();
+                await fetchAthkar();
+            } catch (error) {
+                showToast('فشل الحفظ: ' + error.message, 'danger');
             }
-            
-            athkarModal.hide();
-            renderAthkar();
         });
     </script>
 </body>

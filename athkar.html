@@ -114,6 +114,11 @@
         let currentCategoryId = 1; // 1: Morning, 2: Evening
         let allAthkar = [];
         
+        const categoryMapping = {
+            1: ['صباحي', 'صباح', '1', 1],
+            2: ['مسائي', 'مساء', '2', 2]
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Athkar page loaded');
             Layout.init('athkar');
@@ -130,6 +135,7 @@
                 const response = await ApiService.athkar.getAll();
                 console.log('Athkar Response:', response);
                 
+                // Extract data from standard response structures
                 if (response && response.data) {
                     allAthkar = response.data;
                 } else if (response && response.athkar) {
@@ -148,13 +154,21 @@
         }
 
         function filterAthkar(categoryId) {
+            console.log('Filtering category:', categoryId);
             currentCategoryId = categoryId;
-            renderAthkar();
+            fetchAthkar(); // Sync with server on tab change
         }
 
         function renderAthkar() {
-            // Using 'category' to match backend field name
-            const filtered = allAthkar.filter(a => (a.category == currentCategoryId) || (a.category_id == currentCategoryId));
+            console.log('Rendering for category:', currentCategoryId);
+            const validCategories = categoryMapping[currentCategoryId];
+            
+            const filtered = allAthkar.filter(a => {
+                const catValue = a.category || a.category_id;
+                return validCategories.includes(catValue);
+            });
+            
+            console.log('Filtered items:', filtered);
             const tbody = document.getElementById('athkarTableBody');
             
             if (filtered.length === 0) {
@@ -166,11 +180,11 @@
                 <tr>
                     <td>${item.title ? item.title : '<small class="text-muted">بدون عنوان</small>'}</td>
                     <td><small class="text-truncate d-inline-block" style="max-width: 300px;">${item.content}</small></td>
-                    <td>${item.times}</td>
+                    <td>${item.repetition || item.times || 1}</td>
                     <td><small>${item.benefit || '-'}</small></td>
                     <td>
-                        <span class="badge bg-${item.active ? 'success' : 'secondary'}-light text-${item.active ? 'success' : 'secondary'}">
-                            ${item.active ? 'نشط' : 'غير نشط'}
+                        <span class="badge bg-${item.active !== false ? 'success' : 'secondary'}-light text-${item.active !== false ? 'success' : 'secondary'}">
+                            ${item.active !== false ? 'نشط' : 'غير نشط'}
                         </span>
                     </td>
                     <td>
@@ -197,13 +211,21 @@
             if (!item) return;
 
             document.getElementById('athkarId').value = item.id;
-            // Support both 'category' and 'category_id'
-            document.getElementById('athkarCategory').value = item.category || item.category_id;
+            
+            // Map string category back to ID for the select input
+            let catId = currentCategoryId;
+            if (item.category || item.category_id) {
+                const val = item.category || item.category_id;
+                if (categoryMapping[1].includes(val)) catId = 1;
+                else if (categoryMapping[2].includes(val)) catId = 2;
+            }
+            
+            document.getElementById('athkarCategory').value = catId;
             document.getElementById('athkarTitle').value = item.title || '';
             document.getElementById('athkarContent').value = item.content;
-            document.getElementById('athkarTimes').value = item.times;
+            document.getElementById('athkarTimes').value = item.repetition || item.times || 1;
             document.getElementById('athkarBenefit').value = item.benefit || '';
-            document.getElementById('athkarActive').checked = item.active;
+            document.getElementById('athkarActive').checked = item.active !== false;
             
             document.getElementById('modalTitle').innerText = 'تعديل الذكر';
             athkarModal.show();
@@ -224,11 +246,16 @@
         document.getElementById('athkarForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('athkarId').value;
+            
+            // Map ID back to string if needed by backend, 
+            // but usually backend accepts ID or the user already changed it to 'category'
+            const catId = parseInt(document.getElementById('athkarCategory').value);
+            
             const data = {
-                category: parseInt(document.getElementById('athkarCategory').value),
+                category: catId, // Or map to string if current backend exclusively uses strings
                 title: document.getElementById('athkarTitle').value,
                 content: document.getElementById('athkarContent').value,
-                times: parseInt(document.getElementById('athkarTimes').value) || 1,
+                repetition: parseInt(document.getElementById('athkarTimes').value) || 1,
                 benefit: document.getElementById('athkarBenefit').value,
                 active: document.getElementById('athkarActive').checked
             };

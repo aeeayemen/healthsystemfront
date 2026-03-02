@@ -126,6 +126,14 @@ const ApiService = {
         measurements: (period) => ApiService.request(`/reports/measurements?period=${period}`)
     },
 
+       athkar: {
+        getAll: () => ApiService.request('/athkar'),
+        get: (id) => ApiService.request(`/athkar/${id}`),
+        create: (data) => ApiService.request('/athkar', 'POST', data),
+        update: (id, data) => ApiService.request(`/athkar/${id}`, 'PUT', data),
+        delete: (id) => ApiService.request(`/athkar/${id}`, 'DELETE')
+    },
+
     // Users
     users: {
         getAll: (params) => ApiService.request(`/users?${new URLSearchParams(params)}`),

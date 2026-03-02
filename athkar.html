@@ -115,6 +115,7 @@
         let allAthkar = [];
         
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Athkar page loaded');
             Layout.init('athkar');
             athkarModal = new bootstrap.Modal(document.getElementById('athkarModal'));
             fetchAthkar();
@@ -122,11 +123,23 @@
 
         async function fetchAthkar() {
             try {
+                console.log('Fetching Athkar...');
                 const tbody = document.getElementById('athkarTableBody');
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
                 
                 const response = await ApiService.athkar.getAll();
-                allAthkar = response.data || response; // Handle both direct array and {data: []}
+                console.log('Athkar Response:', response);
+                
+                if (response && response.data) {
+                    allAthkar = response.data;
+                } else if (response && response.athkar) {
+                    allAthkar = response.athkar;
+                } else if (Array.isArray(response)) {
+                    allAthkar = response;
+                } else {
+                    allAthkar = [];
+                }
+                
                 renderAthkar();
             } catch (error) {
                 console.error('Failed to fetch athkar:', error);
@@ -140,7 +153,8 @@
         }
 
         function renderAthkar() {
-            const filtered = allAthkar.filter(a => a.category == currentCategoryId);
+            // Using 'category' to match backend field name
+            const filtered = allAthkar.filter(a => (a.category == currentCategoryId) || (a.category_id == currentCategoryId));
             const tbody = document.getElementById('athkarTableBody');
             
             if (filtered.length === 0) {
@@ -183,7 +197,8 @@
             if (!item) return;
 
             document.getElementById('athkarId').value = item.id;
-            document.getElementById('athkarCategory').value = item.category_id;
+            // Support both 'category' and 'category_id'
+            document.getElementById('athkarCategory').value = item.category || item.category_id;
             document.getElementById('athkarTitle').value = item.title || '';
             document.getElementById('athkarContent').value = item.content;
             document.getElementById('athkarTimes').value = item.times;

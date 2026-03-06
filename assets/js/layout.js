@@ -40,7 +40,8 @@ const Layout = {
                     { name: 'النصائح', link: 'tips.html', id: 'tips' },
                     { name: 'فئات النصائح', link: 'tips-categories.html', id: 'tips-categories' },
                     { name: 'المنتدى', link: 'forum.html', id: 'forum' },
-                    { name: 'الإعلانات', link: 'advertisements.html', id: 'advertisements' }
+                    { name: 'الإعلانات', link: 'advertisements.html', id: 'advertisements' },
+                    { name: 'الملفات المساعدة', link: 'helper-files.html', id: 'helper-files' }
                 ]
             },
             {

@@ -380,7 +380,13 @@ const ApiService = {
             updateStatus: (id, status) => ApiService.request(`/medical-tests/${id}/status`, 'PUT', { status })
         }
     },
-
+  medicalFiles: {
+        getAll: (params) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
+        get: (id) => ApiService.request(`/medical-files/${id}`),
+        create: (formData) => ApiService.uploadFormData('/medical-files', 'POST', formData),
+        update: (id, formData) => ApiService.uploadFormData(`/medical-files/${id}?_method=PUT`, 'POST', formData),
+        delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE')
+    },
     system: {
         logs: (params) => ApiService.request(`/logs?${new URLSearchParams(params)}`),
         notifications: {

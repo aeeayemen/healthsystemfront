@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملفات المساعدة - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar"></nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light" id="navbar"></nav>
+
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-file-medical me-2"></i>المحتوى المساعد (المراجع)</h2>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>إضافة ملف جديد
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>الرقم</th>
+                                        <th>اسم الملف</th>
+                                        <th>النوع</th>
+                                        <th>الوصف</th>
+                                        <th>تاريخ الرفع</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <!-- Data will be loaded from API -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">إضافة ملف مساعد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label class="form-label">اسم الملف (للعرض)</label>
+                            <input type="text" class="form-control" id="formFileName" required placeholder="مثلاً: مرجع كراوس للتغذية">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الملف</label>
+                            <input type="file" class="form-control" id="formFile" required>
+                            <small class="text-muted">انواع الملفات المسموحة: PDF, Images, Word</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">نوع الملف في التطبيق</label>
+                            <select class="form-select" id="formFileType">
+                                <option value="reference">مرجع طبي (Reference)</option>
+                                <option value="public_ref">مرجع عام (Public Ref)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الوصف</label>
+                            <textarea class="form-control" id="formDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body"><p>هل أنت متأكد من حذف هذا الملف؟ لا يمكن التراجع عن هذا الإجراء.</p></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/layout.js"></script>
+    <script>
+        let allData = [];
+        let formModal, deleteModal;
+        let deleteId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Layout.init('helper-files');
+            formModal = new bootstrap.Modal(document.getElementById('formModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            loadData();
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+        });
+
+        async function loadData() {
+            try {
+                // Fetch only reference files (without patient_id if possible, or filter)
+                const response = await ApiService.medicalFiles.getAll();
+                allData = (response.data || response || []).filter(f => !f.patient_id);
+                renderTable();
+            } catch (error) {
+                console.error('Failed to load helper files:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            if (allData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد ملفات مساعدة مرفوعة حالياً</td></tr>';
+            } else {
+                tbody.innerHTML = allData.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>
+                            <a href="${API_BASE_URL.replace('/api', '')}/${item.file_path}" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-file-pdf me-1"></i> ${item.file_name}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-info">${item.file_type || item.status || 'مرجع'}</span></td>
+                        <td class="text-truncate" style="max-width: 200px;">${item.description || '-'}</td>
+                        <td>${item.uploaded_at ? item.uploaded_at.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : '-')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'رفع ملف مساعد جديد';
+            document.getElementById('editId').value = '';
+            document.getElementById('formFileName').value = '';
+            document.getElementById('formFile').value = '';
+            document.getElementById('formDescription').value = '';
+            document.getElementById('formFile').required = true;
+            formModal.show();
+        }
+
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const fileInput = document.getElementById('formFile');
+            const fileName = document.getElementById('formFileName').value;
+            const status = document.getElementById('formFileType').value;
+            const description = document.getElementById('formDescription').value;
+
+            if (!fileName || (!id && fileInput.files.length === 0)) {
+                alert('يرجى اختيار ملف وإدخال اسم له');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file_name', fileName);
+            formData.append('status', status);
+            formData.append('description', description);
+            if (fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+
+            try {
+                if (id) {
+                    await ApiService.medicalFiles.update(id, formData);
+                    showToast('تم تحديث الملف بنجاح');
+                } else {
+                    await ApiService.medicalFiles.create(formData);
+                    showToast('تم رفع الملف بنجاح');
+                }
+                formModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to save file:', error);
+                alert('فشل حفظ الملف: ' + (error.message || 'خطأ غير معروف'));
+            }
+        }
+
+        function openDeleteModal(id) {
+            deleteId = id;
+            deleteModal.show();
+        }
+
+        async function confirmDelete() {
+            try {
+                await ApiService.medicalFiles.delete(deleteId);
+                showToast('تم حذف الملف بنجاح');
+                deleteModal.hide();
+                loadData();
+            } catch (error) {
+                console.error('Failed to delete file:', error);
+                alert('فشل حذف الملف');
+            }
+        }
+    </script>
+</body>
+</html>

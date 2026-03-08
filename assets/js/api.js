@@ -1,4 +1,6 @@
-const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; // Update this with your actual backend URL
+const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; 
+const IMAGE_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/storage/'; 
+
 
 const ApiService = {
     // Helper for making requests

@@ -1,8 +1,6 @@
-const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; // Update this with your actual backend URL
-const IMAGE_BASE_URL = API_BASE_URL.replace('/api', '/'); // Base URL for images/uploads
+const API_BASE_URL = 'http://localhost:8000/api'; // Update this with your actual backend URL
 
 const ApiService = {
-
     // Helper for making requests
     async request(endpoint, method = 'GET', body = null) {
         const token = localStorage.getItem('auth_token');
@@ -98,6 +96,12 @@ const ApiService = {
             return data;
         } catch (error) {
             console.error('API Upload Failed:', error);
+            // Log more details if available
+            if (error.response) {
+                console.error('Response Status:', error.response.status);
+                const errorText = await error.response.text();
+                console.error('Response Body:', errorText);
+            }
             throw error;
         }
     },
@@ -124,14 +128,6 @@ const ApiService = {
         ratings: (params) => ApiService.request(`/rates?${new URLSearchParams(params)}`),
         diets: (year) => ApiService.request(`/reports/diets?year=${year}`),
         measurements: (period) => ApiService.request(`/reports/measurements?period=${period}`)
-    },
-
-       athkar: {
-        getAll: () => ApiService.request('/athkar'),
-        get: (id) => ApiService.request(`/athkar/${id}`),
-        create: (data) => ApiService.request('/athkar', 'POST', data),
-        update: (id, data) => ApiService.request(`/athkar/${id}`, 'PUT', data),
-        delete: (id) => ApiService.request(`/athkar/${id}`, 'DELETE')
     },
 
     // Users
@@ -380,6 +376,8 @@ const ApiService = {
             updateStatus: (id, status) => ApiService.request(`/medical-tests/${id}/status`, 'PUT', { status })
         }
     },
+
+    // Medical Files (Helper Files)
     medicalFiles: {
         getAll: (params) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/medical-files/${id}`),
@@ -388,6 +386,7 @@ const ApiService = {
         delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
         download: (id) => `${API_BASE_URL}/medical-files/${id}/download` // Return URL for direct download
     },
+
     system: {
         logs: (params) => ApiService.request(`/logs?${new URLSearchParams(params)}`),
         notifications: {

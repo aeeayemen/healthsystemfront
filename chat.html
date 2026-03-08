@@ -63,9 +63,16 @@
                         </div>
 
                         <div class="chat-input">
-                            <form id="messageForm" class="d-flex gap-2">
-                                <input type="text" class="form-control" placeholder="اكتب رسالتك هنا..." required>
-                                <button type="button" class="btn btn-light"><i class="fas fa-paperclip"></i></button>
+                            <form id="messageForm" class="d-flex gap-2 align-items-center">
+                                <input type="file" id="chatFileInput" class="d-none" onchange="previewFile()">
+                                <button type="button" class="btn btn-light" onclick="document.getElementById('chatFileInput').click()">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <div id="filePreview" class="d-none badge bg-secondary p-2 position-relative">
+                                    <span id="fileNameDisplay"></span>
+                                    <i class="fas fa-times ms-2 cursor-pointer" onclick="clearFile()"></i>
+                                </div>
+                                <input type="text" id="messageInput" class="form-control" placeholder="اكتب رسالتك هنا...">
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
                             </form>
                         </div>
@@ -132,12 +139,27 @@
                 // Update header info (mocked for now as we might need chat details endpoint)
                 // document.querySelector('.chat-header h6').textContent = ...
 
-                messagesArea.innerHTML = messages.map(msg => `
-                    <div class="message ${msg.is_sender ? 'sent' : 'received'}">
-                        ${msg.message}
-                        <div class="small ${msg.is_sender ? 'text-white-50' : 'text-muted'} mt-1">${formatTime(msg.created_at)}</div>
-                    </div>
-                `).join('');
+                messagesArea.innerHTML = messages.map(msg => {
+                    let content = msg.message;
+                    if (msg.file_path) {
+                        const fileUrl = `${API_BASE_URL.replace('/api', '')}/${msg.file_path}`;
+                        if (msg.file_type && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(msg.file_type.toLowerCase())) {
+                            content += `<div class="mt-2"><img src="${fileUrl}" class="img-fluid rounded shadow-sm" style="max-height: 200px; cursor: pointer;" onclick="window.open('${fileUrl}')"></div>`;
+                        } else {
+                            content += `<div class="mt-2">
+                                <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-light border">
+                                    <i class="fas fa-file-download me-1"></i> ${msg.file_name || 'ملف مرفق'}
+                                </a>
+                            </div>`;
+                        }
+                    }
+                    return `
+                        <div class="message ${msg.sender_type === 'doctor' ? 'sent' : 'received'}">
+                            ${content}
+                            <div class="small ${msg.sender_type === 'doctor' ? 'text-white-50' : 'text-muted'} mt-1">${formatTime(msg.created_at)}</div>
+                        </div>
+                    `;
+                }).join('');
                 
                 messagesArea.scrollTop = messagesArea.scrollHeight;
             } catch (error) {
@@ -151,36 +173,45 @@
             return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
         }
 
+        function previewFile() {
+            const file = document.getElementById('chatFileInput').files[0];
+            if (file) {
+                document.getElementById('fileNameDisplay').textContent = file.name;
+                document.getElementById('filePreview').classList.remove('d-none');
+            }
+        }
+
+        function clearFile() {
+            document.getElementById('chatFileInput').value = '';
+            document.getElementById('filePreview').classList.add('d-none');
+        }
+
         document.getElementById('messageForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentChatId) return;
 
-            const input = e.target.querySelector('input');
+            const input = document.getElementById('messageInput');
+            const fileInput = document.getElementById('chatFileInput');
             const text = input.value;
-            if (!text.trim()) return;
+            const hasFile = fileInput.files.length > 0;
 
-            const messagesArea = document.getElementById('messagesArea');
-            const time = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            
-            // Optimistic UI update
-            messagesArea.innerHTML += `
-                <div class="message sent">
-                    ${text}
-                    <div class="small text-white-50 mt-1">${time}</div>
-                </div>
-            `;
-            messagesArea.scrollTop = messagesArea.scrollHeight;
+            if (!text.trim() && !hasFile) return;
+
+            const formData = new FormData();
+            formData.append('receiver_id', currentChatId);
+            if (text.trim()) formData.append('message', text);
+            if (hasFile) formData.append('file', fileInput.files[0]);
+
+            // Clear input immediately for UX
             input.value = '';
+            clearFile();
 
             try {
-                await ApiService.chat.sendMessage({
-                    conversation_id: currentChatId,
-                    message: text
-                });
-                // Optionally reload messages to confirm or get server timestamp
+                await ApiService.chat.sendMessage(formData);
+                loadChat(currentChatId); // Reload to show server-side data (like file URL)
             } catch (error) {
                 console.error('Failed to send message', error);
-                // Handle error (e.g., show retry button)
+                alert('فشل إرسال الرسالة');
             }
         });
     </script>

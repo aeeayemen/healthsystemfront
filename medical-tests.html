@@ -37,6 +37,7 @@
                                         <th>الاسم</th>
                                         <th>الصورة</th>
                                         <th>تاريخ الإنشاء</th>
+                                        <th>الحالة</th>
                                         <th>إجراءات</th>
                                     </tr>
                                 </thead>
@@ -72,21 +73,23 @@
                         <input type="hidden" id="editId">
                         <div class="mb-3">
                             <label class="form-label">رقم المستخدم (user_id)</label>
-                            <select class="form-select" id="formUserId" required>
-                                <option value="">اختر المستخدم...</option>
-                            </select>
+                            <input type="number" class="form-control" id="formUserId" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">اسم الفحص</label>
                             <input type="text" class="form-control" id="formName" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">صورة الفحص</label>
-                            <input type="file" class="form-control" id="formImage" accept="image/*">
-                            <div id="currentImagePreview" class="mt-2 d-none">
-                                <small class="text-muted d-block">الصورة الحالية:</small>
-                                <img src="" alt="Current Image" class="img-thumbnail" style="height: 50px;">
-                            </div>
+                            <label class="form-label">رابط الصورة</label>
+                            <input type="url" class="form-control" id="formImage" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحالة</label>
+                            <select class="form-select" id="formStatus">
+                                <option value="pending">قيد الانتظار</option>
+                                <option value="completed">مكتمل</option>
+                                <option value="cancelled">ملغى</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -143,7 +146,6 @@
             formModal = new bootstrap.Modal(document.getElementById('formModal'));
             deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
             loadData();
-            loadUsers();
             document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
         });
 
@@ -155,18 +157,6 @@
             } catch (error) {
                 console.error('Failed to load medical tests:', error);
                 document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
-            }
-        }
-
-        async function loadUsers() {
-            try {
-                const response = await ApiService.users.getAll(); 
-                const users = response.data || response;
-                const select = document.getElementById('formUserId');
-                select.innerHTML = '<option value="">اختر المستخدم...</option>' + 
-                    users.map(u => `<option value="${u.id}">${u.name} (${u.email})</option>`).join('');
-            } catch (error) {
-                console.error('Failed to load users', error);
             }
         }
 
@@ -183,8 +173,11 @@
                         <td>${item.id}</td>
                         <td><span class="badge bg-secondary">${item.user_id || '-'}</span></td>
                         <td>${item.name || '-'}</td>
-                        <td>${item.image ? `<img src="${IMAGE_BASE_URL}${item.image}" alt="${item.name}" class="img-preview" onclick="showImage('${IMAGE_BASE_URL}${item.image}')" style="max-width: 100px; cursor: pointer;">` : '-'}</td>
+                        <td>${item.image ? `<img src="${item.image}" alt="${item.name}" class="img-preview" onclick="showImage('${item.image}')" style="max-width: 100px; cursor: pointer;">` : '-'}</td>
                         <td>${item.created_at ? item.created_at.split('T')[0] : '-'}</td>
+                        <td>
+                            <span class="badge bg-${getStatusColor(item.status)}">${getStatusName(item.status)}</span>
+                        </td>
                         <td>
                             <button class="btn btn-sm btn-outline-info me-1" onclick="viewDetails(${item.id})"><i class="fas fa-eye"></i></button>
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
@@ -211,7 +204,6 @@
             document.getElementById('formUserId').value = '';
             document.getElementById('formName').value = '';
             document.getElementById('formImage').value = '';
-            document.getElementById('currentImagePreview').classList.add('d-none');
             formModal.show();
         }
 
@@ -223,14 +215,8 @@
                 document.getElementById('editId').value = id;
                 document.getElementById('formUserId').value = item.user_id || '';
                 document.getElementById('formName').value = item.name || '';
-                document.getElementById('formImage').value = '';
-                const currentImage = document.getElementById('currentImagePreview');
-                if (item.image) {
-                    currentImage.classList.remove('d-none');
-                    currentImage.querySelector('img').src = IMAGE_BASE_URL + item.image;
-                } else {
-                    currentImage.classList.add('d-none');
-                }
+                document.getElementById('formImage').value = item.image || '';
+                document.getElementById('formStatus').value = item.status || 'pending';
                 formModal.show();
             } catch (error) {
                 console.error('Failed to load medical test:', error);
@@ -240,32 +226,24 @@
 
         async function saveData() {
             const id = document.getElementById('editId').value;
-            const imageInput = document.getElementById('formImage');
-            const formData = new FormData();
+            const data = {
+                user_id: parseInt(document.getElementById('formUserId').value),
+                name: document.getElementById('formName').value.trim(),
+                image: document.getElementById('formImage').value.trim(),
+                status: document.getElementById('formStatus').value
+            };
             
-            formData.append('user_id', document.getElementById('formUserId').value);
-            formData.append('name', document.getElementById('formName').value.trim());
-            
-            if (imageInput.files.length > 0) {
-                formData.append('image', imageInput.files[0]);
-            }
-            
-            if (!formData.get('user_id') || !formData.get('name')) { 
+            if (!data.user_id || !data.name || !data.image) { 
                 alert('يرجى ملء جميع الحقول'); 
                 return; 
-            }
-            if (!id && imageInput.files.length === 0) {
-                alert('يرجى اختيار صورة');
-                return;
             }
 
             try {
                 if (id) {
-                    formData.append('_method', 'PUT');
-                    await ApiService.uploadFormData(`/medical-tests/${id}`, 'POST', formData);
+                    await ApiService.medicalTests.update(id, data);
                     if (typeof showToast === 'function') showToast('تم تحديث الفحص بنجاح');
                 } else {
-                    await ApiService.uploadFormData('/medical-tests', 'POST', formData);
+                    await ApiService.medicalTests.create(data);
                     if (typeof showToast === 'function') showToast('تم إضافة الفحص بنجاح');
                 }
                 formModal.hide();
@@ -277,6 +255,7 @@
         }
 
         function openDeleteModal(id) { 
+            // alert('Debug: Opening delete modal for ID: ' + id);
             deleteId = id; 
             deleteModal.show(); 
         }
@@ -287,6 +266,7 @@
                 return;
             }
             try {
+                // alert('Debug: Sending delete request for ID: ' + deleteId);
                 await ApiService.medicalTests.delete(deleteId);
                 if (typeof showToast === 'function') showToast('تم حذف الفحص بنجاح');
                 else alert('تم حذف الفحص بنجاح');
@@ -298,6 +278,13 @@
                 console.error('Failed to delete medical test:', error);
                 alert('فشل حذف الفحص: ' + (error.message || 'خطأ غير معروف'));
             }
+        }
+        function getStatusColor(status) {
+            return { pending: 'warning', completed: 'success', cancelled: 'danger' }[status] || 'secondary';
+        }
+
+        function getStatusName(status) {
+            return { pending: 'قيد الانتظار', completed: 'مكتمل', cancelled: 'ملغى' }[status] || status;
         }
     </script>
 </body>

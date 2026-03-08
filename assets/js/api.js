@@ -254,7 +254,7 @@ const ApiService = {
     chat: {
         getConversations: () => ApiService.request('/chat/conversations'),
         getMessages: (id) => ApiService.request(`/chat/conversations/${id}/messages`),
-        sendMessage: (data) => ApiService.request('/chat/messages', 'POST', data),
+        sendMessage: (formData) => ApiService.uploadFormData('/chat/messages', 'POST', formData),
         adminChats: () => ApiService.request('/admin/chats'),
         deleteConversation: (id) => ApiService.request(`/admin/chats/${id}`, 'DELETE'),
         deleteMessage: (id) => ApiService.request(`/admin/messages/${id}`, 'DELETE')
@@ -380,12 +380,13 @@ const ApiService = {
             updateStatus: (id, status) => ApiService.request(`/medical-tests/${id}/status`, 'PUT', { status })
         }
     },
-  medicalFiles: {
+    medicalFiles: {
         getAll: (params) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/medical-files/${id}`),
         create: (formData) => ApiService.uploadFormData('/medical-files', 'POST', formData),
         update: (id, formData) => ApiService.uploadFormData(`/medical-files/${id}?_method=PUT`, 'POST', formData),
-        delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE')
+        delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
+        download: (id) => `${API_BASE_URL}/medical-files/${id}/download` // Return URL for direct download
     },
     system: {
         logs: (params) => ApiService.request(`/logs?${new URLSearchParams(params)}`),

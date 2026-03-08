@@ -143,15 +143,18 @@
                     <tr>
                         <td>${item.id}</td>
                         <td>
-                            <a href="${API_BASE_URL.replace('/api', '')}/${item.file_path}" target="_blank" class="text-decoration-none">
-                                <i class="fas fa-file-pdf me-1"></i> ${item.file_name}
-                            </a>
+                            <i class="fas fa-file-alt me-1 text-primary"></i> ${item.file_name}
                         </td>
                         <td><span class="badge bg-info">${item.file_type || item.status || 'مرجع'}</span></td>
                         <td class="text-truncate" style="max-width: 200px;">${item.description || '-'}</td>
                         <td>${item.uploaded_at ? item.uploaded_at.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : '-')}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
+                            <a href="${ApiService.medicalFiles.download(item.id)}" class="btn btn-sm btn-outline-primary" target="_blank" title="تحميل">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </td>
                     </tr>
                 `).join('');

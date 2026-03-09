@@ -261,16 +261,16 @@
                     </div>
                     <div class="row g-2">
                         <div class="col-3">
-                            <input type="number" class="form-control form-control-sm meal-cal" placeholder="سعرات" value="${mealData?.calories || ''}">
+                            <input type="number" class="form-control form-control-sm meal-cal" placeholder="سعرات" value="${mealData?.calories || ''}" onchange="calculateTotalCalories()">
                         </div>
                         <div class="col-3">
-                            <input type="number" class="form-control form-control-sm meal-protein" placeholder="بروتين" value="${mealData?.protein || ''}">
+                            <input type="number" class="form-control form-control-sm meal-protein" placeholder="بروتين" value="${mealData?.protein || mealData?.protin || ''}">
                         </div>
                         <div class="col-3">
-                            <input type="number" class="form-control form-control-sm meal-carbs" placeholder="كارب" value="${mealData?.carbs || ''}">
+                            <input type="number" class="form-control form-control-sm meal-carbs" placeholder="كارب" value="${mealData?.carbs || mealData?.carbo || ''}">
                         </div>
                         <div class="col-3">
-                            <input type="number" class="form-control form-control-sm meal-fats" placeholder="دهون" value="${mealData?.fats || ''}">
+                            <input type="number" class="form-control form-control-sm meal-fats" placeholder="دهون" value="${mealData?.fats || mealData?.fat || ''}">
                         </div>
                     </div>
                 </div>
@@ -282,37 +282,57 @@
             document.getElementById(`meal-${id}`).remove();
         }
 
+        function calculateTotalCalories() {
+            let total = 0;
+            document.querySelectorAll('.meal-cal').forEach(input => {
+                total += parseInt(input.value) || 0;
+            });
+            return total > 0 ? Math.round(total / dayCount) : 0;
+        }
+
         async function savePlan() {
+            // Calculate duration in days
+            const startDate = document.getElementById('planStart').value;
+            const endDate = document.getElementById('planEnd').value;
+             let durationDays = 1;
+
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const diffTime = Math.abs(end - start);
+                durationDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
+            }
+
             // Collect Data
             const planData = {
                 title: document.getElementById('planTitle').value,
                 patient_id: document.getElementById('planPatient').value,
                 doctor_id: document.getElementById('planDoctor').value,
-                start_date: document.getElementById('planStart').value,
-                end_date: document.getElementById('planEnd').value,
+                start_date: startDate,
+                end_date: endDate,
                 status: document.getElementById('planStatus').value,
-                days: []
+                daily_calories: calculateTotalCalories(),
+                duration_days: durationDays,
+                meals: []
             };
 
-            // Collect Days & Meals
+            // Collect Meals in backend format
             for (let i = 1; i <= dayCount; i++) {
                 const dayContainer = document.getElementById(`meals-container-${i}`);
                 if (!dayContainer) continue;
 
-                const meals = [];
                 dayContainer.querySelectorAll('.meal-card').forEach(card => {
-                    meals.push({
-                        type: card.querySelector('.meal-type').value,
-                        name: card.querySelector('.meal-name').value,
-                        description: card.querySelector('.meal-desc').value,
-                        calories: card.querySelector('.meal-cal').value,
-                        protein: card.querySelector('.meal-protein').value,
-                        carbs: card.querySelector('.meal-carbs').value,
-                        fats: card.querySelector('.meal-fats').value
+                    planData.meals.push({
+                        day_number: i,
+                        meal_type: card.querySelector('.meal-type').value,
+                        meal_name: card.querySelector('.meal-name').value,
+                        calories: parseInt(card.querySelector('.meal-cal').value) || 0,
+                        protin: parseFloat(card.querySelector('.meal-protein').value) || 0,
+                        carbo: parseFloat(card.querySelector('.meal-carbs').value) || 0,
+                        fat: parseFloat(card.querySelector('.meal-fats').value) || 0,
+                        serving: card.querySelector('.meal-desc').value // Mapping description to serving as per backend validation
                     });
                 });
-
-                planData.days.push({ dayNum: i, meals: meals });
             }
 
             try {

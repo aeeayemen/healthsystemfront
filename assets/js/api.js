@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:8000/api'; // Update this with your actual backend URL
+
+const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; // Render hosting
 
 const ApiService = {
     // Helper for making requests

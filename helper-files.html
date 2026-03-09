@@ -139,7 +139,9 @@
             if (allData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد ملفات مساعدة مرفوعة حالياً</td></tr>';
             } else {
-                tbody.innerHTML = allData.map(item => `
+                tbody.innerHTML = allData.map(item => {
+                    const safeName = (item.file_name || 'file').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    return `
                     <tr>
                         <td>${item.id}</td>
                         <td>
@@ -149,7 +151,7 @@
                         <td class="text-truncate" style="max-width: 200px;">${item.description || '-'}</td>
                         <td>${item.uploaded_at ? item.uploaded_at.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : '-')}</td>
                         <td>
-                            <button onclick="downloadMedicalFile(${item.id}, '${item.file_name}')" class="btn btn-sm btn-outline-primary" title="تحميل">
+                            <button onclick="downloadMedicalFile(${item.id}, '${safeName}')" class="btn btn-sm btn-outline-primary" title="تحميل">
                                 <i class="fas fa-download"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})" title="حذف">
@@ -157,7 +159,7 @@
                             </button>
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
         }
 

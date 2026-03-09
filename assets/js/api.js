@@ -108,47 +108,10 @@ const ApiService = {
 
     // Helper for downloading files securely
     async downloadFile(endpoint, filename) {
-        const token = localStorage.getItem('auth_token');
-        const headers = {};
-
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                method: 'GET',
-                headers
-            });
-
-            if (response.status === 401) {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('hnd_user');
-                window.location.href = 'index.html';
-                return;
-            }
-
-            if (!response.ok) {
-                const text = await response.text();
-                let data;
-                try { data = JSON.parse(text); } catch (e) { data = { message: 'Download failed' }; }
-                throw new Error(data.message || 'Something went wrong');
-            }
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename || 'download';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('API Download Failed:', error);
-            throw error;
-        }
+        // ...Existing code...
     },
+
+    getBaseUrl: () => API_BASE_URL.replace('/api', ''),
 
     // Auth
     auth: {

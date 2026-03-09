@@ -149,9 +149,9 @@
                         <td class="text-truncate" style="max-width: 200px;">${item.description || '-'}</td>
                         <td>${item.uploaded_at ? item.uploaded_at.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : '-')}</td>
                         <td>
-                            <a href="${ApiService.medicalFiles.download(item.id)}" class="btn btn-sm btn-outline-primary" target="_blank" title="تحميل">
+                            <button onclick="downloadMedicalFile(${item.id}, '${item.file_name}')" class="btn btn-sm btn-outline-primary" title="تحميل">
                                 <i class="fas fa-download"></i>
-                            </a>
+                            </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})" title="حذف">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -169,6 +169,16 @@
             document.getElementById('formDescription').value = '';
             document.getElementById('formFile').required = true;
             formModal.show();
+        }
+
+        async function downloadMedicalFile(id, fileName) {
+            try {
+                showToast('جاري بدء التحميل...', 'info');
+                await ApiService.downloadFile(ApiService.medicalFiles.download(id), fileName);
+            } catch (error) {
+                console.error('Download failed', error);
+                alert('فشل تحميل الملف');
+            }
         }
 
         async function saveData() {

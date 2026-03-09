@@ -1,6 +1,4 @@
-const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; 
-const IMAGE_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/storage/'; 
-
+const API_BASE_URL = 'http://localhost:8000/api'; // Update this with your actual backend URL
 
 const ApiService = {
     // Helper for making requests
@@ -104,6 +102,50 @@ const ApiService = {
                 const errorText = await error.response.text();
                 console.error('Response Body:', errorText);
             }
+            throw error;
+        }
+    },
+
+    // Helper for downloading files securely
+    async downloadFile(endpoint, filename) {
+        const token = localStorage.getItem('auth_token');
+        const headers = {};
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'GET',
+                headers
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('hnd_user');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            if (!response.ok) {
+                const text = await response.text();
+                let data;
+                try { data = JSON.parse(text); } catch (e) { data = { message: 'Download failed' }; }
+                throw new Error(data.message || 'Something went wrong');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('API Download Failed:', error);
             throw error;
         }
     },
@@ -386,7 +428,7 @@ const ApiService = {
         create: (formData) => ApiService.uploadFormData('/medical-files', 'POST', formData),
         update: (id, formData) => ApiService.uploadFormData(`/medical-files/${id}?_method=PUT`, 'POST', formData),
         delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
-        download: (id) => `${API_BASE_URL}/medical-files/${id}/download` // Return URL for direct download
+        download: (id) => `/medical-files/${id}/download` // Return relative path for downloadFile helper
     },
 
     system: {

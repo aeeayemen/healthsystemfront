@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:8000/api'; // Update this with your actual backend URL
+const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; 
+const IMAGE_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/storage/'; 
+
 
 const ApiService = {
     // Helper for making requests
@@ -105,13 +107,6 @@ const ApiService = {
             throw error;
         }
     },
-
-    // Helper for downloading files securely
-    async downloadFile(endpoint, filename) {
-        // ...Existing code...
-    },
-
-    getBaseUrl: () => API_BASE_URL.replace('/api', ''),
 
     // Auth
     auth: {
@@ -391,7 +386,7 @@ const ApiService = {
         create: (formData) => ApiService.uploadFormData('/medical-files', 'POST', formData),
         update: (id, formData) => ApiService.uploadFormData(`/medical-files/${id}?_method=PUT`, 'POST', formData),
         delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
-        download: (id) => `/medical-files/${id}/download` // Return relative path for downloadFile helper
+        download: (id) => `${API_BASE_URL}/medical-files/${id}/download` // Return URL for direct download
     },
 
     system: {

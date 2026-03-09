@@ -229,14 +229,28 @@
         document.getElementById('planForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('planId').value;
+            const startDate = document.getElementById('planStart').value;
+            const endDate = document.getElementById('planEnd').value;
+            let durationDays = 1;
+
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const diffTime = Math.abs(end - start);
+                durationDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            }
+
             const data = {
                 title: document.getElementById('planTitle').value,
                 patient_id: document.getElementById('planPatient').value,
                 doctor_id: document.getElementById('planDoctor').value,
-                start_date: document.getElementById('planStart').value,
-                end_date: document.getElementById('planEnd').value,
-                details: document.getElementById('planDetails').value,
-                status: document.getElementById('planStatus').value
+                start_date: startDate,
+                end_date: endDate,
+                description: document.getElementById('planDetails').value,
+                status: document.getElementById('planStatus').value,
+                daily_calories: 2000, // Default for quick add
+                duration_days: durationDays,
+                meals: [] // Default empty meals for quick add
             };
 
             try {

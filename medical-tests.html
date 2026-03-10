@@ -80,8 +80,9 @@
                             <input type="text" class="form-control" id="formName" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">رابط الصورة</label>
-                            <input type="url" class="form-control" id="formImage" required>
+                            <label class="form-label">صورة الفحص</label>
+                            <input type="file" class="form-control" id="formImage" accept="image/*">
+                            <div id="imageStatusLabel" class="form-text mt-1"></div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">الحالة</label>
@@ -173,7 +174,7 @@
                         <td>${item.id}</td>
                         <td><span class="badge bg-secondary">${item.user_id || '-'}</span></td>
                         <td>${item.name || '-'}</td>
-                        <td>${item.image ? `<img src="${item.image}" alt="${item.name}" class="img-preview" onclick="showImage('${item.image}')" style="max-width: 100px; cursor: pointer;">` : '-'}</td>
+                        <td>${item.image ? `<img src="${ApiService.getBaseUrl()}/${item.image}" alt="${item.name}" class="img-preview" onclick="showImage('${ApiService.getBaseUrl()}/${item.image}')" style="max-width: 100px; cursor: pointer;">` : '-'}</td>
                         <td>${item.created_at ? item.created_at.split('T')[0] : '-'}</td>
                         <td>
                             <span class="badge bg-${getStatusColor(item.status)}">${getStatusName(item.status)}</span>
@@ -215,7 +216,12 @@
                 document.getElementById('editId').value = id;
                 document.getElementById('formUserId').value = item.user_id || '';
                 document.getElementById('formName').value = item.name || '';
-                document.getElementById('formImage').value = item.image || '';
+                document.getElementById('formImage').value = ''; // Reset file input
+                if (item.image) {
+                    document.getElementById('imageStatusLabel').innerHTML = `<span class="text-success">توجد صورة حالياً: ${item.image.split('/').pop()}</span>`;
+                } else {
+                    document.getElementById('imageStatusLabel').textContent = 'لا توجد صورة حالياً';
+                }
                 document.getElementById('formStatus').value = item.status || 'pending';
                 formModal.show();
             } catch (error) {
@@ -226,24 +232,45 @@
 
         async function saveData() {
             const id = document.getElementById('editId').value;
-            const data = {
-                user_id: parseInt(document.getElementById('formUserId').value),
-                name: document.getElementById('formName').value.trim(),
-                image: document.getElementById('formImage').value.trim(),
-                status: document.getElementById('formStatus').value
-            };
+            const userId = document.getElementById('formUserId').value;
+            const name = document.getElementById('formName').value.trim();
+            const imageFile = document.getElementById('formImage').files[0];
+            const status = document.getElementById('formStatus').value;
             
-            if (!data.user_id || !data.name || !data.image) { 
-                alert('يرجى ملء جميع الحقول'); 
+            if (!userId || !name) { 
+                alert('يرجى ملء جميع الحقول الضرورية'); 
                 return; 
             }
 
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('name', name);
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            formData.append('status', status);
+
             try {
                 if (id) {
-                    await ApiService.medicalTests.update(id, data);
+                    // Note: Laravel often needs _method: 'PUT' for multipart data in PUT requests
+                    if (ApiService.medicalTests.update) {
+                        // Use the existing service but handle FormData if it doesn't already
+                        await ApiService.medicalTests.update(id, formData);
+                    } else {
+                        // Fallback/Direct call if service doesn't support FormData well
+                        await fetch(`${ApiService.getBaseUrl()}/api/medical-tests/${id}?_method=PUT`, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                                'Accept': 'application/json'
+                            }
+                        });
+                    }
                     if (typeof showToast === 'function') showToast('تم تحديث الفحص بنجاح');
                 } else {
-                    await ApiService.medicalTests.create(data);
+                    await ApiService.medicalTests.create(formData);
                     if (typeof showToast === 'function') showToast('تم إضافة الفحص بنجاح');
                 }
                 formModal.hide();

@@ -1,4 +1,3 @@
-
 const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; // Render hosting
 
 const ApiService = {
@@ -358,8 +357,8 @@ const ApiService = {
     medicalTests: {
         getAll: (params) => ApiService.request(`/medical-tests?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/medical-tests/${id}`),
-        create: (data) => ApiService.request('/medical-tests', 'POST', data),
-        update: (id, data) => ApiService.request(`/medical-tests/${id}`, 'PUT', data),
+        create: (formData) => ApiService.uploadFormData('/medical-tests', 'POST', formData),
+        update: (id, formData) => ApiService.uploadFormData(`/medical-tests/${id}?_method=PUT`, 'POST', formData),
         delete: (id) => ApiService.request(`/medical-tests/${id}`, 'DELETE'),
         updateStatus: (id, status) => ApiService.request(`/medical-tests/${id}/status`, 'PUT', { status })
     },

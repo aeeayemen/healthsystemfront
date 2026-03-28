@@ -166,6 +166,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
                 <div class="row mb-4">
                     <div class="col-md-3 mb-3">
                         <div class="card text-white h-100" style="background-color: #9d0176;">
@@ -243,8 +245,9 @@
             try {
                 // 1. Fetch Stats from API
                 const response = await ApiService.dashboard.stats(period);
-                // API returns { stats: {...}, recent_consultations: [...], monthly_revenue: [...] }
+                console.log('API Response:', response);
                 const stats = response.stats || response;
+                console.log('Resolved Stats:', stats);
 
                 // Update UI with stats
                 document.getElementById('totalUsersCount').innerText = stats.users?.total || 0;

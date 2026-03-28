@@ -1,6 +1,8 @@
-const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; // Render hosting
+var API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; // Update this with your actual backend URL
+var IMAGE_BASE_URL = API_BASE_URL.replace('/api', '/'); // Base URL for images/uploads
 
 const ApiService = {
+
     // Helper for making requests
     async request(endpoint, method = 'GET', body = null) {
         const token = localStorage.getItem('auth_token');
@@ -96,61 +98,9 @@ const ApiService = {
             return data;
         } catch (error) {
             console.error('API Upload Failed:', error);
-            // Log more details if available
-            if (error.response) {
-                console.error('Response Status:', error.response.status);
-                const errorText = await error.response.text();
-                console.error('Response Body:', errorText);
-            }
             throw error;
         }
     },
-
-    // Helper for downloading files securely
-    async downloadFile(endpoint, filename) {
-        const token = localStorage.getItem('auth_token');
-        const headers = {};
-
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                method: 'GET',
-                headers
-            });
-
-            if (response.status === 401) {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('hnd_user');
-                window.location.href = 'index.html';
-                return;
-            }
-
-            if (!response.ok) {
-                const text = await response.text();
-                let data;
-                try { data = JSON.parse(text); } catch (e) { data = { message: 'Download failed' }; }
-                throw new Error(data.message || 'Something went wrong');
-            }
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename || 'download';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('API Download Failed:', error);
-            throw error;
-        }
-    },
-
-    getBaseUrl: () => API_BASE_URL.replace('/api', ''),
 
     // Auth
     auth: {
@@ -296,7 +246,7 @@ const ApiService = {
     chat: {
         getConversations: () => ApiService.request('/chat/conversations'),
         getMessages: (id) => ApiService.request(`/chat/conversations/${id}/messages`),
-        sendMessage: (formData) => ApiService.uploadFormData('/chat/messages', 'POST', formData),
+        sendMessage: (data) => ApiService.request('/chat/messages', 'POST', data),
         adminChats: () => ApiService.request('/admin/chats'),
         deleteConversation: (id) => ApiService.request(`/admin/chats/${id}`, 'DELETE'),
         deleteMessage: (id) => ApiService.request(`/admin/messages/${id}`, 'DELETE')
@@ -357,8 +307,8 @@ const ApiService = {
     medicalTests: {
         getAll: (params) => ApiService.request(`/medical-tests?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/medical-tests/${id}`),
-        create: (formData) => ApiService.uploadFormData('/medical-tests', 'POST', formData),
-        update: (id, formData) => ApiService.uploadFormData(`/medical-tests/${id}?_method=PUT`, 'POST', formData),
+        create: (data) => ApiService.request('/medical-tests', 'POST', data),
+        update: (id, data) => ApiService.request(`/medical-tests/${id}`, 'PUT', data),
         delete: (id) => ApiService.request(`/medical-tests/${id}`, 'DELETE'),
         updateStatus: (id, status) => ApiService.request(`/medical-tests/${id}/status`, 'PUT', { status })
     },
@@ -421,16 +371,6 @@ const ApiService = {
             getAll: (params) => ApiService.request(`/medical-tests?${new URLSearchParams(params)}`),
             updateStatus: (id, status) => ApiService.request(`/medical-tests/${id}/status`, 'PUT', { status })
         }
-    },
-
-    // Medical Files (Helper Files)
-    medicalFiles: {
-        getAll: (params) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
-        get: (id) => ApiService.request(`/medical-files/${id}`),
-        create: (formData) => ApiService.uploadFormData('/medical-files', 'POST', formData),
-        update: (id, formData) => ApiService.uploadFormData(`/medical-files/${id}?_method=PUT`, 'POST', formData),
-        delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
-        download: (id) => `/medical-files/${id}/download` // Return relative path for downloadFile helper
     },
 
     system: {

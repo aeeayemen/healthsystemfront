@@ -159,7 +159,9 @@
         async function loadData() {
             try {
                 const response = await ApiService.advertisements.getAll();
+                console.log('Ads API Response:', response);
                 allData = response.data || response;
+                console.log('Resolved Ads Data:', allData);
                 renderTable();
             } catch (error) {
                 console.error('Failed to load advertisements', error);
@@ -173,7 +175,7 @@
             const tbody = document.getElementById('tableBody');
 
             tbody.innerHTML = allData.length === 0 
-                ? '<tr><td colspan="9" class="text-center text-muted py-4">لا توجد إعلانات</td></tr>'
+                ? '<tr><td colspan="10" class="text-center text-muted py-4">لا توجد إعلانات</td></tr>'
                 : allData.map(item => `
                     <tr>
                         <td>${item.id}</td>

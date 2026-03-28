@@ -31,6 +31,7 @@
                                 <thead>
                                     <tr>
                                         <th>الرقم</th>
+                                        <th>العنوان</th>
                                         <th>رقم المشرف</th>
                                         <th>التاريخ</th>
                                         <th>الصورة</th>
@@ -66,6 +67,10 @@
                     <form id="dataForm">
                         <input type="hidden" id="editId">
                         <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">عنوان الإعلان</label>
+                                <input type="text" class="form-control" id="formTitle" placeholder="عنوان مختصر">
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">الوصف</label>
                                 <textarea class="form-control" id="formDescribtion" rows="3" required></textarea>
@@ -172,6 +177,7 @@
                 : allData.map(item => `
                     <tr>
                         <td>${item.id}</td>
+                        <td>${item.title || '-'}</td>
                         <td><span class="badge bg-secondary">${item.admin_id || '-'}</span></td>
                         <td>${item.date || item.created_at?.split('T')[0] || '-'}</td>
                         <td><img src="${IMAGE_BASE_URL}${item.image}" alt="إعلان" class="img-preview" onclick="showImage('${IMAGE_BASE_URL}${item.image}')"></td>
@@ -198,6 +204,7 @@
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'إضافة إعلان';
             document.getElementById('editId').value = '';
+            document.getElementById('formTitle').value = '';
             document.getElementById('formDescribtion').value = '';
             document.getElementById('formImage').value = '';
             document.getElementById('formPhone').value = '';
@@ -213,6 +220,7 @@
                 
                 document.getElementById('modalTitle').textContent = 'تعديل الإعلان';
                 document.getElementById('editId').value = id;
+                document.getElementById('formTitle').value = item.title || '';
                 document.getElementById('formDescribtion').value = item.describtion;
                 document.getElementById('formImage').value = ''; // Clear file input
                 const currentImage = document.getElementById('currentImagePreview');
@@ -234,6 +242,7 @@
 
         async function saveData() {
             const id = document.getElementById('editId').value;
+            const title = document.getElementById('formTitle').value.trim();
             const describtion = document.getElementById('formDescribtion').value.trim();
             const imageInput = document.getElementById('formImage');
             const phone_number = document.getElementById('formPhone').value.trim();
@@ -247,12 +256,12 @@
             const adminId = parseInt(user.id) || 1;
 
             const formData = new FormData();
+            formData.append('title', title);
             formData.append('describtion', describtion);
             formData.append('phone_number', phone_number);
             formData.append('type', type);
             formData.append('GPS', GPS);
             formData.append('admin_id', adminId);
-            formData.append('title', describtion.substring(0, 50));
             formData.append('is_active', 1);
 
             if (imageInput.files.length > 0) {

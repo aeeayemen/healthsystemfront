@@ -252,6 +252,16 @@ const ApiService = {
         removeUser: (forumId, userId) => ApiService.request(`/forums/${forumId}/users/${userId}`, 'DELETE')
     },
 
+    // Medical Files
+    medicalFiles: {
+        getAll: (params) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
+        get: (id) => ApiService.request(`/medical-files/${id}`),
+        create: (data) => ApiService.uploadFormData('/medical-files', 'POST', data),
+        update: (id, data) => ApiService.uploadFormData(`/medical-files/${id}`, 'POST', data), // Using POST for file updates
+        delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
+        download: (id) => `${API_BASE_URL}/medical-files/${id}/download`
+    },
+
     // Chat
     chat: {
         getConversations: () => ApiService.request('/chat/conversations'),
@@ -388,6 +398,33 @@ const ApiService = {
         notifications: {
             getAll: () => ApiService.request('/notifications'),
             send: (data) => ApiService.request('/notifications/send', 'POST', data)
+        }
+    },
+
+    // Download Helper
+    async downloadFile(url, fileName) {
+        const token = localStorage.getItem('auth_token');
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        try {
+            const response = await fetch(url, { headers });
+            if (!response.ok) throw new Error('Download failed');
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error('Download error:', error);
+            throw error;
         }
     }
 };

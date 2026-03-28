@@ -230,6 +230,16 @@ const ApiService = {
         delete: (id) => ApiService.request(`/advertisements/${id}`, 'DELETE')
     },
 
+    // Athkars
+    athkars: {
+        getAll: (params) => ApiService.request(`/athkar?${new URLSearchParams(params)}`),
+        get: (id) => ApiService.request(`/athkar/${id}`),
+        create: (data) => ApiService.request('/athkar', 'POST', data),
+        update: (id, data) => ApiService.request(`/athkar/${id}`, 'PUT', data),
+        delete: (id) => ApiService.request(`/athkar/${id}`, 'DELETE'),
+        getCategories: () => ApiService.request('/athkar/categories')
+    },
+
     // Forums
     forums: {
         getAll: (params) => ApiService.request(`/forums?${new URLSearchParams(params)}`),

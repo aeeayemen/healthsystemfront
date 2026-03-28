@@ -34,6 +34,7 @@
                                         <th>نوع الاشتراك</th>
                                         <th>السعر</th>
                                         <th>الفترة</th>
+                                        <th>السند</th>
                                         <th>الحالة</th>
                                         <th>الإجراءات</th>
                                     </tr>
@@ -44,6 +45,21 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div class="modal fade" id="receiptModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">صورة سند الدفع</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="receiptImage" src="" class="img-fluid rounded" alt="سند الدفع">
                 </div>
             </div>
         </div>
@@ -111,6 +127,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             Layout.init('subscriptions');
             subModal = new bootstrap.Modal(document.getElementById('subModal'));
+            receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
             loadPatients();
             renderSubs();
         });
@@ -123,6 +140,22 @@
                     patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
             } catch (error) {
                 console.error('Failed to load patients', error);
+            }
+        function viewReceipt(path) {
+            document.getElementById('receiptImage').src = IMAGE_BASE_URL + path;
+            receiptModal.show();
+        }
+
+        async function approveSub(id) {
+            if (confirm('هل أنت متأكد من الموافقة على هذا الاشتراك؟')) {
+                try {
+                    await ApiService.subscriptions.update(id, { status: 'active' });
+                    showToast('تمت الموافقة على الاشتراك بنجاح');
+                    renderSubs();
+                } catch (error) {
+                    console.error('Failed to approve subscription', error);
+                    showToast('فشل الموافقة على الاشتراك', 'error');
+                }
             }
         }
 
@@ -145,11 +178,23 @@
                     <td>${sub.price} ريال</td>
                     <td>${sub.start_date || sub.startDate} - ${sub.end_date || sub.endDate}</td>
                     <td>
+                        ${sub.receipt_image ? `
+                            <button class="btn btn-sm btn-outline-info" onclick="viewReceipt('${sub.receipt_image}')">
+                                <i class="fas fa-image"></i> عرض
+                            </button>
+                        ` : '<span class="text-muted">لا يوجد</span>'}
+                    </td>
+                    <td>
                         <span class="badge bg-${getStatusColor(sub.status)}-light text-${getStatusColor(sub.status)}">
                             ${getStatusName(sub.status)}
                         </span>
                     </td>
                     <td>
+                        ${sub.status === 'pending' ? `
+                            <button class="btn btn-sm btn-success" onclick="approveSub(${sub.id})" title="موافقة">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : ''}
                         <button class="btn btn-sm btn-light text-primary" onclick="editSub(${sub.id})">
                             <i class="fas fa-edit"></i>
                         </button>

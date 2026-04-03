@@ -126,7 +126,15 @@
             try {
                 // Fetch only reference files (without patient_id if possible, or filter)
                 const response = await ApiService.medicalFiles.getAll();
-                allData = (response.data || response || []).filter(f => !f.patient_id);
+                let items = [];
+                if (response && Array.isArray(response.data)) {
+                    items = response.data;
+                } else if (response && response.medicalFiles && Array.isArray(response.medicalFiles)) {
+                    items = response.medicalFiles;
+                } else if (Array.isArray(response)) {
+                    items = response;
+                }
+                allData = items.filter(f => !f.patient_id);
                 renderTable();
             } catch (error) {
                 console.error('Failed to load helper files:', error);

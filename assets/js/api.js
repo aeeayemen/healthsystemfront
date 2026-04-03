@@ -231,7 +231,7 @@ const ApiService = {
     },
 
     // Athkars
-    athkars: {
+    athkar: {
         getAll: (params) => ApiService.request(`/athkar?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/athkar/${id}`),
         create: (data) => ApiService.request('/athkar', 'POST', data),
@@ -254,7 +254,7 @@ const ApiService = {
 
     // Medical Files
     medicalFiles: {
-        getAll: (params) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
+        getAll: (params = {}) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/medical-files/${id}`),
         create: (data) => ApiService.uploadFormData('/medical-files', 'POST', data),
         update: (id, data) => ApiService.uploadFormData(`/medical-files/${id}`, 'POST', data), // Using POST for file updates

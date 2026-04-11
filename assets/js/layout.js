@@ -114,7 +114,7 @@ const Layout = {
         html += `
             </ul>
             <div class="p-3">
-                <button onclick="ApiService.auth.logout()" class="btn btn-danger w-100 btn-sm">
+                <button onclick="Layout.logout()" class="btn btn-danger w-100 btn-sm">
                     <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
                 </button>
             </div>
@@ -180,14 +180,32 @@ const Layout = {
         });
     },
 
-    logout: () => {
-        localStorage.removeItem('hnd_user');
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('isLoggedIn');
+    logout: async () => {
+        try {
+            // Attempt to call API logout but proceed anyway if it fails
+            if (typeof ApiService !== 'undefined' && ApiService.auth && ApiService.auth.logout) {
+                await ApiService.auth.logout().catch(e => console.log('API logout failed', e));
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+
+        // Clear all possible auth-related keys
+        const keysToRemove = ['hnd_user', 'currentUser', 'isLoggedIn', 'auth_token', 'user_type'];
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Redirect to login page
         window.location.href = 'index.html';
     },
 
     init: (activePage) => {
+        // Auth Guard: Redirect to login if token is missing
+        const token = localStorage.getItem('auth_token');
+        if (!token && activePage !== 'login') {
+            window.location.href = 'index.html';
+            return;
+        }
+
         Layout.renderSidebar(activePage);
         Layout.renderNavbar();
     }

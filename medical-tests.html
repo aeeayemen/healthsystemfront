@@ -226,17 +226,24 @@
 
         async function saveData() {
             const id = document.getElementById('editId').value;
-            const data = {
-                user_id: parseInt(document.getElementById('formUserId').value),
-                name: document.getElementById('formName').value.trim(),
-                image: document.getElementById('formImage').value.trim(),
-                status: document.getElementById('formStatus').value
-            };
-            
-            if (!data.user_id || !data.name || !data.image) { 
-                alert('يرجى ملء جميع الحقول'); 
+            const userIdValue = document.getElementById('formUserId').value;
+            const nameValue = document.getElementById('formName').value.trim();
+            const imageValue = document.getElementById('formImage').value.trim();
+            const statusValue = document.getElementById('formStatus').value;
+
+            if (!userIdValue || !nameValue || !imageValue) { 
+                alert('يرجى ملء جميع الحقول المطلوبة'); 
                 return; 
             }
+
+            const data = {
+                user_id: parseInt(userIdValue),
+                name: nameValue,
+                image: imageValue,
+                status: statusValue
+            };
+            
+            console.log('Sending data:', data);
 
             try {
                 if (id) {
@@ -250,7 +257,12 @@
                 loadData();
             } catch (error) {
                 console.error('Failed to save medical test:', error);
-                alert('فشل حفظ البيانات: ' + (error.message || 'خطأ غير معروف'));
+                // Search for detailed validation errors if available
+                let errorMessage = error.message;
+                if (error.errors) {
+                    errorMessage += '\n' + Object.values(error.errors).flat().join('\n');
+                }
+                alert('فشل حفظ البيانات: ' + errorMessage);
             }
         }
 

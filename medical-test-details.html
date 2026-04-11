@@ -99,7 +99,17 @@
                 document.getElementById('userId').textContent = test.user_id || '-';
                 document.getElementById('testName').textContent = test.name || '-';
                 document.getElementById('createdAt').textContent = test.created_at || '-';
-                document.getElementById('testImage').src = test.image ? IMAGE_BASE_URL + test.image : '';
+                
+                // Handle image URL: use directly if it's a full URL, otherwise append IMAGE_BASE_URL
+                if (test.image) {
+                    if (test.image.startsWith('http')) {
+                        document.getElementById('testImage').src = test.image;
+                    } else {
+                        document.getElementById('testImage').src = IMAGE_BASE_URL + test.image;
+                    }
+                } else {
+                    document.getElementById('testImage').src = '';
+                }
             } catch (error) {
                 console.error('Failed to load test:', error);
                 alert('فشل تحميل بيانات الفحص');

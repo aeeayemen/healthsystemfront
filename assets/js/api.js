@@ -399,6 +399,15 @@ const ApiService = {
             getAll: () => ApiService.request('/notifications'),
             send: (data) => ApiService.request('/notifications/send', 'POST', data)
         }
+    },
+
+    // Athkar
+    athkar: {
+        getAll: () => ApiService.request('/athkar'),
+        get: (id) => ApiService.request(`/athkar/${id}`),
+        create: (data) => ApiService.request('/athkar', 'POST', data),
+        update: (id, data) => ApiService.request(`/athkar/${id}`, 'PUT', data),
+        delete: (id) => ApiService.request(`/athkar/${id}`, 'DELETE')
     }
 };
 

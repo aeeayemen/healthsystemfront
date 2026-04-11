@@ -1,7 +1,11 @@
-var API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; // Update this with your actual backend URL
-var IMAGE_BASE_URL = API_BASE_URL.replace('/api', '/'); // Base URL for images/uploads
+const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; 
+const IMAGE_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/storage/'; 
+
 
 const ApiService = {
+    // Helpers for URL construction
+    getBaseUrl: () => API_BASE_URL,
+    getImageBaseUrl: () => IMAGE_BASE_URL,
 
     // Helper for making requests
     async request(endpoint, method = 'GET', body = null) {
@@ -98,6 +102,12 @@ const ApiService = {
             return data;
         } catch (error) {
             console.error('API Upload Failed:', error);
+            // Log more details if available
+            if (error.response) {
+                console.error('Response Status:', error.response.status);
+                const errorText = await error.response.text();
+                console.error('Response Body:', errorText);
+            }
             throw error;
         }
     },
@@ -230,16 +240,6 @@ const ApiService = {
         delete: (id) => ApiService.request(`/advertisements/${id}`, 'DELETE')
     },
 
-    // Athkars
-    athkar: {
-        getAll: (params) => ApiService.request(`/athkar?${new URLSearchParams(params)}`),
-        get: (id) => ApiService.request(`/athkar/${id}`),
-        create: (data) => ApiService.request('/athkar', 'POST', data),
-        update: (id, data) => ApiService.request(`/athkar/${id}`, 'PUT', data),
-        delete: (id) => ApiService.request(`/athkar/${id}`, 'DELETE'),
-        getCategories: () => ApiService.request('/athkar/categories')
-    },
-
     // Forums
     forums: {
         getAll: (params) => ApiService.request(`/forums?${new URLSearchParams(params)}`),
@@ -252,21 +252,11 @@ const ApiService = {
         removeUser: (forumId, userId) => ApiService.request(`/forums/${forumId}/users/${userId}`, 'DELETE')
     },
 
-    // Medical Files
-    medicalFiles: {
-        getAll: (params = {}) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
-        get: (id) => ApiService.request(`/medical-files/${id}`),
-        create: (data) => ApiService.uploadFormData('/medical-files', 'POST', data),
-        update: (id, data) => ApiService.uploadFormData(`/medical-files/${id}`, 'POST', data), // Using POST for file updates
-        delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
-        download: (id) => `${API_BASE_URL}/medical-files/${id}/download`
-    },
-
     // Chat
     chat: {
         getConversations: () => ApiService.request('/chat/conversations'),
         getMessages: (id) => ApiService.request(`/chat/conversations/${id}/messages`),
-        sendMessage: (data) => ApiService.request('/chat/messages', 'POST', data),
+        sendMessage: (formData) => ApiService.uploadFormData('/chat/messages', 'POST', formData),
         adminChats: () => ApiService.request('/admin/chats'),
         deleteConversation: (id) => ApiService.request(`/admin/chats/${id}`, 'DELETE'),
         deleteMessage: (id) => ApiService.request(`/admin/messages/${id}`, 'DELETE')
@@ -393,38 +383,21 @@ const ApiService = {
         }
     },
 
+    // Medical Files (Helper Files)
+    medicalFiles: {
+        getAll: (params) => ApiService.request(`/medical-files?${new URLSearchParams(params)}`),
+        get: (id) => ApiService.request(`/medical-files/${id}`),
+        create: (formData) => ApiService.uploadFormData('/medical-files', 'POST', formData),
+        update: (id, formData) => ApiService.uploadFormData(`/medical-files/${id}?_method=PUT`, 'POST', formData),
+        delete: (id) => ApiService.request(`/medical-files/${id}`, 'DELETE'),
+        download: (id) => `${API_BASE_URL}/medical-files/${id}/download` // Return URL for direct download
+    },
+
     system: {
         logs: (params) => ApiService.request(`/logs?${new URLSearchParams(params)}`),
         notifications: {
             getAll: () => ApiService.request('/notifications'),
             send: (data) => ApiService.request('/notifications/send', 'POST', data)
-        }
-    },
-
-    // Download Helper
-    async downloadFile(url, fileName) {
-        const token = localStorage.getItem('auth_token');
-        const headers = {};
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        try {
-            const response = await fetch(url, { headers });
-            if (!response.ok) throw new Error('Download failed');
-
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(downloadUrl);
-        } catch (error) {
-            console.error('Download error:', error);
-            throw error;
         }
     }
 };

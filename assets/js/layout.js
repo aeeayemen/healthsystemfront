@@ -77,6 +77,11 @@ const Layout = {
                         <i class="fas fa-home"></i> الرئيسية
                     </a>
                 </li>
+                <li>
+                    <a href="subscriptions.html" class="${activePage === 'subscriptions' ? 'active' : ''}">
+                        <i class="fas fa-credit-card"></i> الاشتراكات
+                    </a>
+                </li>
         `;
 
         menuStructure.forEach(menu => {

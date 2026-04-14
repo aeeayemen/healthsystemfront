@@ -15,7 +15,8 @@ const Layout = {
                     { name: 'المستخدمين المشتركين', link: 'users-subscribed.html', id: 'users-subscribed' },
                     { name: 'الفحص الطبي', link: 'medical-tests.html', id: 'medical-tests' },
                     { name: 'الحساب الأساسي', link: 'main-calculation.html', id: 'main-calculation' },
-                    { name: 'الحساب الأسبوعي', link: 'weekly-calculations.html', id: 'weekly-calculations' }
+                    { name: 'الحساب الأسبوعي', link: 'weekly-calculations.html', id: 'weekly-calculations' },
+                    { name: 'الاشتراكات', link: 'subscriptions.html', id: 'subscriptions' }
                 ]
             },
             {
@@ -75,11 +76,6 @@ const Layout = {
                 <li>
                     <a href="dashboard.html" class="${activePage === 'dashboard' ? 'active' : ''}">
                         <i class="fas fa-home"></i> الرئيسية
-                    </a>
-                </li>
-                <li>
-                    <a href="subscriptions.html" class="${activePage === 'subscriptions' ? 'active' : ''}">
-                        <i class="fas fa-credit-card"></i> الاشتراكات
                     </a>
                 </li>
         `;

@@ -7,6 +7,57 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        /* Messages table responsive card layout */
+        @media (max-width: 992px) {
+            .messages-table thead {
+                display: none;
+            }
+            .messages-table tbody tr {
+                display: block;
+                background: #fff;
+                border: 1px solid #e9ecef;
+                border-radius: 10px;
+                margin-bottom: 12px;
+                padding: 14px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            }
+            .messages-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                padding: 6px 0 !important;
+                border-bottom: 1px solid #f0f0f0 !important;
+                text-align: left;
+                gap: 10px;
+            }
+            .messages-table tbody td:last-child {
+                border-bottom: none !important;
+                justify-content: flex-end;
+                padding-top: 10px !important;
+            }
+            .messages-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--primary, #4361ee);
+                min-width: 80px;
+                flex-shrink: 0;
+                font-size: 0.85rem;
+            }
+            .messages-table tbody td:last-child::before {
+                display: none;
+            }
+            .messages-table tbody td .text-truncate {
+                max-width: 100% !important;
+                white-space: normal !important;
+                word-break: break-word;
+            }
+            .messages-table tbody td .btn-group {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="wrapper">
@@ -21,7 +72,7 @@
 
                 <div class="card"><div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover messages-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>الرقم</th>
@@ -80,6 +131,8 @@
                     date: c.date || (c.updated_at ? c.updated_at.split('T')[0] : '-'),
                     read: c.read !== undefined ? c.read : true
                 }));
+                // Sort newest first by ID descending
+                allData.sort((a, b) => b.id - a.id);
                 renderTable();
             } catch (error) {
                 console.error('Failed to load messages:', error);
@@ -143,13 +196,13 @@
                 }
                 
                 return `<tr class="${!item.read ? 'table-warning' : ''}">
-                    <td>${item.id}</td>
-                    <td><span class="badge bg-light text-dark border">${item.user_id}</span></td>
-                    <td><span class="badge bg-light text-dark border">${item.doctor_id}</span></td>
-                    <td>${messageHtml || '-'}</td>
-                    <td><small>${item.time}</small></td>
-                    <td><small>${item.date}</small></td>
-                    <td><span class="badge ${item.read ? 'bg-success' : 'bg-warning'}">${item.read ? 'مقروءة' : 'جديدة'}</span></td>
+                    <td data-label="الرقم">${item.id}</td>
+                    <td data-label="المستخدم"><span class="badge bg-light text-dark border">${item.user_id}</span></td>
+                    <td data-label="الطبيب"><span class="badge bg-light text-dark border">${item.doctor_id}</span></td>
+                    <td data-label="الرسالة">${messageHtml || '-'}</td>
+                    <td data-label="الوقت"><small>${item.time}</small></td>
+                    <td data-label="التاريخ"><small>${item.date}</small></td>
+                    <td data-label="الحالة"><span class="badge ${item.read ? 'bg-success' : 'bg-warning'}">${item.read ? 'مقروءة' : 'جديدة'}</span></td>
                     <td>
                         <div class="btn-group">
                             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})" title="حذف"><i class="fas fa-trash"></i></button>

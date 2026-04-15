@@ -22,13 +22,20 @@
                 <div class="card"><div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead><tr><th>الرقم</th><th>رقم المستخدم</th><th>رقم الطبيب</th><th>الرسالة</th><th>الوقت</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-                            <tbody id="tableBody">
-                                <tr><td>1</td><td>أحمد محمد</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">السلام عليكم دكتور، لدي سؤال عن النظام الغذائي</td><td>10:30</td><td>2024-11-20</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(1)"><i class="fas fa-eye"></i></button></td></tr>
-                                <tr><td>2</td><td>أحمد محمد</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">هل يمكنني تناول الفواكه بعد الوجبات؟</td><td>10:32</td><td>2024-11-20</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(2)"><i class="fas fa-eye"></i></button></td></tr>
-                                <tr><td>3</td><td>سارة علي</td><td>د. سمية خالد</td><td class="text-truncate" style="max-width: 200px;">شكراً على الخطة الجديدة دكتورة</td><td>14:00</td><td>2024-11-21</td><td><span class="badge bg-warning"><i class="fas fa-envelope"></i> جديدة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(3)"><i class="fas fa-eye"></i></button></td></tr>
-                                <tr><td>4</td><td>خالد عمر</td><td>د. أحمد الشريف</td><td class="text-truncate" style="max-width: 200px;">متى موعدي القادم؟</td><td>09:15</td><td>2024-11-22</td><td><span class="badge bg-warning"><i class="fas fa-envelope"></i> جديدة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(4)"><i class="fas fa-eye"></i></button></td></tr>
-                                <tr><td>5</td><td>فاطمة حسن</td><td>د. سمية خالد</td><td class="text-truncate" style="max-width: 200px;">أشعر بتحسن كبير بعد اتباع النظام</td><td>16:45</td><td>2024-11-22</td><td><span class="badge bg-success"><i class="fas fa-check"></i> مقروءة</span></td><td><button class="btn btn-sm btn-outline-info" onclick="viewMessage(5)"><i class="fas fa-eye"></i></button></td></tr>
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الرقم</th>
+                                    <th>المستخدم</th>
+                                    <th>الطبيب</th>
+                                    <th style="min-width: 200px;">الرسالة / الملف</th>
+                                    <th>الوقت</th>
+                                    <th>التاريخ</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="align-middle">
+                                <!-- سيتم ملؤه بواسطة JS -->
                             </tbody>
                         </table>
                     </div>
@@ -85,7 +92,7 @@
                 const response = await ApiService.users.getAll(); 
                 const users = response.data || response;
                 const select = document.getElementById('formUserId');
-                select.innerHTML = '<option value="">اختر المستخدم...</option>' + 
+                if(select) select.innerHTML = '<option value="">اختر المستخدم...</option>' + 
                     users.map(u => `<option value="${u.id}">${u.name} (${u.email})</option>`).join('');
             } catch (error) {
                 console.error('Failed to load users', error);
@@ -97,7 +104,7 @@
                 const response = await ApiService.doctors.getAll({application_status: 'approved'}); 
                 const doctors = response.data || response;
                 const select = document.getElementById('formDoctorId');
-                select.innerHTML = '<option value="">اختر الطبيب...</option>' + 
+                if(select) select.innerHTML = '<option value="">اختر الطبيب...</option>' + 
                     doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
             } catch (error) {
                 console.error('Failed to load doctors', error);
@@ -110,26 +117,44 @@
             const pageData = allData.slice(start, start + perPage);
             
             tbody.innerHTML = pageData.length === 0 ? '<tr><td colspan="8" class="text-center text-muted py-4">لا توجد رسائل</td></tr>' : pageData.map(item => {
-                let messageHtml = `<span class="text-truncate d-inline-block" style="max-width:200px;">${item.message || ''}</span>`;
+                let messageHtml = `<div class="text-truncate" style="max-width:250px;">${item.message || ''}</div>`;
                 
                 if (item.file_path) {
-                    const fileUrl = `${API_BASE_URL.replace('/api', '')}/${item.file_path}`;
+                    const cleanPath = item.file_path.startsWith('/') ? item.file_path.substring(1) : item.file_path;
+                    const fileUrl = `${API_BASE_URL.replace('/api', '')}/${cleanPath}`;
+                    
                     if (item.file_type && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(item.file_type.toLowerCase())) {
-                        messageHtml += `<div class="mt-1"><img src="${fileUrl}" style="max-height: 40px; cursor: pointer;" onclick="window.open('${fileUrl}')" class="rounded shadow-sm"></div>`;
+                        messageHtml += `
+                            <div class="mt-2">
+                                <img src="${fileUrl}" 
+                                     style="height: 50px; width: 50px; object-fit: cover; cursor: pointer;" 
+                                     onclick="window.open('${fileUrl}')" 
+                                     class="rounded border shadow-sm"
+                                     onerror="this.src='https://placehold.co/50x50?text=Image';this.onerror=null;">
+                            </div>`;
                     } else {
-                        messageHtml += `<div class="mt-1"><a href="${fileUrl}" target="_blank" class="text-primary small"><i class="fas fa-file-download"></i> ملف</a></div>`;
+                        messageHtml += `
+                            <div class="mt-2">
+                                <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2">
+                                    <i class="fas fa-paperclip small"></i> ملف
+                                </a>
+                            </div>`;
                     }
                 }
                 
                 return `<tr class="${!item.read ? 'table-warning' : ''}">
                     <td>${item.id}</td>
-                    <td>${item.user_id}</td>
-                    <td>${item.doctor_id}</td>
+                    <td><span class="badge bg-light text-dark border">${item.user_id}</span></td>
+                    <td><span class="badge bg-light text-dark border">${item.doctor_id}</span></td>
                     <td>${messageHtml || '-'}</td>
-                    <td>${item.time}</td>
-                    <td>${item.date}</td>
-                    <td><span class="badge ${item.read ? 'badge-read bg-success' : 'badge-unread bg-warning'}">${item.read ? 'مقروءة' : 'غير مقروءة'}</span></td>
-                    <td><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td>
+                    <td><small>${item.time}</small></td>
+                    <td><small>${item.date}</small></td>
+                    <td><span class="badge ${item.read ? 'bg-success' : 'bg-warning'}">${item.read ? 'مقروءة' : 'جديدة'}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
                 </tr>`;
             }).join('');
             renderPagination();

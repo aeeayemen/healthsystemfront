@@ -31,7 +31,6 @@
                                 <thead>
                                     <tr>
                                         <th>الرقم</th>
-                                        <th>العنوان</th>
                                         <th>رقم المشرف</th>
                                         <th>التاريخ</th>
                                         <th>الصورة</th>
@@ -67,10 +66,6 @@
                     <form id="dataForm">
                         <input type="hidden" id="editId">
                         <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">عنوان الإعلان</label>
-                                <input type="text" class="form-control" id="formTitle" placeholder="عنوان مختصر">
-                            </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">الوصف</label>
                                 <textarea class="form-control" id="formDescribtion" rows="3" required></textarea>
@@ -159,9 +154,7 @@
         async function loadData() {
             try {
                 const response = await ApiService.advertisements.getAll();
-                console.log('Ads API Response:', response);
                 allData = response.data || response;
-                console.log('Resolved Ads Data:', allData);
                 renderTable();
             } catch (error) {
                 console.error('Failed to load advertisements', error);
@@ -175,14 +168,13 @@
             const tbody = document.getElementById('tableBody');
 
             tbody.innerHTML = allData.length === 0 
-                ? '<tr><td colspan="10" class="text-center text-muted py-4">لا توجد إعلانات</td></tr>'
+                ? '<tr><td colspan="9" class="text-center text-muted py-4">لا توجد إعلانات</td></tr>'
                 : allData.map(item => `
                     <tr>
                         <td>${item.id}</td>
-                        <td>${item.title || '-'}</td>
                         <td><span class="badge bg-secondary">${item.admin_id || '-'}</span></td>
                         <td>${item.date || item.created_at?.split('T')[0] || '-'}</td>
-                        <td><img src="${IMAGE_BASE_URL}${item.image}" alt="إعلان" class="img-preview" onclick="showImage('${IMAGE_BASE_URL}${item.image}')"></td>
+                        <td><img src="${ApiService.resolveImageUrl(item.image)}" alt="إعلان" class="img-preview" onclick="showImage('${ApiService.resolveImageUrl(item.image)}')"></td>
                         <td class="text-truncate" style="max-width: 150px;">${item.describtion}</td>
                         <td>${item.phone_number}</td>
                         <td><span class="badge ${item.type === 'عرض' ? 'bg-success' : 'bg-info'}">${item.type}</span></td>
@@ -206,7 +198,6 @@
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'إضافة إعلان';
             document.getElementById('editId').value = '';
-            document.getElementById('formTitle').value = '';
             document.getElementById('formDescribtion').value = '';
             document.getElementById('formImage').value = '';
             document.getElementById('formPhone').value = '';
@@ -222,13 +213,12 @@
                 
                 document.getElementById('modalTitle').textContent = 'تعديل الإعلان';
                 document.getElementById('editId').value = id;
-                document.getElementById('formTitle').value = item.title || '';
                 document.getElementById('formDescribtion').value = item.describtion;
                 document.getElementById('formImage').value = ''; // Clear file input
                 const currentImage = document.getElementById('currentImagePreview');
                 if (item.image) {
                     currentImage.classList.remove('d-none');
-                    currentImage.querySelector('img').src = IMAGE_BASE_URL + item.image;
+                    currentImage.querySelector('img').src = ApiService.resolveImageUrl(item.image);
                 } else {
                     currentImage.classList.add('d-none');
                 }
@@ -244,7 +234,6 @@
 
         async function saveData() {
             const id = document.getElementById('editId').value;
-            const title = document.getElementById('formTitle').value.trim();
             const describtion = document.getElementById('formDescribtion').value.trim();
             const imageInput = document.getElementById('formImage');
             const phone_number = document.getElementById('formPhone').value.trim();
@@ -258,12 +247,12 @@
             const adminId = parseInt(user.id) || 1;
 
             const formData = new FormData();
-            formData.append('title', title);
             formData.append('describtion', describtion);
             formData.append('phone_number', phone_number);
             formData.append('type', type);
             formData.append('GPS', GPS);
             formData.append('admin_id', adminId);
+            formData.append('title', describtion.substring(0, 50));
             formData.append('is_active', 1);
 
             if (imageInput.files.length > 0) {

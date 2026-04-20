@@ -209,8 +209,11 @@
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">السيرة الذاتية (CV)</label>
-                                <input type="file" class="form-control" id="doctorCV">
-                                <small class="text-muted">يمكنك رفع ملف PDF أو Word</small>
+                                <input type="file" class="form-control" id="doctorCV" accept=".pdf,.doc,.docx">
+                                <div id="currentCVPreview" class="mt-2 d-none">
+                                    <small class="text-muted d-block">الملف الحالي:</small>
+                                    <a href="#" id="currentCVLink" target="_blank" class="text-primary"><i class="fas fa-file-pdf me-1"></i> عرض السيرة الذاتية</a>
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">التقييم (من 5)</label>
@@ -402,6 +405,11 @@
             document.getElementById('doctorForm').reset();
             document.getElementById('doctorId').value = '';
             document.getElementById('doctorUserId').value = '';
+            document.getElementById('currentCVPreview').classList.add('d-none');
+            document.getElementById('currentDegreePreview').classList.add('d-none');
+            document.getElementById('currentImagePreview').classList.add('d-none');
+            document.getElementById('doctorLicenseNumber').value = '897889';
+            document.getElementById('doctorConsultationFee').value = '897889';
             modalTitle.textContent = 'إضافة طبيب جديد';
         }
 
@@ -432,6 +440,15 @@
                 document.getElementById('doctorLicenseNumber').value = doctor.license_number || '';
                 document.getElementById('doctorConsultationFee').value = doctor.consultation_fee || '';
                 document.getElementById('doctorYearsOfExperience').value = doctor.years_of_experience || '';
+                
+                document.getElementById('doctorCV').value = ''; // Clear file input
+                const currentCV = document.getElementById('currentCVPreview');
+                if (doctor.CV) {
+                    currentCV.classList.remove('d-none');
+                    document.getElementById('currentCVLink').href = doctor.CV;
+                } else {
+                    currentCV.classList.add('d-none');
+                }
                 document.getElementById('doctorProfileImage').value = ''; // Clear file input
                 const currentImage = document.getElementById('currentImagePreview');
                 if (doctor.profile_image) {

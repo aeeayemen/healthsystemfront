@@ -191,7 +191,7 @@
             document.getElementById('receiptPatientName').textContent = patientName || '';
 
             if (path) {
-                img.src = IMAGE_BASE_URL + path;
+                img.src = ApiService.resolveImageUrl(path);
                 img.classList.remove('d-none');
                 noImg.classList.add('d-none');
             } else {
@@ -344,7 +344,7 @@
                 const previewImg = document.getElementById('receiptPreviewImg');
                 const previewDiv = document.getElementById('receiptPreview');
                 if (sub.receipt_image) {
-                    previewImg.src = IMAGE_BASE_URL + sub.receipt_image;
+                    previewImg.src = ApiService.resolveImageUrl(sub.receipt_image);
                     previewDiv.classList.remove('d-none');
                 } else {
                     previewDiv.classList.add('d-none');

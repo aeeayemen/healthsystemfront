@@ -1,5 +1,5 @@
 const API_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/api'; 
-const IMAGE_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/storage/'; 
+const IMAGE_BASE_URL = 'https://health-system-backend-l7m5.onrender.com/'; 
 
 
 const ApiService = {
@@ -7,46 +7,7 @@ const ApiService = {
     getBaseUrl: () => API_BASE_URL,
     getImageBaseUrl: () => IMAGE_BASE_URL,
 
-    /**
-     * Resolves an image path to a full URL.
-     * Handles absolute URLs, relative paths, and encodes non-ASCII characters.
-     */
-    resolveImageUrl(path) {
-        if (!path) return '';
-        
-        let url = path;
-        // If it's already a full URL, just handle encoding and protocol
-        if (path.startsWith('http')) {
-            url = path;
-        } else {
-            // Check if it's a relative path starting with uploads/ or similar
-            // If IMAGE_BASE_URL ends with /storage/ and path starts with uploads/, 
-            // we should probably use the root domain instead
-            const base = IMAGE_BASE_URL;
-            if (path.startsWith('uploads/') && base.endsWith('/storage/')) {
-                const rootBase = base.replace(/\/storage\/$/, '/');
-                url = `${rootBase}${path}`;
-            } else {
-                url = `${base}${path}`;
-            }
-        }
-
-        // Force HTTPS
-        if (url.startsWith('http://')) {
-            url = url.replace('http://', 'https://');
-        }
-
-        // Encode Arabic characters and other special chars
-        try {
-            // We only encode the path part if it's a full URL
-            const urlObj = new URL(url);
-            urlObj.pathname = encodeURI(decodeURI(urlObj.pathname));
-            return urlObj.toString();
-        } catch (e) {
-            // Fallback for relative paths or invalid URLs
-            return encodeURI(decodeURI(url));
-        }
-    },
+    // Helper for making requests
     async request(endpoint, method = 'GET', body = null) {
         const token = localStorage.getItem('auth_token');
         const headers = {
@@ -362,14 +323,7 @@ const ApiService = {
         updateStatus: (id, status) => ApiService.request(`/medical-tests/${id}/status`, 'PUT', { status })
     },
 
-    // Weekly Calculations
-    weeklyCalculations: {
-        getAll: (params) => ApiService.request(`/weekly-calculations?${new URLSearchParams(params)}`),
-        get: (id) => ApiService.request(`/weekly-calculations/${id}`),
-        create: (data) => ApiService.request('/weekly-calculations', 'POST', data),
-        update: (id, data) => ApiService.request(`/weekly-calculations/${id}`, 'PUT', data),
-        delete: (id) => ApiService.request(`/weekly-calculations/${id}`, 'DELETE')
-    },
+
 
     // Main Calculations
     mainCalculations: {

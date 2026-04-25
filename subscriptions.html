@@ -239,7 +239,7 @@
 
         async function renderSubs() {
             try {
-                const response = await ApiService.patients.getAll();
+                const response = await ApiService.subscriptions.getAll();
                 const subs = response.data || response;
                 const tbody = document.querySelector('#subsTable tbody');
                 
@@ -259,7 +259,7 @@
                     <td>${sub.id}</td>
                     <td>${patientName}</td>
                     <td>${sub.doctor?.name || sub.doctor_name || '-'}</td>
-                    <td>${getTypeName(sub.type)}</td>
+                    <td>${getTypeName(sub.plan_type || sub.type)}</td>
                     <td>${sub.price} ريال</td>
                     <td>${sub.start_date || sub.startDate || '-'} ← ${sub.end_date || sub.endDate || '-'}</td>
                     <td>
@@ -328,24 +328,24 @@
 
         async function editSub(id) {
             try {
-                const response = await ApiService.patients.get(id);
+                const response = await ApiService.subscriptions.get(id);
                 const sub = response.data || response;
 
                 document.getElementById('subId').value = sub.id;
-                document.getElementById('subPatient').value = sub.id; // Patient ID is same as user ID in this model
-                document.getElementById('subDoctor').value = sub.current_doctor_id || '';
-                document.getElementById('subType').value = sub.subscription_type || '';
-                document.getElementById('subPrice').value = sub.subscription_price || '';
-                document.getElementById('subStart').value = sub.subscription_start_date || '';
-                document.getElementById('subEnd').value = sub.subscription_end_date || '';
-                document.getElementById('subStatus').value = sub.subscription_status || 'pending';
+                document.getElementById('subPatient').value = sub.patient_id || sub.patientId;
+                document.getElementById('subDoctor').value = sub.doctor_id || sub.doctorId || '';
+                document.getElementById('subType').value = sub.plan_type || sub.type;
+                document.getElementById('subPrice').value = sub.price;
+                document.getElementById('subStart').value = sub.start_date || sub.startDate;
+                document.getElementById('subEnd').value = sub.end_date || sub.endDate;
+                document.getElementById('subStatus').value = sub.status;
                 document.getElementById('modalTitle').innerText = 'تعديل الاشتراك';
                 
-                // Show preview if image exists
+                const previewImg = document.getElementById('receiptPreviewImg');
                 const previewDiv = document.getElementById('receiptPreview');
-                if (sub.subscription_receipt_image) {
+                if (sub.receipt_image) {
+                    previewImg.src = IMAGE_BASE_URL + sub.receipt_image;
                     previewDiv.classList.remove('d-none');
-                    previewDiv.querySelector('img').src = ApiService.resolveImageUrl(sub.subscription_receipt_image);
                 } else {
                     previewDiv.classList.add('d-none');
                 }
@@ -360,7 +360,7 @@
         async function deleteSub(id) {
             if (confirm('هل أنت متأكد من حذف هذا الاشتراك؟')) {
                 try {
-                    await ApiService.patients.delete(id);
+                    await ApiService.subscriptions.delete(id);
                     renderSubs();
                     showToast('تم حذف الاشتراك بنجاح');
                 } catch (error) {
@@ -376,8 +376,9 @@
             const patientId = document.getElementById('subPatient').value;
             
             const formData = new FormData();
+            formData.append('patient_id', patientId);
             formData.append('doctor_id', document.getElementById('subDoctor').value);
-            formData.append('type', document.getElementById('subType').value);
+            formData.append('plan_type', document.getElementById('subType').value);
             formData.append('price', document.getElementById('subPrice').value);
             formData.append('start_date', document.getElementById('subStart').value);
             formData.append('end_date', document.getElementById('subEnd').value);
@@ -389,14 +390,17 @@
             }
 
             try {
-                const targetId = id || patientId;
-                if (!targetId) {
-                    showToast('يرجى اختيار مريض أولاً', 'error');
-                    return;
+                if (id) {
+                    await ApiService.subscriptions.updateWithFile(id, formData);
+                    showToast('تم تحديث الاشتراك بنجاح');
+                } else {
+                    if (!patientId) {
+                        showToast('يرجى اختيار مريض أولاً', 'error');
+                        return;
+                    }
+                    await ApiService.subscriptions.createWithFile(formData);
+                    showToast('تم إضافة الاشتراك بنجاح');
                 }
-
-                await ApiService.patients.updateWithFile(targetId, formData);
-                showToast(id ? 'تم تحديث الاشتراك بنجاح' : 'تم تفعيل حساب الاشتراك بنجاح');
                 
                 subModal.hide();
                 renderSubs();

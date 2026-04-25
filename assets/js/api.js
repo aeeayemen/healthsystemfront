@@ -206,7 +206,9 @@ const ApiService = {
         getAll: (params) => ApiService.request(`/subscriptions?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/subscriptions/${id}`),
         create: (data) => ApiService.request('/subscriptions', 'POST', data),
+        createWithFile: (formData) => ApiService.uploadFormData('/subscriptions', 'POST', formData),
         update: (id, data) => ApiService.request(`/subscriptions/${id}`, 'PUT', data),
+        updateWithFile: (id, formData) => ApiService.uploadFormData(`/subscriptions/${id}?_method=PUT`, 'POST', formData),
         delete: (id) => ApiService.request(`/subscriptions/${id}`, 'DELETE')
     },
 

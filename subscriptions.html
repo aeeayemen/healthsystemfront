@@ -332,15 +332,24 @@
                 const sub = response.data || response;
 
                 document.getElementById('subId').value = sub.id;
-                document.getElementById('subPatient').value = sub.patient_id || sub.patientId;
-                document.getElementById('subDoctor').value = sub.doctor_id || sub.doctorId || '';
-                document.getElementById('subType').value = sub.type || sub.plan_type;
-                document.getElementById('subPrice').value = sub.price;
-                document.getElementById('subStart').value = sub.start_date || sub.startDate;
-                document.getElementById('subEnd').value = sub.end_date || sub.endDate;
-                document.getElementById('subStatus').value = sub.status;
+                document.getElementById('subPatient').value = sub.id; // Patient ID is same as user ID in this model
+                document.getElementById('subDoctor').value = sub.current_doctor_id || '';
+                document.getElementById('subType').value = sub.subscription_type || '';
+                document.getElementById('subPrice').value = sub.subscription_price || '';
+                document.getElementById('subStart').value = sub.subscription_start_date || '';
+                document.getElementById('subEnd').value = sub.subscription_end_date || '';
+                document.getElementById('subStatus').value = sub.subscription_status || 'pending';
                 document.getElementById('modalTitle').innerText = 'تعديل الاشتراك';
                 
+                // Show preview if image exists
+                const previewDiv = document.getElementById('receiptPreview');
+                if (sub.subscription_receipt_image) {
+                    previewDiv.classList.remove('d-none');
+                    previewDiv.querySelector('img').src = ApiService.resolveImageUrl(sub.subscription_receipt_image);
+                } else {
+                    previewDiv.classList.add('d-none');
+                }
+
                 subModal.show();
             } catch (error) {
                 console.error('Failed to load subscription details', error);
@@ -364,26 +373,36 @@
         document.getElementById('subForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('subId').value;
-            const data = {
-                patient_id: document.getElementById('subPatient').value,
-                doctor_id: document.getElementById('subDoctor').value,
-                type: document.getElementById('subType').value,
-                price: document.getElementById('subPrice').value,
-                start_date: document.getElementById('subStart').value,
-                end_date: document.getElementById('subEnd').value,
-                status: document.getElementById('subStatus').value
-            };
+            const patientId = document.getElementById('subPatient').value;
+            
+            const formData = new FormData();
+            formData.append('doctor_id', document.getElementById('subDoctor').value);
+            formData.append('type', document.getElementById('subType').value);
+            formData.append('price', document.getElementById('subPrice').value);
+            formData.append('start_date', document.getElementById('subStart').value);
+            formData.append('end_date', document.getElementById('subEnd').value);
+            formData.append('status', document.getElementById('subStatus').value);
+            
+            const receiptFile = document.getElementById('subReceipt').files[0];
+            if (receiptFile) {
+                formData.append('receipt_image', receiptFile);
+            }
 
             try {
-                const targetId = id || data.patient_id;
-                await ApiService.patients.update(targetId, data);
+                const targetId = id || patientId;
+                if (!targetId) {
+                    showToast('يرجى اختيار مريض أولاً', 'error');
+                    return;
+                }
+
+                await ApiService.patients.updateWithFile(targetId, formData);
                 showToast(id ? 'تم تحديث الاشتراك بنجاح' : 'تم تفعيل حساب الاشتراك بنجاح');
                 
                 subModal.hide();
                 renderSubs();
             } catch (error) {
                 console.error('Failed to save subscription', error);
-                showToast('فشل حفظ الاشتراك', 'error');
+                showToast('فشل حفظ الاشتراك: ' + (error.message || 'خطأ غير معروف'), 'error');
             }
         });
     </script>

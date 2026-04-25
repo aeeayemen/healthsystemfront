@@ -239,32 +239,35 @@
 
         async function renderSubs() {
             try {
-                const response = await ApiService.subscriptions.getAll();
-                const subs = response.data || response;
+                const response = await ApiService.patients.getAll();
+                let subs = response.data || response;
+                
+                if (!Array.isArray(subs)) subs = [];
+
                 const tbody = document.querySelector('#subsTable tbody');
                 
                 if (subs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">لا توجد اشتراكات لعرضها</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center">لا توجد اشتراكات لعرضها</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = subs.map(sub => {
-                    const patientName = sub.patient?.fullname || sub.patient?.name || sub.patient_name || 'غير محدد';
-                    const isPending = sub.status === 'pending';
-                    const statusColor = getStatusColor(sub.status);
+                    const patientName = sub.patient_name || (sub.patient ? (sub.patient.fullname || sub.patient.name) : 'غير محدد');
+                    const isPending = sub.subscription_status === 'pending' || sub.status === 'pending';
+                    const status = sub.subscription_status || sub.status;
+                    const statusColor = getStatusColor(status);
                     
-                    // Support both field names for receipt image
-                    const receiptImg = sub.receipt_image || sub.subscription_receipt_image || '';
+                    const receiptImg = sub.subscription_receipt_image || sub.receipt_image || '';
                     const hasReceipt = !!receiptImg;
 
                     return `
                 <tr class="${isPending ? 'table-warning' : ''}">
                     <td>${sub.id}</td>
                     <td>${patientName}</td>
-                    <td>${sub.doctor?.name || sub.doctor_name || '-'}</td>
-                    <td>${getTypeName(sub.plan_type || sub.type)}</td>
-                    <td>${sub.price} ريال</td>
-                    <td>${sub.start_date || sub.startDate || '-'} ← ${sub.end_date || sub.endDate || '-'}</td>
+                    <td>${sub.doctor_name || (sub.doctor ? sub.doctor.name : '-')}</td>
+                    <td>${getTypeName(sub.subscription_type || sub.plan_type || sub.type)}</td>
+                    <td>${sub.subscription_price || sub.price || 0} ريال</td>
+                    <td>${sub.subscription_start_date || sub.start_date || '-'} ← ${sub.subscription_end_date || sub.end_date || '-'}</td>
                     <td>
                         <button class="btn btn-sm ${hasReceipt ? 'btn-outline-info' : 'btn-outline-secondary'}" 
                             onclick="viewReceipt(${sub.id}, '${receiptImg}', '${patientName.replace(/'/g, "\\'") }', ${isPending})" 
@@ -273,7 +276,7 @@
                         </button>
                     </td>
                     <td>
-                        <span class="badge bg-${statusColor}">${getStatusName(sub.status)}</span>
+                        <span class="badge bg-${statusColor}">${getStatusName(status)}</span>
                     </td>
                     <td>
                         <div class="d-flex gap-1 flex-wrap">
@@ -294,7 +297,7 @@
                 }).join('');
             } catch (error) {
                 console.error('Failed to load subscriptions', error);
-                document.querySelector('#subsTable tbody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+                document.querySelector('#subsTable tbody').innerHTML = '<tr><td colspan="9" class="text-center text-danger">فشل تحميل بيانات المشتركين</td></tr>';
             }
         }
 
@@ -307,7 +310,6 @@
         }
 
         function showToast(message, type = 'success') {
-            // Use app.js showToast if available, else fallback
             if (typeof window.showToast === 'function' && window.showToast !== showToast) {
                 window.showToast(message, type);
                 return;
@@ -328,28 +330,30 @@
             document.getElementById('subForm').reset();
             document.getElementById('subId').value = '';
             document.getElementById('subDoctor').value = '';
+            document.getElementById('receiptPreview').classList.add('d-none');
             document.getElementById('modalTitle').innerText = 'إضافة اشتراك جديد';
         }
 
         async function editSub(id) {
             try {
-                const response = await ApiService.subscriptions.get(id);
+                const response = await ApiService.patients.get(id);
                 const sub = response.data || response;
 
                 document.getElementById('subId').value = sub.id;
-                document.getElementById('subPatient').value = sub.patient_id || sub.patientId;
-                document.getElementById('subDoctor').value = sub.doctor_id || sub.doctorId || '';
-                document.getElementById('subType').value = sub.plan_type || sub.type;
-                document.getElementById('subPrice').value = sub.price;
-                document.getElementById('subStart').value = sub.start_date || sub.startDate;
-                document.getElementById('subEnd').value = sub.end_date || sub.endDate;
-                document.getElementById('subStatus').value = sub.status;
-                document.getElementById('modalTitle').innerText = 'تعديل الاشتراك';
+                document.getElementById('subPatient').value = sub.id; 
+                document.getElementById('subDoctor').value = sub.current_doctor_id || '';
+                document.getElementById('subType').value = sub.subscription_type || '';
+                document.getElementById('subPrice').value = sub.subscription_price || '';
+                document.getElementById('subStart').value = sub.subscription_start_date || '';
+                document.getElementById('subEnd').value = sub.subscription_end_date || '';
+                document.getElementById('subStatus').value = sub.subscription_status || 'pending';
+                document.getElementById('modalTitle').innerText = 'تعديل بيانات المستخدم المشترك';
                 
                 const previewImg = document.getElementById('receiptPreviewImg');
                 const previewDiv = document.getElementById('receiptPreview');
-                if (sub.receipt_image) {
-                    previewImg.src = ApiService.resolveImageUrl(sub.receipt_image);
+                const receiptImg = sub.subscription_receipt_image || sub.receipt_image;
+                if (receiptImg) {
+                    previewImg.src = ApiService.resolveImageUrl(receiptImg);
                     previewDiv.classList.remove('d-none');
                 } else {
                     previewDiv.classList.add('d-none');
@@ -357,20 +361,20 @@
 
                 subModal.show();
             } catch (error) {
-                console.error('Failed to load subscription details', error);
-                showToast('فشل تحميل تفاصيل الاشتراك', 'error');
+                console.error('Failed to load details', error);
+                showToast('فشل تحميل التفاصيل', 'error');
             }
         }
 
         async function deleteSub(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الاشتراك؟')) {
+            if (confirm('هل أنت متأكد من حذف هذا المستخدم من قائمة المشتركين؟')) {
                 try {
-                    await ApiService.subscriptions.delete(id);
+                    await ApiService.patients.delete(id);
                     renderSubs();
-                    showToast('تم حذف الاشتراك بنجاح');
+                    showToast('تم الحذف بنجاح');
                 } catch (error) {
-                    console.error('Failed to delete subscription', error);
-                    showToast('فشل حذف الاشتراك', 'error');
+                    console.error('Failed to delete', error);
+                    showToast('فشل الحذف', 'error');
                 }
             }
         }
@@ -381,9 +385,8 @@
             const patientId = document.getElementById('subPatient').value;
             
             const formData = new FormData();
-            formData.append('patient_id', patientId);
             formData.append('doctor_id', document.getElementById('subDoctor').value);
-            formData.append('plan_type', document.getElementById('subType').value);
+            formData.append('type', document.getElementById('subType').value);
             formData.append('price', document.getElementById('subPrice').value);
             formData.append('start_date', document.getElementById('subStart').value);
             formData.append('end_date', document.getElementById('subEnd').value);
@@ -395,23 +398,20 @@
             }
 
             try {
-                if (id) {
-                    await ApiService.subscriptions.updateWithFile(id, formData);
-                    showToast('تم تحديث الاشتراك بنجاح');
-                } else {
-                    if (!patientId) {
-                        showToast('يرجى اختيار مريض أولاً', 'error');
-                        return;
-                    }
-                    await ApiService.subscriptions.createWithFile(formData);
-                    showToast('تم إضافة الاشتراك بنجاح');
+                const targetId = id || patientId;
+                if (!targetId) {
+                    showToast('يرجى اختيار مريض أولاً', 'error');
+                    return;
                 }
+
+                await ApiService.patients.updateWithFile(targetId, formData);
+                showToast('تم تحديث بيانات الاشتراك بنجاح ✓');
                 
                 subModal.hide();
                 renderSubs();
             } catch (error) {
-                console.error('Failed to save subscription', error);
-                showToast('فشل حفظ الاشتراك: ' + (error.message || 'خطأ غير معروف'), 'error');
+                console.error('Failed to save', error);
+                showToast('فشل الحفظ: ' + (error.message || 'خطأ غير معروف'), 'error');
             }
         });
     </script>

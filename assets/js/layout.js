@@ -12,11 +12,9 @@ const Layout = {
                 items: [
                     { name: 'المستخدمين العاديين', link: 'users-normal.html', id: 'users-normal' },
                     { name: 'المستخدمين الدافعين', link: 'users-paying.html', id: 'users-paying' },
-                    { name: 'المستخدمين المشتركين', link: 'users-subscribed.html', id: 'users-subscribed' },
+                    { name: 'المستخدمين المشتركين', link: 'subscriptions.html', id: 'subscriptions' },
                     { name: 'الفحص الطبي', link: 'medical-tests.html', id: 'medical-tests' },
-                    { name: 'الحساب الأساسي', link: 'main-calculation.html', id: 'main-calculation' },
-                    { name: 'الحساب الأسبوعي', link: 'weekly-calculations.html', id: 'weekly-calculations' },
-                    { name: 'الاشتراكات', link: 'subscriptions.html', id: 'subscriptions' }
+                    { name: 'الحساب الأساسي', link: 'main-calculation.html', id: 'main-calculation' }
                 ]
             },
             {

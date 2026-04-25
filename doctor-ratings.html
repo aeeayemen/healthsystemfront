@@ -16,7 +16,6 @@
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-star me-2"></i>تقييمات الأطباء</h2>
-                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة تقييم</button>
                 </div>
 
                 <div class="card"><div class="card-body">
@@ -92,7 +91,7 @@
         function renderTable(){const tbody=document.getElementById('tableBody');tbody.innerHTML=allData.length===0?'<tr><td colspan="5" class="text-center text-muted py-4">لا توجد تقييمات</td></tr>':allData.map(item=>`<tr><td>${item.id}</td><td>${item.doctor_name || item.doctor_id}</td><td>${item.user_name || item.user_id}</td><td>${getStars(item.rate)} <strong>${item.rate}</strong></td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');}
 
 
-        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة تقييم';document.getElementById('editId').value='';document.getElementById('formDoctorId').value='';document.getElementById('formUserId').value='';document.getElementById('formRate').value='5';formModal.show();}
+
         
         function openEditModal(id){
             const item=allData.find(r=>r.id===id);

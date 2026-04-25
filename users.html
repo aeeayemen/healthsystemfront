@@ -30,9 +30,8 @@
                             <div class="d-flex gap-2">
                                 <select class="form-select w-auto" id="roleFilter" onchange="renderUsers()">
                                     <option value="all">كل الأدوار</option>
-                                    <option value="admin">مسؤول</option>
                                     <option value="doctor">طبيب</option>
-                                    <option value="patient">مريض</option>
+                                    <option value="patient">مستخدم عادي</option>
                                 </select>
                                 <select class="form-select w-auto" id="statusFilter" onchange="renderUsers()">
                                     <option value="all">كل الحالات</option>
@@ -93,9 +92,8 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">الدور</label>
                                 <select class="form-select" id="userRole" required onchange="toggleFields()">
-                                    <option value="admin">مسؤول (Admin)</option>
                                     <option value="doctor">طبيب (Doctor)</option>
-                                    <option value="patient">مريض (Patient)</option>
+                                    <option value="patient">مستخدم عادي (Patient)</option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -227,7 +225,7 @@
         }
 
         function getRoleName(role) {
-            return { admin: 'مسؤول', doctor: 'طبيب', patient: 'مريض' }[role] || role;
+            return { admin: 'مسؤول', doctor: 'طبيب', patient: 'مستخدم عادي' }[role] || role;
         }
 
         function resetForm() {

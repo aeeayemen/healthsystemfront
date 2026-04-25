@@ -35,6 +35,7 @@
                                         <th>الرقم</th>
                                         <th>الاسم</th>
                                         <th>البريد الإلكتروني</th>
+                                        <th>الطبيب</th>
                                         <th>كلمة المرور</th>
                                         <th>النوع</th>
                                         <th>تاريخ الإنشاء</th>
@@ -155,7 +156,7 @@
             const totalCountElement = document.getElementById('totalCount');
 
             if (allData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد بيانات</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">لا توجد بيانات</td></tr>';
                 totalCountElement.textContent = '0 مستخدم';
             } else {
                 tbody.innerHTML = allData.map(item => `
@@ -163,6 +164,7 @@
                         <td>${item.id}</td>
                         <td>${item.name || '-'}</td>
                         <td>${item.email || '-'}</td>
+                        <td>${item.doctor_name || '-'}</td>
                         <td><code>******</code></td>
                         <td><span class="badge bg-secondary">${item.type || item.role || 'normal'}</span></td>
                         <td>${item.created_at ? item.created_at.split('T')[0] : '-'}</td>

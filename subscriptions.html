@@ -216,7 +216,7 @@
             try {
                 // Single call: backend SubscriptionController::update() automatically
                 // sets patient.user.type = 'payed' when status is set to 'active'
-                await ApiService.subscriptions.update(subId, { status: 'active' });
+                await ApiService.patients.update(subId, { status: 'active' });
 
                 showToast('تم اعتماد الدفع وتفعيل الاشتراك بنجاح ✓', 'success');
                 renderSubs();
@@ -232,7 +232,7 @@
 
         async function renderSubs() {
             try {
-                const response = await ApiService.subscriptions.getAll();
+                const response = await ApiService.patients.getAll();
                 const subs = response.data || response;
                 const tbody = document.querySelector('#subsTable tbody');
                 
@@ -321,7 +321,7 @@
 
         async function editSub(id) {
             try {
-                const response = await ApiService.subscriptions.get(id);
+                const response = await ApiService.patients.get(id);
                 const sub = response.data || response;
 
                 document.getElementById('subId').value = sub.id;
@@ -344,7 +344,7 @@
         async function deleteSub(id) {
             if (confirm('هل أنت متأكد من حذف هذا الاشتراك؟')) {
                 try {
-                    await ApiService.subscriptions.delete(id);
+                    await ApiService.patients.delete(id);
                     renderSubs();
                     showToast('تم حذف الاشتراك بنجاح');
                 } catch (error) {
@@ -368,13 +368,9 @@
             };
 
             try {
-                if (id) {
-                    await ApiService.subscriptions.update(id, data);
-                    showToast('تم تحديث الاشتراك بنجاح');
-                } else {
-                    await ApiService.subscriptions.create(data);
-                    showToast('تم إضافة الاشتراك بنجاح');
-                }
+                const targetId = id || data.patient_id;
+                await ApiService.patients.update(targetId, data);
+                showToast(id ? 'تم تحديث الاشتراك بنجاح' : 'تم تفعيل حساب الاشتراك بنجاح');
                 
                 subModal.hide();
                 renderSubs();

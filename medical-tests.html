@@ -20,9 +20,6 @@
                     <h2><i class="fas fa-flask me-2"></i>الفحص الطبي</h2>
                     <div class="d-flex align-items-center">
                         <span class="badge bg-primary me-3" id="totalCount">0 فحص</span>
-                        <button class="btn btn-primary" onclick="openAddModal()">
-                            <i class="fas fa-plus me-2"></i>إضافة فحص
-                        </button>
                     </div>
                 </div>
 
@@ -198,14 +195,7 @@
             window.location.href = `medical-test-details.html?id=${id}`; 
         }
 
-        function openAddModal() {
-            document.getElementById('modalTitle').textContent = 'إضافة فحص';
-            document.getElementById('editId').value = '';
-            document.getElementById('formUserId').value = '';
-            document.getElementById('formName').value = '';
-            document.getElementById('formImage').value = '';
-            formModal.show();
-        }
+
 
         async function openEditModal(id) {
             try {

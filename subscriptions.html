@@ -31,6 +31,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>المستخدم</th>
+                                        <th>الطبيب</th>
                                         <th>نوع الاشتراك</th>
                                         <th>السعر</th>
                                         <th>الفترة</th>
@@ -94,6 +95,10 @@
                             <select class="form-select" id="subPatient" required></select>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">الطبيب</label>
+                            <select class="form-select" id="subDoctor" required></select>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">نوع الاشتراك</label>
                             <select class="form-select" id="subType" required>
                                 <option value="monthly">شهري</option>
@@ -144,8 +149,20 @@
             subModal = new bootstrap.Modal(document.getElementById('subModal'));
             receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
             loadPatients();
+            loadDoctors();
             renderSubs();
         });
+
+        async function loadDoctors() {
+            try {
+                const response = await ApiService.doctors.getAll({ application_status: 'approved' });
+                const doctors = response.data || response;
+                document.getElementById('subDoctor').innerHTML = '<option value="">اختر الطبيب...</option>' + 
+                    doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            } catch (error) {
+                console.error('Failed to load doctors', error);
+            }
+        }
 
         async function loadPatients() {
             try {
@@ -234,6 +251,7 @@
                 <tr class="${isPending ? 'table-warning' : ''}">
                     <td>${sub.id}</td>
                     <td>${patientName}</td>
+                    <td>${sub.doctor?.name || sub.doctor_name || '-'}</td>
                     <td>${getTypeName(sub.type)}</td>
                     <td>${sub.price} ريال</td>
                     <td>${sub.start_date || sub.startDate || '-'} ← ${sub.end_date || sub.endDate || '-'}</td>
@@ -297,6 +315,7 @@
         function resetForm() {
             document.getElementById('subForm').reset();
             document.getElementById('subId').value = '';
+            document.getElementById('subDoctor').value = '';
             document.getElementById('modalTitle').innerText = 'إضافة اشتراك جديد';
         }
 
@@ -307,7 +326,8 @@
 
                 document.getElementById('subId').value = sub.id;
                 document.getElementById('subPatient').value = sub.patient_id || sub.patientId;
-                document.getElementById('subType').value = sub.type;
+                document.getElementById('subDoctor').value = sub.doctor_id || sub.doctorId || '';
+                document.getElementById('subType').value = sub.type || sub.plan_type;
                 document.getElementById('subPrice').value = sub.price;
                 document.getElementById('subStart').value = sub.start_date || sub.startDate;
                 document.getElementById('subEnd').value = sub.end_date || sub.endDate;
@@ -339,6 +359,7 @@
             const id = document.getElementById('subId').value;
             const data = {
                 patient_id: document.getElementById('subPatient').value,
+                doctor_id: document.getElementById('subDoctor').value,
                 type: document.getElementById('subType').value,
                 price: document.getElementById('subPrice').value,
                 start_date: document.getElementById('subStart').value,

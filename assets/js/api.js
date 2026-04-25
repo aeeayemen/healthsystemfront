@@ -6,6 +6,11 @@ const ApiService = {
     // Helpers for URL construction
     getBaseUrl: () => API_BASE_URL,
     getImageBaseUrl: () => IMAGE_BASE_URL,
+    resolveImageUrl: (path) => {
+        if (!path) return '';
+        if (path.startsWith('http://') || path.startsWith('https://')) return path;
+        return IMAGE_BASE_URL + path.replace(/^\/+/, '');
+    },
 
     // Helper for making requests
     async request(endpoint, method = 'GET', body = null) {

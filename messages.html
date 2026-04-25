@@ -78,7 +78,6 @@
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-envelope me-2"></i>الرسائل</h2>
-                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus me-2"></i>إضافة رسالة</button>
                 </div>
 
                 <div class="card"><div class="card-body">
@@ -106,15 +105,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="formModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة رسالة</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
-            <div class="mb-3"><label class="form-label">رقم المستخدم</label><select class="form-select" id="formUserId" required><option value="">اختر المستخدم...</option></select></div>
-            <div class="mb-3"><label class="form-label">رقم الطبيب</label><select class="form-select" id="formDoctorId" required><option value="">اختر الطبيب...</option></select></div>
-            <div class="mb-3"><label class="form-label">الرسالة</label><textarea class="form-control" id="formMessage" rows="4" required></textarea></div>
-        </form></div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="saveData()">حفظ</button></div>
-    </div></div></div>
+
     <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
         <div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
         <div class="modal-body"><p>هل أنت متأكد من حذف هذه الرسالة؟</p></div>
@@ -125,7 +116,7 @@
     <script src="assets/js/layout.js"></script>
     <script>
         let allData=[],currentPage=1,perPage=10,formModal,deleteModal,deleteId=null;
-        document.addEventListener('DOMContentLoaded',()=>{Layout.init('messages');formModal=new bootstrap.Modal(document.getElementById('formModal'));deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();loadUsers();loadDoctors();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
+        document.addEventListener('DOMContentLoaded',()=>{Layout.init('messages');deleteModal=new bootstrap.Modal(document.getElementById('deleteModal'));loadData();loadUsers();loadDoctors();document.getElementById('confirmDeleteBtn').addEventListener('click',confirmDelete);});
         
         async function loadData(){
             try {
@@ -227,27 +218,7 @@
         function renderPagination(){const tp=Math.ceil(allData.length/perPage);document.getElementById('paginationInfo').textContent=`عرض ${allData.length>0?(currentPage-1)*perPage+1:0} - ${Math.min(currentPage*perPage,allData.length)} من ${allData.length}`;let h=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=tp;i++)h+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;h+=`<li class="page-item ${currentPage===tp||tp===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=h;}
         
         function goToPage(p){const tp=Math.ceil(allData.length/perPage);if(p>=1&&p<=tp){currentPage=p;renderTable();}}
-        function openAddModal(){document.getElementById('modalTitle').textContent='إضافة رسالة';document.getElementById('editId').value='';document.getElementById('formUserId').value='';document.getElementById('formDoctorId').value='';document.getElementById('formMessage').value='';formModal.show();}
-        
-        async function saveData(){
-            const user_id=parseInt(document.getElementById('formUserId').value);
-            const doctor_id=parseInt(document.getElementById('formDoctorId').value);
-            const message=document.getElementById('formMessage').value.trim();
-            if(!user_id||!doctor_id||!message){alert('يرجى ملء جميع الحقول');return;}
-            
-            try {
-                await ApiService.chat.sendMessage({ 
-                    sender_id: user_id, 
-                    receiver_id: doctor_id, 
-                    massage: message 
-                });
-                formModal.hide();
-                loadData();
-            } catch (error) {
-                console.error('Failed to send message:', error);
-                alert('فشل إرسال الرسالة: ' + (error.message || 'خطأ غير معروف'));
-            }
-        }
+
         
         function openDeleteModal(id){deleteId=id;deleteModal.show();}
         

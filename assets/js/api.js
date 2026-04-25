@@ -166,12 +166,13 @@ const ApiService = {
         updateStatus: (id, status) => ApiService.request(`/doctors/${id}/status`, 'POST', { status })
     },
 
-    // Patients (Assuming similar structure to users or specific endpoint)
+    // Patients (Subscribed Users)
     patients: {
-        getAll: (params) => ApiService.request(`/users-subscribed?${new URLSearchParams(params)}`), // Assuming /patients endpoint exists or filtered users
+        getAll: (params) => ApiService.request(`/users-subscribed?${new URLSearchParams(params)}`),
         get: (id) => ApiService.request(`/users-subscribed/${id}`),
         create: (data) => ApiService.request('/users-subscribed', 'POST', data),
         update: (id, data) => ApiService.request(`/users-subscribed/${id}`, 'PUT', data),
+        updateWithFile: (id, formData) => ApiService.uploadFormData(`/users-subscribed/${id}?_method=PUT`, 'POST', formData),
         delete: (id) => ApiService.request(`/users-subscribed/${id}`, 'DELETE')
     },
 

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المستخدمين المشتركين - لوحة التحكم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -252,7 +252,10 @@
                     const patientName = sub.patient?.fullname || sub.patient?.name || sub.patient_name || 'غير محدد';
                     const isPending = sub.status === 'pending';
                     const statusColor = getStatusColor(sub.status);
-                    const hasReceipt = !!sub.receipt_image;
+                    
+                    // Support both field names for receipt image
+                    const receiptImg = sub.receipt_image || sub.subscription_receipt_image || '';
+                    const hasReceipt = !!receiptImg;
 
                     return `
                 <tr class="${isPending ? 'table-warning' : ''}">
@@ -264,26 +267,28 @@
                     <td>${sub.start_date || sub.startDate || '-'} ← ${sub.end_date || sub.endDate || '-'}</td>
                     <td>
                         <button class="btn btn-sm ${hasReceipt ? 'btn-outline-info' : 'btn-outline-secondary'}" 
-                            onclick="viewReceipt(${sub.id}, '${sub.receipt_image || ''}', '${patientName.replace(/'/g, "\\'") }', ${isPending})" 
+                            onclick="viewReceipt(${sub.id}, '${receiptImg}', '${patientName.replace(/'/g, "\\'") }', ${isPending})" 
                             title="${hasReceipt ? 'عرض سند الدفع' : 'لا يوجد سند'}">
-                            <i class="fas fa-${hasReceipt ? 'image' : 'image'} me-1"></i>${hasReceipt ? 'عرض السند' : 'بلا سند'}
+                            <i class="fas fa-${hasReceipt ? 'image' : 'image-slash'} me-1"></i>${hasReceipt ? 'عرض السند' : 'بلا سند'}
                         </button>
                     </td>
                     <td>
                         <span class="badge bg-${statusColor}">${getStatusName(sub.status)}</span>
                     </td>
-                    <td class="d-flex gap-1 flex-wrap">
-                        ${isPending ? `
-                            <button class="btn btn-sm btn-success" onclick="approvePayment(${sub.id})" title="اعتماد الدفع">
-                                <i class="fas fa-check-circle me-1"></i>اعتماد
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            ${isPending ? `
+                                <button class="btn btn-sm btn-success" onclick="approvePayment(${sub.id})" title="اعتماد الدفع">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-sm btn-outline-primary" onclick="editSub(${sub.id})" title="تعديل">
+                                <i class="fas fa-edit"></i>
                             </button>
-                        ` : ''}
-                        <button class="btn btn-sm btn-light text-primary" onclick="editSub(${sub.id})" title="تعديل">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-light text-danger" onclick="deleteSub(${sub.id})" title="حذف">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSub(${sub.id})" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>`;
                 }).join('');

@@ -85,8 +85,7 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">النوع</label>
                                 <select class="form-select" id="formType" required>
-                                    <option value="عرض">عرض</option>
-                                    <option value="ترويج">ترويج</option>
+                                    <option value="إعلان">إعلان</option>
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -177,7 +176,7 @@
                         <td><img src="${ApiService.resolveImageUrl(item.image)}" alt="إعلان" class="img-preview" onclick="showImage('${ApiService.resolveImageUrl(item.image)}')"></td>
                         <td class="text-truncate" style="max-width: 150px;">${item.describtion}</td>
                         <td>${item.phone_number}</td>
-                        <td><span class="badge ${item.type === 'عرض' ? 'bg-success' : 'bg-info'}">${item.type}</span></td>
+                        <td><span class="badge bg-primary">إعلان</span></td>
                         <td><code>${item.GPS || '-'}</code></td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
@@ -201,7 +200,7 @@
             document.getElementById('formDescribtion').value = '';
             document.getElementById('formImage').value = '';
             document.getElementById('formPhone').value = '';
-            document.getElementById('formType').value = 'عرض';
+            document.getElementById('formType').value = 'إعلان';
             document.getElementById('formGPS').value = '';
             formModal.show();
         }

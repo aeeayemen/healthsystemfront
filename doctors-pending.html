@@ -145,8 +145,8 @@
                     <td class="text-primary small fw-bold">${item.diet_price||'-'}</td>
                     <td><code class="small">${item.license_number||'-'}</code></td>
                     <td class="small">${item.phone_number || '-'}</td>
-                    <td>${item.CV ? `<a href="${ApiService.resolveImageUrl(item.CV)}" target="_blank" class="text-primary"><i class="fas fa-file-pdf"></i></a>` : '-'}</td>
-                    <td>${item.degree ? `<a href="${ApiService.resolveImageUrl(item.degree)}" target="_blank" class="text-primary"><i class="fas fa-certificate"></i></a>` : '-'}</td>
+                    <td>${item.CV ? `<a href="${ApiService.resolveImageUrl(item.CV)}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a>` : '-'}</td>
+                    <td>${item.degree ? `<a href="${ApiService.resolveImageUrl(item.degree)}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fas fa-certificate"></i></a>` : '-'}</td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn btn-sm btn-success" onclick="approveDoctor(${item.id})" title="قبول"><i class="fas fa-check"></i></button>

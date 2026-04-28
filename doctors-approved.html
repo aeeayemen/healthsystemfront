@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الدكاترة المقبولين - لوحة التحكم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -24,7 +24,7 @@
                 <div class="card"><div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead><tr><th>الرقم</th><th>الاسم</th><th>الجنس</th><th>الدرجة</th><th>الحساب البنكي</th><th>رقم الهاتف</th><th>السيرة الذاتية</th><th>رقم المشرف</th><th>التقييم</th><th>سعر الكشف</th><th>سنوات الخبرة</th><th>إجراءات</th></tr></thead>
+                            <thead><tr><th>الاسم</th><th>التخصص</th><th>البريد</th><th>الجنس</th><th>سعر الكشف</th><th>سعر الحمية</th><th>التراخيص</th><th>رقم الهاتف</th><th>السيرة</th><th>الدرجة</th><th>التقييم</th><th>إجراءات</th></tr></thead>
                             <tbody id="tableBody">
                                 <!-- Data loaded via JS -->
                             </tbody>
@@ -49,6 +49,8 @@
                     </select>
                 </div>
                     <div class="col-md-6 mb-3"><label class="form-label">الاسم</label><input type="text" class="form-control" id="formName" required></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">البريد الإلكتروني</label><input type="email" class="form-control" id="formEmail" placeholder="example@email.com"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">التخصص</label><input type="text" class="form-control" id="formSpecialty" placeholder="مثلاً: تغذية علاجية"></div>
                     <div class="col-md-6 mb-3"><label class="form-label">الجنس</label><select class="form-select" id="formGender" required><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">الدرجة العلمية</label>
@@ -60,16 +62,10 @@
                     </div>
                     <div class="col-md-6 mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="formPhone" required></div>
                     <div class="col-md-6 mb-3"><label class="form-label">الحساب البنكي</label><input type="text" class="form-control" id="formBankAccount"></div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">السيرة الذاتية (CV)</label>
-                        <input type="file" class="form-control" id="formCV" accept=".pdf,.doc,.docx">
-                        <div id="currentCVPreview" class="mt-2 d-none">
-                            <small class="text-muted d-block">الملف الحالي:</small>
-                            <a href="#" id="currentCVLink" target="_blank" class="text-primary"><i class="fas fa-file-pdf me-1"></i> عرض السيرة الذاتية</a>
-                        </div>
-                    </div>
+                    <div class="col-md-6 mb-3"><label class="form-label">السيرة الذاتية</label><input type="file" class="form-control" id="formCV" accept=".pdf,.doc,.docx"></div>
                     <div class="col-md-6 mb-3"><label class="form-label">رقم الترخيص</label><input type="text" class="form-control" id="formLicenseNumber" required></div>
                     <div class="col-md-6 mb-3"><label class="form-label">سعر الكشف</label><input type="number" class="form-control" id="formConsultationFee"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">سعر الحمية</label><input type="number" class="form-control" id="formDietPrice"></div>
                     <div class="col-md-6 mb-3"><label class="form-label">سنوات الخبرة</label><input type="number" class="form-control" id="formYearsOfExperience"></div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">صورة الملف الشخصي</label>
@@ -130,7 +126,41 @@
             }
         }
         
-        function renderTable(){const tbody=document.getElementById('tableBody');const start=(currentPage-1)*perPage;const pageData=allData.slice(start,start+perPage);tbody.innerHTML=pageData.length===0?'<tr><td colspan="12" class="text-center text-muted py-4">لا يوجد دكاترة مقبولين</td></tr>':pageData.map(item=>`<tr><td>${item.id}</td><td>${item.name}</td><td><span class="badge ${item.gender==='male'?'bg-primary':'bg-pink'}">${item.gender==='male'?'ذكر':'أنثى'}</span></td><td>${item.degree ? `<a href="${item.degree}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i></a>` : '-'}</td><td><code>${item.bank_account||'-'}</code></td><td>${item.phone_number || '-'}</td><td>${item.CV ? `<a href="${item.CV}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf"></i></a>` : '-'}</td><td><span class="badge bg-success">${item.admin_id || '-'}</span></td><td><i class="fas fa-star text-warning"></i> ${item.rating || 0}</td><td>${item.consultation_fee||'-'} ريال</td><td>${item.years_of_experience||'-'}</td><td><button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');renderPagination();}
+        function renderTable(){
+            const tbody = document.getElementById('tableBody');
+            const start = (currentPage-1) * perPage;
+            const pageData = allData.slice(start, start + perPage);
+            
+            tbody.innerHTML = pageData.length === 0 ? '<tr><td colspan="12" class="text-center text-muted py-4">لا يوجد دكاترة مقبولين</td></tr>' : pageData.map(item => `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="${item.profile_image ? ApiService.resolveImageUrl(item.profile_image) : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}`}" class="rounded-circle me-2" width="30" height="30">
+                            <div>
+                                <div class="fw-bold">${item.name}</div>
+                                <small class="text-muted">ID: ${item.id}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-light text-primary border">${item.specialization || '-'}</span></td>
+                    <td><div class="small">${item.email || '-'}</div></td>
+                    <td>${item.gender==='male'?'ذكر':'أنثى'}</td>
+                    <td class="text-success small fw-bold">${item.consultation_fee||'-'}</td>
+                    <td class="text-primary small fw-bold">${item.diet_price||'-'}</td>
+                    <td class="small"><code>${item.license_number||'-'}</code></td>
+                    <td class="small">${item.phone_number || '-'}</td>
+                    <td>${item.CV ? `<a href="${ApiService.resolveImageUrl(item.CV)}" target="_blank" class="text-primary"><i class="fas fa-file-pdf"></i></a>` : '-'}</td>
+                    <td>${item.degree ? `<a href="${ApiService.resolveImageUrl(item.degree)}" target="_blank" class="text-primary"><i class="fas fa-certificate"></i></a>` : '-'}</td>
+                    <td><div class="text-warning small"><i class="fas fa-star"></i> ${item.rating || 0}</div></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${item.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`).join('');
+            renderPagination();
+        }
         function renderPagination(){const totalPages=Math.ceil(allData.length/perPage);const start=(currentPage-1)*perPage+1;const end=Math.min(currentPage*perPage,allData.length);document.getElementById('paginationInfo').textContent=`عرض ${allData.length>0?start:0} - ${end} من ${allData.length}`;let html=`<li class="page-item ${currentPage===1?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage-1})">السابق</a></li>`;for(let i=1;i<=totalPages;i++)html+=`<li class="page-item ${currentPage===i?'active':''}"><a class="page-link" href="#" onclick="goToPage(${i})">${i}</a></li>`;html+=`<li class="page-item ${currentPage===totalPages||totalPages===0?'disabled':''}"><a class="page-link" href="#" onclick="goToPage(${currentPage+1})">التالي</a></li>`;document.getElementById('pagination').innerHTML=html;}
         function goToPage(page){const totalPages=Math.ceil(allData.length/perPage);if(page>=1&&page<=totalPages){currentPage=page;renderTable();}}
         function openAddModal(){
@@ -138,15 +168,17 @@
             document.getElementById('editId').value='';
             document.getElementById('formUserId').value='';
             document.getElementById('formName').value='';
+            document.getElementById('formEmail').value='';
+            document.getElementById('formSpecialty').value='';
             document.getElementById('formGender').value='male';
             document.getElementById('formDegree').value='';
             document.getElementById('currentDegreePreview').classList.add('d-none');
             document.getElementById('formPhone').value='';
             document.getElementById('formBankAccount').value='';
             document.getElementById('formCV').value='';
-            document.getElementById('currentCVPreview').classList.add('d-none');
-            document.getElementById('formLicenseNumber').value='897889';
-            document.getElementById('formConsultationFee').value='897889';
+            document.getElementById('formLicenseNumber').value='';
+            document.getElementById('formConsultationFee').value='';
+            document.getElementById('formDietPrice').value='';
             document.getElementById('formYearsOfExperience').value='';
             document.getElementById('formProfileImage').value='';
             document.getElementById('currentImagePreview').classList.add('d-none');
@@ -161,35 +193,31 @@
                 document.getElementById('modalTitle').textContent='تعديل الدكتور';
                 document.getElementById('editId').value=id;
                 document.getElementById('formUserId').value=item.user_id || '';
-                document.getElementById('formName').value=item.name;
+                document.getElementById('formName').value=item.name || '';
+                document.getElementById('formEmail').value=item.email || '';
+                document.getElementById('formSpecialty').value=item.specialization || '';
                 document.getElementById('formGender').value=item.gender || 'male';
                 document.getElementById('formDegree').value='';
                 const currentDegree = document.getElementById('currentDegreePreview');
                 if (item.degree) {
                     currentDegree.classList.remove('d-none');
-                    document.getElementById('currentDegreeLink').href = item.degree;
+                    document.getElementById('currentDegreeLink').href = ApiService.resolveImageUrl(item.degree);
                 } else {
                     currentDegree.classList.add('d-none');
                 }
                 document.getElementById('formPhone').value=item.phone_number || '';
                 document.getElementById('formBankAccount').value=item.bank_account || '';
-                document.getElementById('formCV').value='';
-                const currentCV = document.getElementById('currentCVPreview');
-                if (item.CV) {
-                    currentCV.classList.remove('d-none');
-                    document.getElementById('currentCVLink').href = item.CV;
-                } else {
-                    currentCV.classList.add('d-none');
-                }
+                document.getElementById('formCV').value=''; // Files can't be set back
                 document.getElementById('formLicenseNumber').value=item.license_number || '';
                 document.getElementById('formConsultationFee').value=item.consultation_fee || '';
+                document.getElementById('formDietPrice').value=item.diet_price || '';
                 document.getElementById('formYearsOfExperience').value=item.years_of_experience || '';
                 
                 document.getElementById('formProfileImage').value = '';
                 const currentImage = document.getElementById('currentImagePreview');
                 if (item.profile_image) {
                     currentImage.classList.remove('d-none');
-                    currentImage.querySelector('img').src = IMAGE_BASE_URL + item.profile_image;
+                    currentImage.querySelector('img').src = ApiService.resolveImageUrl(item.profile_image);
                 } else {
                     currentImage.classList.add('d-none');
                 }
@@ -208,6 +236,8 @@
 
             formData.append('user_id', document.getElementById('formUserId').value);
             formData.append('name', document.getElementById('formName').value.trim());
+            formData.append('email', document.getElementById('formEmail').value.trim());
+            formData.append('specialization', document.getElementById('formSpecialty').value.trim() || 'تغذية علاجية');
             formData.append('gender', document.getElementById('formGender').value);
             const degreeInput = document.getElementById('formDegree');
             if (degreeInput.files.length > 0) {
@@ -216,14 +246,14 @@
             formData.append('phone_number', document.getElementById('formPhone').value.trim());
             formData.append('bank_account', document.getElementById('formBankAccount').value.trim());
             const cvInput = document.getElementById('formCV');
-            if (cvInput.files.length > 0) {
+                if (cvInput.files && cvInput.files.length > 0) {
                 formData.append('CV', cvInput.files[0]);
             }
             formData.append('license_number', document.getElementById('formLicenseNumber').value.trim());
             formData.append('consultation_fee', document.getElementById('formConsultationFee').value);
+            formData.append('diet_price', document.getElementById('formDietPrice').value);
             formData.append('years_of_experience', document.getElementById('formYearsOfExperience').value);
             formData.append('bio', document.getElementById('formBio').value.trim());
-            formData.append('specialization', 'تغذية علاجية');
             formData.append('application_status', 'approved');
 
             const profileImageInput = document.getElementById('formProfileImage');

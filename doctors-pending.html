@@ -37,15 +37,16 @@
         <div class="modal-header"><h5 class="modal-title" id="modalTitle">إضافة دكتور</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body"><form id="dataForm"><input type="hidden" id="editId">
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">رقم المستخدم (User ID)</label>
-                    <select class="form-select" id="formUserId" required>
-                        <option value="">اختر المستخدم...</option>
-                        <!-- Populated by JS -->
-                    </select>
-                </div>
                 <div class="col-md-6 mb-3"><label class="form-label">الاسم</label><input type="text" class="form-control" id="formName" required></div>
-                <div class="col-md-6 mb-3"><label class="form-label">البريد الإلكتروني</label><input type="email" class="form-control" id="formEmail" placeholder="example@email.com"></div>
+                <div class="col-md-6 mb-3"><label class="form-label">البريد الإلكتروني</label><input type="email" class="form-control" id="formEmail" required placeholder="example@email.com"></div>
+                <div class="col-md-6 mb-3" id="passwordFieldContainer">
+                    <label class="form-label">كلمة المرور</label>
+                    <input type="password" class="form-control" id="formPassword" placeholder="أدخل كلمة المرور">
+                </div>
+                <div class="col-md-6 mb-3" id="passwordConfirmFieldContainer">
+                    <label class="form-label">تأكيد كلمة المرور</label>
+                    <input type="password" class="form-control" id="formPasswordConfirm" placeholder="تأكيد كلمة المرور">
+                </div>
                 <div class="col-md-6 mb-3"><label class="form-label">التخصص</label><input type="text" class="form-control" id="formSpecialty" placeholder="مثلاً: تغذية علاجية"></div>
                 <div class="col-md-6 mb-3"><label class="form-label">الجنس</label><select class="form-select" id="formGender" required><option value="male">ذكر</option><option value="female">أنثى</option></select></div>
                 <div class="col-md-6 mb-3">
@@ -164,18 +165,17 @@
             if(!confirm('هل تريد قبول هذا الدكتور؟'))return;
             try {
                 await ApiService.doctors.approve(id);
-                showToast('تم قبول الدكتور بنجاح');
+                alert('تم قبول الدكتور بنجاح');
                 loadData();
             } catch (error) {
                 console.error('Failed to approve doctor:', error);
-                showToast('فشل قبول الدكتور', 'error');
+                alert('فشل قبول الدكتور');
             }
         }
         
         function openAddModal(){
-            document.getElementById('modalTitle').textContent='إضافة دكتور';
+            document.getElementById('modalTitle').textContent='إضافة طبيب جديد';
             document.getElementById('editId').value='';
-            document.getElementById('formUserId').value='';
             document.getElementById('formName').value='';
             document.getElementById('formEmail').value='';
             document.getElementById('formSpecialty').value='';
@@ -192,6 +192,11 @@
             document.getElementById('formProfileImage').value='';
             document.getElementById('currentImagePreview').classList.add('d-none');
             document.getElementById('formBio').value='';
+            
+            document.getElementById('passwordFieldContainer').classList.remove('d-none');
+            document.getElementById('passwordConfirmFieldContainer').classList.remove('d-none');
+            document.getElementById('formPassword').required = true;
+            document.getElementById('formPasswordConfirm').required = true;
             formModal.show();
         }
         
@@ -201,7 +206,12 @@
                 const item = response.data || response;
                 document.getElementById('modalTitle').textContent='تعديل الدكتور';
                 document.getElementById('editId').value=id;
-                document.getElementById('formUserId').value=item.user_id || '';
+                
+                document.getElementById('passwordFieldContainer').classList.add('d-none');
+                document.getElementById('passwordConfirmFieldContainer').classList.add('d-none');
+                document.getElementById('formPassword').required = false;
+                document.getElementById('formPasswordConfirm').required = false;
+
                 document.getElementById('formName').value=item.name || '';
                 document.getElementById('formEmail').value=item.email || '';
                 document.getElementById('formSpecialty').value=item.specialization || '';
@@ -216,7 +226,7 @@
                 }
                 document.getElementById('formPhone').value=item.phone_number || '';
                 document.getElementById('formBankAccount').value=item.bank_account || '';
-                document.getElementById('formCV').value=''; // Files can't be set
+                document.getElementById('formCV').value='';
                 document.getElementById('formLicenseNumber').value=item.license_number || '';
                 document.getElementById('formConsultationFee').value=item.consultation_fee || '';
                 document.getElementById('formDietPrice').value=item.diet_price || '';
@@ -240,10 +250,26 @@
         }
         
         async function saveData(){
-            const id=document.getElementById('editId').value;
+            const id = document.getElementById('editId').value;
             const formData = new FormData();
+            
+            const password = document.getElementById('formPassword').value;
+            const passwordConfirm = document.getElementById('formPasswordConfirm').value;
+            
+            if (!id) {
+                if (!password || password.length < 8) {
+                    alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+                    return;
+                }
+                if (password !== passwordConfirm) {
+                    alert('كلمة المرور وتأكيدها غير متطابقين');
+                    return;
+                }
+                formData.append('password', password);
+                formData.append('password_confirmation', passwordConfirm);
+                formData.append('type', 'doctor');
+            }
 
-            formData.append('user_id', document.getElementById('formUserId').value);
             formData.append('name', document.getElementById('formName').value.trim());
             formData.append('email', document.getElementById('formEmail').value.trim());
             formData.append('specialization', document.getElementById('formSpecialty').value.trim() || 'تغذية علاجية');
@@ -252,34 +278,43 @@
             if (degreeInput.files.length > 0) {
                 formData.append('degree', degreeInput.files[0]);
             }
-            formData.append('phone_number', document.getElementById('formPhone').value.trim());
+            
+            if (!id) {
+                formData.append('phone', document.getElementById('formPhone').value.trim());
+            } else {
+                formData.append('phone_number', document.getElementById('formPhone').value.trim());
+            }
+
             formData.append('bank_account', document.getElementById('formBankAccount').value.trim());
             const cvInput = document.getElementById('formCV');
             if (cvInput.files.length > 0) {
-                formData.append('CV', cvInput.files[0]);
+                formData.append(id ? 'CV' : 'cv', cvInput.files[0]);
             }
             formData.append('license_number', document.getElementById('formLicenseNumber').value.trim());
             formData.append('consultation_fee', document.getElementById('formConsultationFee').value);
             formData.append('diet_price', document.getElementById('formDietPrice').value);
             formData.append('years_of_experience', document.getElementById('formYearsOfExperience').value);
             formData.append('bio', document.getElementById('formBio').value.trim());
-            formData.append('application_status', 'pending');
+            
+            if (id) {
+                formData.append('application_status', 'pending');
+            }
 
             const profileImageInput = document.getElementById('formProfileImage');
             if (profileImageInput.files.length > 0) {
                 formData.append('profile_image', profileImageInput.files[0]);
             }
 
-            if(!formData.get('user_id')||!formData.get('name')||!formData.get('phone_number')){alert('يرجى ملء الحقول المطلوبة');return;}
+            if(!formData.get('name')||!document.getElementById('formPhone').value){alert('يرجى ملء الحقول المطلوبة');return;}
             
             try {
-                if(id){
+                if (id) {
                     formData.append('_method', 'PUT');
                     await ApiService.uploadFormData(`/doctors/${id}`, 'POST', formData);
-                    if (typeof showToast === 'function') showToast('تم تحديث بيانات الدكتور بنجاح');
+                    alert('تم تحديث بيانات الدكتور بنجاح');
                 } else {
-                    await ApiService.uploadFormData('/doctors', 'POST', formData);
-                    if (typeof showToast === 'function') showToast('تم إضافة الدكتور بنجاح');
+                    await ApiService.uploadFormData('/register', 'POST', formData);
+                    alert('تم إضافة الدكتور بنجاح');
                 }
                 formModal.hide();
                 loadData();

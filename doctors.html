@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة الأطباء - لوحة التحكم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <style>
    
@@ -128,15 +128,16 @@
                                 <thead>
                                     <tr>
                                         <th>الاسم</th>
+                                        <th>التخصص</th>
+                                        <th>البريد الإلكتروني</th>
                                         <th>الجنس</th>
-                                        <th>الدرجة العلمية</th>
-                                        <th>رقم الهاتف</th>
-                                        <th>الحساب البنكي</th>
-                                        <th>السيرة الذاتية</th>
-                                        <th>التقييم</th>
-                                        <th>المنتديات</th>
                                         <th>سعر الكشف</th>
-                                        <th>سنوات الخبرة</th>
+                                        <th>سعر الحمية</th>
+                                        <th>الترخيص</th>
+                                        <th>رقم الهاتف</th>
+                                        <th>السيرة الذاتية</th>
+                                        <th>الدرجة العلمية</th>
+                                        <th>التقييم</th>
                                         <th>الحالة</th>
                                         <th>الإجراءات</th>
                                     </tr>
@@ -176,6 +177,10 @@
                                 <input type="text" class="form-control" id="doctorName" required>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="doctorEmail" placeholder="example@email.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">الجنس</label>
                                 <select class="form-select" id="doctorGender" required>
                                     <option value="male">ذكر</option>
@@ -183,51 +188,38 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label">سعر الحمية</label>
+                                <input type="number" class="form-control" id="doctorDietPrice" step="0.01" placeholder="أدخل سعر الحمية">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الحساب البنكي</label>
+                                <input type="text" class="form-control" id="doctorBank" placeholder="أدخل رقم الحساب البنكي">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" id="doctorPhone" required placeholder="أدخل رقم الهاتف">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">السيرة الذاتية (CV)</label>
+                                <input type="file" class="form-control" id="doctorCV" accept=".pdf,.doc,.docx,.jpeg,.png,.jpg">
+                                <small class="text-muted">يمكنك رفع ملف PDF أو Word أو صورة</small>
+                                <div id="currentCVPreview" class="mt-2 d-none">
+                                    <small class="text-muted d-block">الملف الحالي:</small>
+                                    <a href="#" id="currentCVLink" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i> عرض السيرة الذاتية</a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">الدرجة العلمية</label>
                                 <input type="file" class="form-control" id="doctorDegree" accept=".pdf,.png,.jpg,.jpeg">
+                                <small class="text-muted">يمكنك رفع ملف PDF أو صورة</small>
                                 <div id="currentDegreePreview" class="mt-2 d-none">
                                     <small class="text-muted d-block">الملف الحالي:</small>
                                     <a href="#" id="currentDegreeLink" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i> عرض الملف</a>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">رقم الهاتف</label>
-                                <input type="tel" class="form-control" id="doctorPhone" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">الحساب البنكي</label>
-                                <input type="text" class="form-control" id="doctorBank">
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label class="form-label">التخصص</label>
-                                <select class="form-select" id="doctorSpecialty" required>
-                                    <option value="تغذية علاجية">تغذية علاجية</option>
-                                    <option value="طب رياضي">طب رياضي</option>
-                                    <option value="باطنة">باطنة</option>
-                                    <option value="علاج طبيعي">علاج طبيعي</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">السيرة الذاتية (CV)</label>
-                                <input type="file" class="form-control" id="doctorCV" accept=".pdf,.doc,.docx">
-                                <div id="currentCVPreview" class="mt-2 d-none">
-                                    <small class="text-muted d-block">الملف الحالي:</small>
-                                    <a href="#" id="currentCVLink" target="_blank" class="text-primary"><i class="fas fa-file-pdf me-1"></i> عرض السيرة الذاتية</a>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">التقييم (من 5)</label>
-                                <select class="form-select" id="doctorRating">
-                                    <option value="5">5 نجوم</option>
-                                    <option value="4">4 نجوم</option>
-                                    <option value="3">3 نجوم</option>
-                                    <option value="2">2 نجوم</option>
-                                    <option value="1">1 نجمة</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">عدد المنتديات</label>
-                                <input type="number" class="form-control" id="doctorForums" min="0" value="0">
+                                <input type="text" class="form-control" id="doctorSpecialty" required placeholder="مثلاً: تغذية علاجية">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">رقم الترخيص</label>
@@ -235,7 +227,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">سعر الكشف</label>
-                                <input type="number" class="form-control" id="doctorConsultationFee">
+                                <input type="number" class="form-control" id="doctorConsultationFee" step="0.01">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">سنوات الخبرة</label>
@@ -248,6 +240,16 @@
                                     <small class="text-muted d-block">الصورة الحالية:</small>
                                     <img src="" alt="Current Profile" class="img-thumbnail" style="height: 50px;">
                                 </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">التقييم (من 5)</label>
+                                <select class="form-select" id="doctorRating">
+                                    <option value="5">5 نجوم</option>
+                                    <option value="4">4 نجوم</option>
+                                    <option value="3">3 نجوم</option>
+                                    <option value="2">2 نجوم</option>
+                                    <option value="1">1 نجمة</option>
+                                </select>
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">نبذة عن الطبيب</label>
@@ -272,6 +274,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/app.js"></script>
@@ -308,7 +311,7 @@
                 doctorsTableBody.innerHTML = '';
                 
                 if (doctors.length === 0) {
-                    doctorsTableBody.innerHTML = '<tr><td colspan="10" class="text-center">لا يوجد أطباء لعرضهم</td></tr>';
+                    doctorsTableBody.innerHTML = '<tr><td colspan="11" class="text-center">لا يوجد أطباء لعرضهم</td></tr>';
                     return;
                 }
 
@@ -347,36 +350,32 @@
                     row.innerHTML = `
                         <td>
                             <div class="d-flex align-items-center">
-                                <img src="${doctor.profile_image ? IMAGE_BASE_URL + doctor.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0D8ABC&color=fff&size=35`}" class="rounded-circle me-3" alt="صورة الطبيب" width="35" height="35">
+                                <img src="${doctor.profile_image ? ApiService.resolveImageUrl(doctor.profile_image) : `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0D8ABC&color=fff&size=35`}" class="rounded-circle me-3" alt="صورة الطبيب" width="35" height="35">
                                 <div>
-                                    <h6 class="mb-0">${doctor.name}</h6>
-                                    <small class="text-muted">${doctor.specialization || '-'}</small>
+                                    <h6 class="mb-0 text-nowrap">${doctor.name}</h6>
+                                    <small class="text-muted">ID: ${doctor.id}</small>
                                 </div>
                             </div>
                         </td>
+                        <td><span class="badge bg-light text-primary border">${doctor.specialization || '-'}</span></td>
+                        <td><div class="small">${doctor.email || '-'}</div></td>
                         <td>${doctor.gender === 'male' ? 'ذكر' : (doctor.gender === 'female' ? 'أنثى' : '-')}</td>
-                        <td>${doctor.degree ? `<a href="${doctor.degree}" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i> تحميل</a>` : '-'}</td>
-                        <td>${doctor.phone_number || '-'}</td>
-                        <td><span class="text-muted">${doctor.bank_account || '-'}</span></td>
+                        <td class="text-success fw-bold">${doctor.consultation_fee ? doctor.consultation_fee + ' ريال' : '-'}</td>
+                        <td class="text-primary fw-bold">${doctor.diet_price ? doctor.diet_price + ' ريال' : '-'}</td>
+                        <td><code class="small">${doctor.license_number || '-'}</code></td>
+                        <td><div class="small">${doctor.phone_number || '-'}</div></td>
                         <td>
-                        <td>
-                            ${doctor.CV ? `<a href="${doctor.CV}" target="_blank" class="text-primary"><i class="fas fa-file-pdf me-1"></i> تحميل السيرة الذاتية</a>` : '-'}
+                            ${doctor.CV ? `<a href="${ApiService.resolveImageUrl(doctor.CV)}" target="_blank" class="btn btn-sm btn-link text-primary p-0"><i class="fas fa-file-pdf"></i></a>` : '-'}
                         </td>
-                        </td>
+                        <td>${doctor.degree ? `<a href="${ApiService.resolveImageUrl(doctor.degree)}" target="_blank" class="btn btn-sm btn-link text-primary p-0"><i class="fas fa-certificate"></i></a>` : '-'}</td>
                         <td>
-                            <div class="rating-stars">
+                            <div class="rating-stars small text-nowrap">
                                 ${starsHtml}
-                                <span class="text-muted ms-1">(${rating})</span>
                             </div>
                         </td>
-                        <td>
-                            <span class="badge bg-secondary">${doctor.forums_count || 0}</span>
-                        </td>
-                        <td>${doctor.consultation_fee || '-'} ريال</td>
-                        <td>${doctor.years_of_experience || '-'}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <div class="action-buttons">
+                            <div class="action-buttons text-nowrap">
                                 <button class="btn btn-sm btn-outline-primary" onclick="editDoctor(${doctor.id})" title="تعديل">
                                     <i class="fas fa-edit"></i>
                                 </button>
@@ -396,7 +395,7 @@
                 });
             } catch (error) {
                 console.error('Failed to load doctors', error);
-                doctorsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+                doctorsTableBody.innerHTML = '<tr><td colspan="11" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
             }
         }
 
@@ -405,11 +404,11 @@
             document.getElementById('doctorForm').reset();
             document.getElementById('doctorId').value = '';
             document.getElementById('doctorUserId').value = '';
-            document.getElementById('currentCVPreview').classList.add('d-none');
+            document.getElementById('doctorEmail').value = '';
+            document.getElementById('doctorDietPrice').value = '';
             document.getElementById('currentDegreePreview').classList.add('d-none');
+            document.getElementById('currentCVPreview').classList.add('d-none');
             document.getElementById('currentImagePreview').classList.add('d-none');
-            document.getElementById('doctorLicenseNumber').value = '897889';
-            document.getElementById('doctorConsultationFee').value = '897889';
             modalTitle.textContent = 'إضافة طبيب جديد';
         }
 
@@ -422,7 +421,23 @@
                 document.getElementById('doctorId').value = doctor.id;
                 document.getElementById('doctorUserId').value = doctor.user_id || '';
                 document.getElementById('doctorName').value = doctor.name;
+                document.getElementById('doctorEmail').value = doctor.email || '';
                 document.getElementById('doctorGender').value = doctor.gender || 'male';
+                document.getElementById('doctorDietPrice').value = doctor.diet_price || '';
+                document.getElementById('doctorBank').value = doctor.bank_account || '';
+                document.getElementById('doctorPhone').value = doctor.phone_number || '';
+                
+                // Handle CV preview
+                document.getElementById('doctorCV').value = '';
+                const currentCV = document.getElementById('currentCVPreview');
+                if (doctor.CV) {
+                    currentCV.classList.remove('d-none');
+                    document.getElementById('currentCVLink').href = doctor.CV;
+                } else {
+                    currentCV.classList.add('d-none');
+                }
+                
+                // Handle Degree preview
                 document.getElementById('doctorDegree').value = '';
                 const currentDegree = document.getElementById('currentDegreePreview');
                 if (doctor.degree) {
@@ -431,25 +446,14 @@
                 } else {
                     currentDegree.classList.add('d-none');
                 }
-                document.getElementById('doctorPhone').value = doctor.phone_number || '';
-                document.getElementById('doctorBank').value = doctor.bank_account || '';
+                
                 document.getElementById('doctorSpecialty').value = doctor.specialization || '';
                 document.getElementById('doctorRating').value = Math.floor(doctor.rating || 5);
-                document.getElementById('doctorForums').value = doctor.forums_count || 0;
                 document.getElementById('doctorStatus').value = doctor.application_status || 'pending';
                 document.getElementById('doctorLicenseNumber').value = doctor.license_number || '';
                 document.getElementById('doctorConsultationFee').value = doctor.consultation_fee || '';
                 document.getElementById('doctorYearsOfExperience').value = doctor.years_of_experience || '';
-                
-                document.getElementById('doctorCV').value = ''; // Clear file input
-                const currentCV = document.getElementById('currentCVPreview');
-                if (doctor.CV) {
-                    currentCV.classList.remove('d-none');
-                    document.getElementById('currentCVLink').href = doctor.CV;
-                } else {
-                    currentCV.classList.add('d-none');
-                }
-                document.getElementById('doctorProfileImage').value = ''; // Clear file input
+                document.getElementById('doctorProfileImage').value = '';
                 const currentImage = document.getElementById('currentImagePreview');
                 if (doctor.profile_image) {
                     currentImage.classList.remove('d-none');
@@ -504,32 +508,47 @@
             
             formData.append('user_id', document.getElementById('doctorUserId').value);
             formData.append('name', document.getElementById('doctorName').value);
+            
+            const email = document.getElementById('doctorEmail').value;
+            if (email) formData.append('email', email);
+            
             formData.append('gender', document.getElementById('doctorGender').value);
+            
+            const dietPrice = document.getElementById('doctorDietPrice').value;
+            if (dietPrice) formData.append('diet_price', dietPrice);
+            
+            formData.append('bank_account', document.getElementById('doctorBank').value);
+            formData.append('phone_number', document.getElementById('doctorPhone').value);
+            
+            // Handle CV file upload
+            const cvInput = document.getElementById('doctorCV');
+            if (cvInput.files.length > 0) {
+                formData.append('CV', cvInput.files[0]);
+            }
+            
             // Handle Degree file upload
             const degreeInput = document.getElementById('doctorDegree');
             if (degreeInput.files.length > 0) {
                 formData.append('degree', degreeInput.files[0]);
             }
-            formData.append('phone_number', document.getElementById('doctorPhone').value);
-            formData.append('bank_account', document.getElementById('doctorBank').value);
+            
             formData.append('specialization', document.getElementById('doctorSpecialty').value);
             formData.append('rating', document.getElementById('doctorRating').value);
-            formData.append('forums_count', document.getElementById('doctorForums').value);
             formData.append('application_status', document.getElementById('doctorStatus').value);
             formData.append('license_number', document.getElementById('doctorLicenseNumber').value);
-            formData.append('consultation_fee', document.getElementById('doctorConsultationFee').value);
-            formData.append('years_of_experience', document.getElementById('doctorYearsOfExperience').value);
+            
+            const consultationFee = document.getElementById('doctorConsultationFee').value;
+            if (consultationFee) formData.append('consultation_fee', consultationFee);
+            
+            const yearsExp = document.getElementById('doctorYearsOfExperience').value;
+            if (yearsExp) formData.append('years_of_experience', yearsExp);
+            
             formData.append('bio', document.getElementById('doctorBio').value);
 
-            // Handle File Uploads
+            // Handle Profile Image Upload
             const profileImageInput = document.getElementById('doctorProfileImage');
             if (profileImageInput.files.length > 0) {
                 formData.append('profile_image', profileImageInput.files[0]);
-            }
-
-            const cvInput = document.getElementById('doctorCV');
-            if (cvInput.files.length > 0) {
-                formData.append('CV', cvInput.files[0]);
             }
             
             try {

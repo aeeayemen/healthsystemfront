@@ -166,19 +166,20 @@
                         <input type="hidden" id="doctorId">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">رقم المستخدم (User ID)</label>
-                                <select class="form-select" id="doctorUserId" required>
-                                    <option value="">اختر المستخدم...</option>
-                                    <!-- Populated by JS -->
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label class="form-label">الاسم الكامل</label>
                                 <input type="text" class="form-control" id="doctorName" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">البريد الإلكتروني</label>
-                                <input type="email" class="form-control" id="doctorEmail" placeholder="example@email.com">
+                                <input type="email" class="form-control" id="doctorEmail" required placeholder="example@email.com">
+                            </div>
+                            <div class="col-md-6 mb-3" id="passwordFieldContainer">
+                                <label class="form-label">كلمة المرور</label>
+                                <input type="password" class="form-control" id="doctorPassword" placeholder="أدخل كلمة المرور">
+                            </div>
+                            <div class="col-md-6 mb-3" id="passwordConfirmFieldContainer">
+                                <label class="form-label">تأكيد كلمة المرور</label>
+                                <input type="password" class="form-control" id="doctorPasswordConfirm" placeholder="تأكيد كلمة المرور">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">الجنس</label>
@@ -364,10 +365,8 @@
                         <td class="text-primary fw-bold">${doctor.diet_price ? doctor.diet_price + ' ريال' : '-'}</td>
                         <td><code class="small">${doctor.license_number || '-'}</code></td>
                         <td><div class="small">${doctor.phone_number || '-'}</div></td>
-                        <td>
-                            ${doctor.CV ? `<a href="${ApiService.resolveImageUrl(doctor.CV)}" target="_blank" class="btn btn-sm btn-link text-primary p-0"><i class="fas fa-file-pdf"></i></a>` : '-'}
-                        </td>
-                        <td>${doctor.degree ? `<a href="${ApiService.resolveImageUrl(doctor.degree)}" target="_blank" class="btn btn-sm btn-link text-primary p-0"><i class="fas fa-certificate"></i></a>` : '-'}</td>
+                        <td>${doctor.CV ? `<a href="${ApiService.resolveImageUrl(doctor.CV)}" target="_blank" class="btn btn-sm btn-outline-secondary" title="السيرة الذاتية"><i class="fas fa-file-pdf"></i></a>` : '-'}</td>
+                        <td>${doctor.degree ? `<a href="${ApiService.resolveImageUrl(doctor.degree)}" target="_blank" class="btn btn-sm btn-outline-info" title="الدرجة العلمية"><i class="fas fa-certificate"></i></a>` : '-'}</td>
                         <td>
                             <div class="rating-stars small text-nowrap">
                                 ${starsHtml}
@@ -403,12 +402,18 @@
         function resetForm() {
             document.getElementById('doctorForm').reset();
             document.getElementById('doctorId').value = '';
-            document.getElementById('doctorUserId').value = '';
             document.getElementById('doctorEmail').value = '';
             document.getElementById('doctorDietPrice').value = '';
             document.getElementById('currentDegreePreview').classList.add('d-none');
             document.getElementById('currentCVPreview').classList.add('d-none');
             document.getElementById('currentImagePreview').classList.add('d-none');
+            
+            // Show password fields for new entries
+            document.getElementById('passwordFieldContainer').classList.remove('d-none');
+            document.getElementById('passwordConfirmFieldContainer').classList.remove('d-none');
+            document.getElementById('doctorPassword').required = true;
+            document.getElementById('doctorPasswordConfirm').required = true;
+            
             modalTitle.textContent = 'إضافة طبيب جديد';
         }
 
@@ -419,7 +424,13 @@
                 const doctor = response.data || response;
                 
                 document.getElementById('doctorId').value = doctor.id;
-                document.getElementById('doctorUserId').value = doctor.user_id || '';
+                // Hide password fields for editing
+                document.getElementById('passwordFieldContainer').classList.add('d-none');
+                document.getElementById('passwordConfirmFieldContainer').classList.add('d-none');
+                document.getElementById('doctorPassword').required = false;
+                document.getElementById('doctorPasswordConfirm').required = false;
+
+                // document.getElementById('doctorUserId').value = doctor.user_id || ''; // Removed
                 document.getElementById('doctorName').value = doctor.name;
                 document.getElementById('doctorEmail').value = doctor.email || '';
                 document.getElementById('doctorGender').value = doctor.gender || 'male';
@@ -503,27 +514,43 @@
         doctorForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const id = document.getElementById('doctorId').value;
-            const formData = new FormData();
+            const password = document.getElementById('doctorPassword').value;
+            const passwordConfirm = document.getElementById('doctorPasswordConfirm').value;
             
-            formData.append('user_id', document.getElementById('doctorUserId').value);
+            if (!id) {
+                if (!password || password.length < 8) {
+                    alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+                    return;
+                }
+                if (password !== passwordConfirm) {
+                    alert('كلمة المرور وتأكيدها غير متطابقين');
+                    return;
+                }
+                formData.append('password', password);
+                formData.append('password_confirmation', passwordConfirm);
+                formData.append('type', 'doctor');
+            }
+
             formData.append('name', document.getElementById('doctorName').value);
-            
-            const email = document.getElementById('doctorEmail').value;
-            if (email) formData.append('email', email);
-            
+            formData.append('email', document.getElementById('doctorEmail').value);
             formData.append('gender', document.getElementById('doctorGender').value);
             
             const dietPrice = document.getElementById('doctorDietPrice').value;
             if (dietPrice) formData.append('diet_price', dietPrice);
             
             formData.append('bank_account', document.getElementById('doctorBank').value);
-            formData.append('phone_number', document.getElementById('doctorPhone').value);
+            // Phone mapping to 'phone' in register and 'phone_number' in update
+            if (!id) {
+                formData.append('phone', document.getElementById('doctorPhone').value);
+            } else {
+                formData.append('phone_number', document.getElementById('doctorPhone').value);
+            }
             
             // Handle CV file upload
             const cvInput = document.getElementById('doctorCV');
             if (cvInput.files.length > 0) {
-                formData.append('CV', cvInput.files[0]);
+                // Backend register expects 'cv', update expects 'CV'
+                formData.append(id ? 'CV' : 'cv', cvInput.files[0]);
             }
             
             // Handle Degree file upload
@@ -533,8 +560,6 @@
             }
             
             formData.append('specialization', document.getElementById('doctorSpecialty').value);
-            formData.append('rating', document.getElementById('doctorRating').value);
-            formData.append('application_status', document.getElementById('doctorStatus').value);
             formData.append('license_number', document.getElementById('doctorLicenseNumber').value);
             
             const consultationFee = document.getElementById('doctorConsultationFee').value;
@@ -550,6 +575,11 @@
             if (profileImageInput.files.length > 0) {
                 formData.append('profile_image', profileImageInput.files[0]);
             }
+
+            if (id) {
+                formData.append('rating', document.getElementById('doctorRating').value);
+                formData.append('application_status', document.getElementById('doctorStatus').value);
+            }
             
             try {
                 if (id) {
@@ -557,7 +587,8 @@
                     await ApiService.uploadFormData(`/doctors/${id}`, 'POST', formData);
                     alert('تم تحديث بيانات الطبيب بنجاح');
                 } else {
-                    await ApiService.uploadFormData('/doctors', 'POST', formData);
+                    // Use register endpoint for new doctors to create user + doctor
+                    await ApiService.uploadFormData('/register', 'POST', formData);
                     alert('تم إضافة الطبيب بنجاح');
                 }
                 

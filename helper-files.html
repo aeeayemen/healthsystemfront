@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الملفات المساعدة - لوحة التحكم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
@@ -123,72 +123,114 @@
         });
 
         async function loadData() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><br>جاري التحميل...</td></tr>';
+            
             try {
-                // Fetch only reference files (without patient_id if possible, or filter)
+                // Fetch helper files (where patient_id is null)
                 const response = await ApiService.medicalFiles.getAll();
-                let items = [];
-                if (response && Array.isArray(response.data)) {
-                    items = response.data;
-                } else if (response && response.medicalFiles && Array.isArray(response.medicalFiles)) {
-                    items = response.medicalFiles;
+                
+                // Handle paginated response
+                if (response && response.data) {
+                    allData = response.data;
                 } else if (Array.isArray(response)) {
-                    items = response;
+                    allData = response;
+                } else {
+                    allData = [];
                 }
-                allData = items.filter(f => !f.patient_id);
+                
                 renderTable();
             } catch (error) {
                 console.error('Failed to load helper files:', error);
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">فشل تحميل البيانات: ' + error.message + '</td></tr>';
             }
         }
 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
-            if (allData.length === 0) {
+            if (!allData || allData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد ملفات مساعدة مرفوعة حالياً</td></tr>';
-            } else {
-                tbody.innerHTML = allData.map(item => {
-                    const safeName = (item.file_name || 'file').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    return `
-                    <tr>
-                        <td>${item.id}</td>
-                        <td>
-                            <i class="fas fa-file-alt me-1 text-primary"></i> ${item.file_name}
-                        </td>
-                        <td><span class="badge bg-info">${item.file_type || item.status || 'مرجع'}</span></td>
-                        <td class="text-truncate" style="max-width: 200px;">${item.description || '-'}</td>
-                        <td>${item.uploaded_at ? item.uploaded_at.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : '-')}</td>
-                        <td>
-                            <button onclick="downloadMedicalFile(${item.id}, '${safeName}')" class="btn btn-sm btn-outline-primary" title="تحميل">
+                return;
+            }
+
+            tbody.innerHTML = allData.map(item => `
+                <tr>
+                    <td><span class="text-muted small">#${item.id}</span></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="fas ${getFileIcon(item.file_type)} me-2 text-primary fs-5"></i>
+                            <div>
+                                <div class="fw-bold">${item.file_name}</div>
+                                <div class="small text-muted">${item.file_size ? (item.file_size / 1024 / 1024).toFixed(2) + ' MB' : ''}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge ${item.status === 'public_ref' ? 'bg-success' : 'bg-info'}">
+                            ${item.status === 'public_ref' ? 'مرجع عام' : (item.status === 'reference' ? 'مرجع طبي' : (item.status || 'مرجع'))}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 250px;" title="${item.description || ''}">
+                            ${item.description || '<span class="text-muted italic">لا يوجد وصف</span>'}
+                        </div>
+                    </td>
+                    <td><div class="small">${formatDate(item.uploaded_at || item.created_at)}</div></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="${item.file_path ? ApiService.resolveImageUrl(item.file_path) : ApiService.medicalFiles.download(item.id)}" class="btn btn-sm btn-outline-primary" target="_blank" title="تحميل/عرض">
                                 <i class="fas fa-download"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="editItem(${item.id})" title="تعديل">
+                                <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${item.id})" title="حذف">
                                 <i class="fas fa-trash"></i>
                             </button>
-                        </td>
-                    </tr>
-                `}).join('');
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getFileIcon(type) {
+            if (!type) return 'fa-file-alt';
+            type = type.toLowerCase();
+            if (['pdf'].includes(type)) return 'fa-file-pdf';
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(type)) return 'fa-file-image';
+            if (['doc', 'docx'].includes(type)) return 'fa-file-word';
+            return 'fa-file-alt';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) {
+                return dateStr.split('T')[0];
             }
         }
 
         function openAddModal() {
             document.getElementById('modalTitle').textContent = 'رفع ملف مساعد جديد';
             document.getElementById('editId').value = '';
-            document.getElementById('formFileName').value = '';
-            document.getElementById('formFile').value = '';
-            document.getElementById('formDescription').value = '';
+            document.getElementById('dataForm').reset();
             document.getElementById('formFile').required = true;
             formModal.show();
         }
 
-        async function downloadMedicalFile(id, fileName) {
-            try {
-                showToast('جاري بدء التحميل...', 'info');
-                await ApiService.downloadFile(ApiService.medicalFiles.download(id), fileName);
-            } catch (error) {
-                console.error('Download failed', error);
-                alert('فشل تحميل الملف');
-            }
+        function editItem(id) {
+            const item = allData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').textContent = 'تعديل الملف المساعد';
+            document.getElementById('editId').value = item.id;
+            document.getElementById('formFileName').value = item.file_name;
+            document.getElementById('formFileType').value = item.status || 'reference';
+            document.getElementById('formDescription').value = item.description || '';
+            document.getElementById('formFile').required = false;
+            formModal.show();
         }
 
         async function saveData() {
@@ -198,8 +240,13 @@
             const status = document.getElementById('formFileType').value;
             const description = document.getElementById('formDescription').value;
 
-            if (!fileName || (!id && fileInput.files.length === 0)) {
-                alert('يرجى اختيار ملف وإدخال اسم له');
+            if (!fileName) {
+                alert('يرجى إدخال اسم للملف');
+                return;
+            }
+
+            if (!id && fileInput.files.length === 0) {
+                alert('يرجى اختيار ملف للرفع');
                 return;
             }
 
@@ -207,23 +254,34 @@
             formData.append('file_name', fileName);
             formData.append('status', status);
             formData.append('description', description);
+            // Explicitly set patient_id to empty for helper files
+            formData.append('patient_id', ''); 
+
             if (fileInput.files.length > 0) {
                 formData.append('file', fileInput.files[0]);
             }
 
+            const saveBtn = document.querySelector('#formModal .btn-primary');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جاري الحفظ...';
+
             try {
                 if (id) {
                     await ApiService.medicalFiles.update(id, formData);
-                    showToast('تم تحديث الملف بنجاح');
+                    if (typeof showToast === 'function') showToast('تم تحديث الملف بنجاح'); else alert('تم تحديث الملف بنجاح');
                 } else {
                     await ApiService.medicalFiles.create(formData);
-                    showToast('تم رفع الملف بنجاح');
+                    if (typeof showToast === 'function') showToast('تم رفع الملف بنجاح'); else alert('تم رفع الملف بنجاح');
                 }
                 formModal.hide();
                 loadData();
             } catch (error) {
                 console.error('Failed to save file:', error);
-                alert('فشل حفظ الملف: ' + (error.message || 'خطأ غير معروف'));
+                alert('فشل حفظ الملف: ' + (error.message || 'خطأ في الاتصال بالخادم'));
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
             }
         }
 
@@ -233,14 +291,22 @@
         }
 
         async function confirmDelete() {
+            const btn = document.getElementById('confirmDeleteBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جاري الحذف...';
+
             try {
                 await ApiService.medicalFiles.delete(deleteId);
-                showToast('تم حذف الملف بنجاح');
+                if (typeof showToast === 'function') showToast('تم حذف الملف بنجاح'); else alert('تم حذف الملف بنجاح');
                 deleteModal.hide();
                 loadData();
             } catch (error) {
                 console.error('Failed to delete file:', error);
                 alert('فشل حذف الملف');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
     </script>

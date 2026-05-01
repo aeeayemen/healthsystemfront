@@ -68,7 +68,7 @@ const Layout = {
 
         let html = `
             <div class="sidebar-header">
-                <h3><i class="fas fa-heartbeat me-2"></i> Nutrguide </h3>
+                <h3><i class="fas fa-heartbeat me-2"></i> Nutriguide </h3>
             </div>
             <ul class="list-unstyled components">
                 <li>
